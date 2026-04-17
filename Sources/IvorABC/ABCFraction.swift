@@ -1,5 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
+private import XestiTools
+
 /// A fraction with an unsigned integer numerator and denominator.
 public struct ABCFraction {
 
@@ -7,13 +9,12 @@ public struct ABCFraction {
 
     /// Creates a new fraction with the provided numerator and denominator.
     ///
-    /// If `denominator` is zero, this initializer stops execution.
-    ///
     /// - Parameter numerator:   The numerator of the fraction.
-    /// - Parameter denominator: The denominator of the fraction. Must be
-    ///                          greater than zero.
+    /// - Parameter denominator: The denominator of the fraction.
     /// - Parameter reduce:      Whether to reduce the fraction to its simplest
     ///                          form.
+    ///
+    /// - Precondition: The denominator must be greater than zero.
     public init(numerator: UInt,
                 denominator: UInt,
                 reduce: Bool) {
@@ -24,7 +25,7 @@ public struct ABCFraction {
 
         if reduce, den != 1 {
             if num != 0 {
-                let tmp = _gcd(num, den)
+                let tmp = UInt.gcd(num, den)
 
                 if tmp != 1 {
                     num /= tmp
@@ -56,18 +57,4 @@ extension ABCFraction: Equatable {
 // MARK: - Sendable
 
 extension ABCFraction: Sendable {
-}
-
-// MARK: - Private Functions
-
-private func _gcd(_ n1: UInt,
-                  _ n2: UInt) -> UInt {
-    var val1 = n1
-    var val2 = n2
-
-    while val2 != 0 {
-        (val1, val2) = (val2, val1 % val2)
-    }
-
-    return val1
 }
