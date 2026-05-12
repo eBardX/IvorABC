@@ -24,7 +24,8 @@ extension Character {
 
     internal var isABCDirectiveNameTail: Bool {
         switch self {
-        case "-", ":":
+        case "-",
+             ":":
              true
 
         default:
@@ -34,7 +35,8 @@ extension Character {
 
     internal var isABCHexDigit: Bool {
         switch self {
-        case "A"..."F", "a"..."f":
+        case "a"..."f",
+             "A"..."F":
              true
 
         default:
@@ -44,7 +46,8 @@ extension Character {
 
     internal var isABCLetter: Bool {
         switch self {
-        case "A"..."Z", "a"..."z":
+        case "a"..."z",
+             "A"..."Z":
              true
 
         default:
@@ -54,7 +57,8 @@ extension Character {
 
     internal var isABCWhitespace: Bool {
         switch self {
-        case "\t", " ":
+        case " ",
+             "\t":
             true
 
         default:

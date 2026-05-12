@@ -8,14 +8,14 @@ extension ABCSymbolTokenizer {
 
     // MARK: Internal Type Properties
 
-    nonisolated(unsafe) internal static let regexAnnotation = Regex {
+    internal nonisolated(unsafe) static let regexAnnotation = Regex {
         "\""
         annotationCC
         annotationValue
         "\""
     }
 
-    nonisolated(unsafe) internal static let regexBarRepeat = Regex {
+    internal nonisolated(unsafe) static let regexBarRepeat = Regex {
         Optionally {
             "."
         }
@@ -36,7 +36,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) internal static let regexBrokenRhythm = Regex {
+    internal nonisolated(unsafe) static let regexBrokenRhythm = Regex {
         ChoiceOf {
             Repeat(1...3) {
                 "<"
@@ -47,7 +47,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) internal static let regexChordSymbol = Regex {
+    internal nonisolated(unsafe) static let regexChordSymbol = Regex {
         "\""
         chordPitch
         ZeroOrMore {
@@ -68,7 +68,7 @@ extension ABCSymbolTokenizer {
         "\""
     }
 
-    nonisolated(unsafe) internal static let regexDecoration = Regex {
+    internal nonisolated(unsafe) static let regexDecoration = Regex {
         ChoiceOf {
             decorationShorthandCC
             Regex {
@@ -81,7 +81,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) internal static let regexInlineField = Regex {
+    internal nonisolated(unsafe) static let regexInlineField = Regex {
         "["
         letterCC
         ":"
@@ -89,7 +89,7 @@ extension ABCSymbolTokenizer {
         "]"
     }
 
-    nonisolated(unsafe) internal static let regexNote = Regex {
+    internal nonisolated(unsafe) static let regexNote = Regex {
         ZeroOrMore {
             accidentalCC
         }
@@ -105,14 +105,14 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) internal static let regexRest = Regex {
+    internal nonisolated(unsafe) static let regexRest = Regex {
         restCC
         Optionally {
             duration
         }
     }
 
-    nonisolated(unsafe) internal static let regexTuplet = Regex {
+    internal nonisolated(unsafe) static let regexTuplet = Regex {
         "("
         tupletDigitCC
         Repeat(...2) {
@@ -123,7 +123,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) internal static let regexVariantEnding = Regex {
+    internal nonisolated(unsafe) static let regexVariantEnding = Regex {
         "["
         repeatRangeList
         NegativeLookahead {
@@ -138,7 +138,7 @@ extension ABCSymbolTokenizer {
 
     // MARK: Private Type Properties
 
-    nonisolated(unsafe) private static let annotationValue = Regex {
+    private nonisolated(unsafe) static let annotationValue = Regex {
         OneOrMore {
             ChoiceOf {
                 "\\\\"
@@ -150,14 +150,14 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) private static let chordPitch = Regex {
+    private nonisolated(unsafe) static let chordPitch = Regex {
         chordPitchLetterCC
         Optionally {
             chordAccidentalCC
         }
     }
 
-    nonisolated(unsafe) private static let duration = Regex {
+    private nonisolated(unsafe) static let duration = Regex {
         ChoiceOf {
             Regex {
                 Optionally {
@@ -177,7 +177,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) private static let inlineFieldValue = Regex {
+    private nonisolated(unsafe) static let inlineFieldValue = Regex {
         ZeroOrMore {
             ChoiceOf {
                 "\\\\"
@@ -188,7 +188,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) private static let repeatRange = Regex {
+    private nonisolated(unsafe) static let repeatRange = Regex {
         repeatDigitCC
         Optionally {
             "-"
@@ -196,7 +196,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) private static let repeatRangeList = Regex {
+    private nonisolated(unsafe) static let repeatRangeList = Regex {
         repeatRange
         ZeroOrMore {
             ","
@@ -204,7 +204,7 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    nonisolated(unsafe) private static let uinteger = Regex {
+    private nonisolated(unsafe) static let uinteger = Regex {
         OneOrMore {
             digitCC
         }

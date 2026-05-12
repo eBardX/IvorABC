@@ -275,16 +275,16 @@ extension ABCParseContext {
     private static func _determineEffectiveMode(for mode: ABCKeySignature.Mode) -> ABCKeySignature.Mode? {
         switch mode {
         case .aeolian:
-            return .minor
+            .minor
 
         case .explicit:
-            return nil
+            nil
 
         case .ionian:
-            return .major
+            .major
 
         default:
-            return mode
+            mode
         }
     }
 

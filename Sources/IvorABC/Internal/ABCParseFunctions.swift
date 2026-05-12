@@ -612,14 +612,15 @@ private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySig
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {
     switch tidyInput.lowercased() {
-    case "", "none":
-        return .empty
+    case "",
+         "none":
+        .empty
 
     case "hp":
-        return .highlandPipes
+        .highlandPipes
 
     default:
-        return nil
+        nil
     }
 }
 

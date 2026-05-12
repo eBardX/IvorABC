@@ -26,7 +26,7 @@ extension ABCParserTests {
 
     @Test
     func test_parseInvalidUTF8Throws() {
-        let data = Data([0xFF, 0xFE])
+        let data = Data([0xff, 0xfe])
         let parser = ABCParser()
 
         #expect(throws: ABCParseError.self) {

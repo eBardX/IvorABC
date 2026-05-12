@@ -38,10 +38,13 @@ extension ABCSymbolMatcher {
     private func _determineQCount(_ pcount: UInt,
                                   _ context: inout ABCParseContext) -> UInt {
         switch pcount {
-        case 2, 4, 8:
+        case 2,
+             4,
+             8:
             3
 
-        case 3, 6:
+        case 3,
+             6:
             2
 
         default:
@@ -107,11 +110,9 @@ extension ABCSymbolMatcher {
         let duration = _makeDuration(result.duration, &context)
         let pitch = _makePitch(result.pitch, &context)
 
-        let note = ABCNote(pitch: pitch,
-                           duration: duration,
-                           isTied: result.isTied)
-
-        return note
+        return ABCNote(pitch: pitch,
+                       duration: duration,
+                       isTied: result.isTied)
     }
 
     private mutating func _matchChordSymbol() throws -> ABCSymbol? {
@@ -138,11 +139,9 @@ extension ABCSymbolMatcher {
         let duration = _makeDuration(result.duration, &context)
         let pitch = _makePitch(result.pitch, &context)
 
-        let note = ABCNote(pitch: pitch,
-                           duration: duration,
-                           isTied: result.isTied)
-
-        return note
+        return ABCNote(pitch: pitch,
+                       duration: duration,
+                       isTied: result.isTied)
     }
 
     private mutating func _matchGraceNotes(_ context: inout ABCParseContext) throws -> ABCSymbol? {
@@ -193,12 +192,14 @@ extension ABCSymbolMatcher {
         let rest: ABCRest
 
         switch result.kind {
-        case "X", "Z":
+        case "X",
+             "Z":
             let count = result.duration?.numerator ?? 1
 
             rest = .multiMeasure(result.kind == "X", count)
 
-        case "x", "z":
+        case "x",
+             "z":
             let duration = _makeDuration(result.duration, &context)
 
             rest = .regular(result.kind == "x", duration)

@@ -44,7 +44,7 @@ extension ABCSymbolTokenizer {
 
     // MARK: Private Type Properties
 
-    nonisolated(unsafe) private static let rules: [Rule] = [Rule(regexAnnotation, .annotation),
+    private nonisolated(unsafe) static let rules: [Rule] = [Rule(regexAnnotation, .annotation),
                                                             Rule(regexBarRepeat, .barRepeat),
                                                             Rule(regexBrokenRhythm, .brokenRhythm),
                                                             Rule(regexChordSymbol, .chordSymbol),
