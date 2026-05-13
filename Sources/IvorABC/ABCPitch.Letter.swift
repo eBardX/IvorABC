@@ -3,25 +3,25 @@
 extension ABCPitch {
     /// The letter name of an ABC pitch.
     public enum Letter {
-        /// The note A.
+        /// The pitch letter A.
         case a
 
-        /// The note B.
+        /// The pitch letter B.
         case b
 
-        /// The note C.
+        /// The pitch letter C.
         case c
 
-        /// The note D.
+        /// The pitch letter D.
         case d
 
-        /// The note E.
+        /// The pitch letter E.
         case e
 
-        /// The note F.
+        /// The pitch letter F.
         case f
 
-        /// The note G.
+        /// The pitch letter G.
         case g
     }
 }
