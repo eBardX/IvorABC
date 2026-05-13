@@ -67,10 +67,12 @@ public enum ABCParseError {
 // MARK: - EnhancedError
 
 extension ABCParseError: EnhancedError {
+    /// Returns the error category identifying the source module.
     public var category: Category? {
         Category("IvorABC")
     }
 
+    /// Returns a human-readable description of this error.
     public var message: String {
         switch self {
         case .dataConversionFailed:
