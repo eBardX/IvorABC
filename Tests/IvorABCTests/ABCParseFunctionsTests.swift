@@ -105,7 +105,7 @@ extension ABCParseFunctions {
         #expect(parseKeySignature("F#MIX") == .standard(.fSharp, .mixolydian, []))
         #expect(parseKeySignature("G") == .standard(.g, .major, []))
         #expect(parseKeySignature("HP") == .highlandPipes)
-        #expect(parseKeySignature("Hp") == .highlandPipes)
+        #expect(parseKeySignature("Hp") == .highlandPipesPreset)
         #expect(parseKeySignature("none") == .empty)
     }
 

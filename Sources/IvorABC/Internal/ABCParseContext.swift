@@ -245,6 +245,9 @@ extension ABCParseContext {
             return [:]
 
         case .highlandPipes:
+            return [:]
+
+        case .highlandPipesPreset:
             return [.c: .sharp,
                     .f: .sharp,
                     .g: .natural]

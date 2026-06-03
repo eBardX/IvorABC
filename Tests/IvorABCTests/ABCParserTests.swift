@@ -11,6 +11,58 @@ struct ABCParserTests {
 
 extension ABCParserTests {
     @Test
+    func parse_keyHP_noAccidentals() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:HP\nCFG|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry else { return nil }
+            return s
+        }.first)
+        let notes = symbolLine.compactMap { sym -> ABCNote? in
+            guard case let .note(n) = sym else { return nil }
+            return n
+        }
+
+        #expect(notes.count == 3)
+        #expect(notes[0].pitch.letter == .c)
+        #expect(notes[0].pitch.accidental == .natural)
+        #expect(notes[1].pitch.letter == .f)
+        #expect(notes[1].pitch.accidental == .natural)
+        #expect(notes[2].pitch.letter == .g)
+        #expect(notes[2].pitch.accidental == .natural)
+    }
+
+    @Test
+    func parse_keyHp_presetAccidentals() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:Hp\nCFG|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry else { return nil }
+            return s
+        }.first)
+        let notes = symbolLine.compactMap { sym -> ABCNote? in
+            guard case let .note(n) = sym else { return nil }
+            return n
+        }
+
+        #expect(notes.count == 3)
+        #expect(notes[0].pitch.letter == .c)
+        #expect(notes[0].pitch.accidental == .sharp)
+        #expect(notes[1].pitch.letter == .f)
+        #expect(notes[1].pitch.accidental == .sharp)
+        #expect(notes[2].pitch.letter == .g)
+        #expect(notes[2].pitch.accidental == .natural)
+    }
+
+    @Test
     func test_parseEmptyTunebook() throws {
         let input = "%abc-2.1\n"
         let data = Data(input.utf8)

@@ -5,8 +5,11 @@ public enum ABCKeySignature {
     /// An empty (key-less) key signature.
     case empty
 
-    /// A Highland pipes key signature.
+    /// A Highland pipes key signature with no accidentals (`K:HP`).
     case highlandPipes
+
+    /// A Highland pipes key signature with preset accidentals F♯, C♯, G♯ (`K:Hp`).
+    case highlandPipesPreset
 
     /// A standard key signature with the specified tonic, mode, and
     /// accidentals.
