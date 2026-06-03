@@ -114,11 +114,15 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
         let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
-            guard case let .symbols(s) = entry else { return nil }
+            guard case let .symbols(s) = entry
+            else { return nil }
+
             return s
         }.first)
         let notes = symbolLine.compactMap { sym -> ABCNote? in
-            guard case let .note(n) = sym else { return nil }
+            guard case let .note(n) = sym
+            else { return nil }
+
             return n
         }
 
@@ -140,11 +144,15 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
         let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
-            guard case let .symbols(s) = entry else { return nil }
+            guard case let .symbols(s) = entry
+            else { return nil }
+
             return s
         }.first)
         let notes = symbolLine.compactMap { sym -> ABCNote? in
-            guard case let .note(n) = sym else { return nil }
+            guard case let .note(n) = sym
+            else { return nil }
+
             return n
         }
 
@@ -155,5 +163,83 @@ extension ABCParserTests {
         #expect(notes[1].pitch.accidental == .sharp)
         #expect(notes[2].pitch.letter == .g)
         #expect(notes[2].pitch.accidental == .natural)
+    }
+
+    @Test
+    func parse_overlay_singleMarker() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDEF&GABC|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let overlayIndices = symbols.indices.filter { symbols[$0] == .overlay }
+
+        #expect(overlayIndices.count == 1)
+    }
+
+    @Test
+    func parse_overlay_multipleMarkers() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDEF&GABG&CDEF|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let overlayCount = symbols.filter { $0 == .overlay }.count
+
+        #expect(overlayCount == 2)
+    }
+
+    @Test
+    func parse_overlay_preservesSurroundingNotes() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCG&EG|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let overlayIndex = try #require(symbols.indices.first { symbols[$0] == .overlay })
+
+        let notesBefore = symbols[..<overlayIndex].compactMap { sym -> ABCNote? in
+            guard case let .note(n) = sym
+            else { return nil }
+
+            return n
+        }
+        let notesAfter = symbols[overlayIndex...].dropFirst().compactMap { sym -> ABCNote? in
+            guard case let .note(n) = sym
+            else { return nil }
+
+            return n
+        }
+
+        #expect(notesBefore.count == 2)
+        #expect(notesBefore[0].pitch.letter == .c)
+        #expect(notesBefore[1].pitch.letter == .g)
+        #expect(notesAfter.count == 2)
+        #expect(notesAfter[0].pitch.letter == .e)
+        #expect(notesAfter[1].pitch.letter == .g)
     }
 }

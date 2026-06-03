@@ -139,7 +139,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .title(normalize(vtext))
 
     case "U":
-        return .userDefined(normalize(vtext))
+        guard let uds = parseUserDefinedSymbol(vtext)
+        else { throw ABCParseError.invalidUserDefinedSymbol(vtext) }
+
+        return .userDefined(uds)
 
     case "V":
         guard let voice = parseVoice(vtext)
@@ -299,7 +302,7 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
     guard !tidyInput.isEmpty
     else { return nil }
 
-    var duration: ABCDuration?
+    var durations: [ABCDuration] = []
     var text: String?
     var rate: UInt?
 
@@ -318,10 +321,10 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
     if !input.isEmpty {
         let idx = input.dropFirst().firstIndex(of: "\"") ?? input.endIndex
 
-        guard let result = _parseTempoDurationRate(trimSuffix(input[..<idx]))
+        guard let result = _parseTempoDurationsRate(trimSuffix(input[..<idx]))
         else { return nil }
 
-        duration = result.duration
+        durations = result.durations
         rate = result.rate
 
         input = input[idx...]
@@ -341,7 +344,7 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
         return nil
     }
 
-    return ABCTempo(duration: duration,
+    return ABCTempo(durations: durations,
                     rate: rate,
                     text: text)
 }
@@ -359,6 +362,10 @@ internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
 
     default:
         break
+    }
+
+    if tidyInput.contains("+") {
+        return _parseComplexTimeSignature(tidyInput)
     }
 
     guard let fraction = _parseFraction(tidyInput),
@@ -403,6 +410,24 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     else { return nil }
 
     return (pcount, qcount, rcount)
+}
+
+internal func parseUserDefinedSymbol(_ tidyInput: Substring) -> ABCUserDefinedSymbol? {
+    guard let symbol = tidyInput.first
+    else { return nil }
+
+    let rest = trimPrefix(tidyInput.dropFirst())
+
+    guard rest.hasPrefix("=")
+    else { return nil }
+
+    let decoration = String(trim(rest.dropFirst()))
+
+    guard !decoration.isEmpty
+    else { return nil }
+
+    return ABCUserDefinedSymbol(symbol: symbol,
+                                decoration: decoration)
 }
 
 internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
@@ -483,8 +508,9 @@ loop:
 
 // MARK: Private Types
 
-private typealias ParseVoicePropertyResult = (key: String, value: String, rest: Substring)
-private typealias PitchLetterResult        = (letter: ABCPitch.Letter, octave: ABCPitch.Octave)
+private typealias ParseTempoDurationsRateResult = (durations: [ABCDuration], rate: UInt)
+private typealias ParseVoicePropertyResult      = (key: String, value: String, rest: Substring)
+private typealias PitchLetterResult             = (letter: ABCPitch.Letter, octave: ABCPitch.Octave)
 
 // MARK: Private Constants
 
@@ -552,6 +578,54 @@ private let tonics: [Substring: ABCKeySignature.Tonic] = ["A": .a,
                                                           "Gb": .gFlat]
 
 // MARK: Private Functions
+
+private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
+    let numeratorText: Substring
+    let denominatorText: Substring
+
+    if tidyInput.first == "(" {
+        guard let closeIdx = tidyInput.firstIndex(of: ")")
+        else { return nil }
+
+        numeratorText = tidyInput[tidyInput.index(after: tidyInput.startIndex)..<closeIdx]
+
+        let afterClose = tidyInput[tidyInput.index(after: closeIdx)...]
+
+        guard afterClose.first == "/"
+        else { return nil }
+
+        denominatorText = afterClose.dropFirst()
+    } else {
+        let parts = tidyInput.splitBeforeFirst("/")
+
+        guard let dtail = parts.tail
+        else { return nil }
+
+        numeratorText = parts.head
+        denominatorText = dtail.dropFirst()
+    }
+
+    guard let denominator = UInt(denominatorText),
+          [1, 2, 4, 8, 16, 32, 64].contains(denominator)
+    else { return nil }
+
+    let numParts = numeratorText.split(separator: "+",
+                                       omittingEmptySubsequences: false)
+
+    guard numParts.count >= 2
+    else { return nil }
+
+    var numerators: [UInt] = []
+
+    for part in numParts {
+        guard let num = UInt(part), num > 0
+        else { return nil }
+
+        numerators.append(num)
+    }
+
+    return .complex(numerators, denominator)
+}
 
 private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
     let result = tidyInput.splitBeforeFirst("/")
@@ -656,17 +730,29 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
     return (tonic, mode)
 }
 
-private func _parseTempoDurationRate(_ tidyInput: Substring) -> (duration: ABCDuration, rate: UInt)? {
+private func _parseTempoDurationsRate(_ tidyInput: Substring) -> ParseTempoDurationsRateResult? {
     let result = tidyInput.splitBeforeFirst("=")
     let dtext = trimSuffix(result.head)
+    let pieces = dtext.split { $0.isABCWhitespace }
 
-    guard let duration = _parseDuration(dtext),
-          let rtext = result.tail?.dropFirst(),
+    guard !pieces.isEmpty
+    else { return nil }
+
+    var durations: [ABCDuration] = []
+
+    for piece in pieces {
+        guard let dur = _parseDuration(piece)
+        else { return nil }
+
+        durations.append(dur)
+    }
+
+    guard let rtext = result.tail?.dropFirst(),
           let rate = UInt(trimPrefix(rtext)),
           rate > 0
     else { return nil }
 
-    return (duration, rate)
+    return (durations, rate)
 }
 
 private func _parseTempoText(_ tidyInput: Substring) -> String? {

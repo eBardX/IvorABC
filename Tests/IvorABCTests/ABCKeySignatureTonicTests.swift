@@ -11,15 +11,27 @@ struct ABCKeySignatureTonicTests {
 extension ABCKeySignatureTonicTests {
     @Test
     func allCasesAreDistinct() {
-        let allCases: [ABCKeySignature.Tonic] = [
-            .a, .aFlat, .aSharp,
-            .b, .bFlat, .bSharp,
-            .c, .cFlat, .cSharp,
-            .d, .dFlat, .dSharp,
-            .e, .eFlat, .eSharp,
-            .f, .fFlat, .fSharp,
-            .g, .gFlat, .gSharp
-        ]
+        let allCases: [ABCKeySignature.Tonic] = [.a,
+                                                 .aFlat,
+                                                 .aSharp,
+                                                 .b,
+                                                 .bFlat,
+                                                 .bSharp,
+                                                 .c,
+                                                 .cFlat,
+                                                 .cSharp,
+                                                 .d,
+                                                 .dFlat,
+                                                 .dSharp,
+                                                 .e,
+                                                 .eFlat,
+                                                 .eSharp,
+                                                 .f,
+                                                 .fFlat,
+                                                 .fSharp,
+                                                 .g,
+                                                 .gFlat,
+                                                 .gSharp]
 
         for i in allCases.indices {
             for j in allCases.indices where i != j {

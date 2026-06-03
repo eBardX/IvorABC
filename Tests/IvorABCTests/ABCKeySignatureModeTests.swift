@@ -11,10 +11,16 @@ struct ABCKeySignatureModeTests {
 extension ABCKeySignatureModeTests {
     @Test
     func allCasesAreDistinct() {
-        let allCases: [ABCKeySignature.Mode] = [
-            .aeolian, .dorian, .explicit, .ionian, .locrian,
-            .lydian, .major, .minor, .mixolydian, .phrygian
-        ]
+        let allCases: [ABCKeySignature.Mode] = [.aeolian,
+                                                .dorian,
+                                                .explicit,
+                                                .ionian,
+                                                .locrian,
+                                                .lydian,
+                                                .major,
+                                                .minor,
+                                                .mixolydian,
+                                                .phrygian]
 
         for i in allCases.indices {
             for j in allCases.indices where i != j {

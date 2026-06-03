@@ -34,6 +34,9 @@ public enum ABCSymbol {
     /// A note.
     case note(ABCNote)
 
+    /// A voice overlay marker (`&`).
+    case overlay
+
     /// A rest.
     case rest(ABCRest)
 

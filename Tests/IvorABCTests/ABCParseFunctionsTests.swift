@@ -43,6 +43,7 @@ extension ABCParseFunctionsTests {
         #expect(throws: ABCParseError.self) { try parseField("K:B##") }
         #expect(throws: ABCParseError.self) { try parseField("Q:120") }
         #expect(throws: ABCParseError.self) { try parseField("L:1/3") }
+        #expect(throws: ABCParseError.self) { try parseField("U:~") }
         #expect(throws: ABCParseError.self) { try parseField("[A:area]") }
     }
 
@@ -74,7 +75,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
-        try expectFieldIsUserDefined(parseField("U:~=!roll!"), "~=!roll!")
+        try expectFieldIsUserDefined(parseField("U:~=!roll!"), _udef("~", "!roll!"))
         try expectFieldIsVoice(parseField("V:1"))
     }
 
@@ -227,6 +228,26 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
+    func parseTempo_compoundBeat_failure() {
+        #expect(parseTempo("3/8+1/4=44") == nil)
+        #expect(parseTempo("1/4+1/4+1/4=120") == nil)
+        #expect(parseTempo("1/4 +3/8+ 1/4 + 3/8=40") == nil)
+    }
+
+    @Test
+    func parseTempo_compoundBeat_success() {
+        let d38 = _dur(3, 8)
+        let d14 = _dur(1, 4)
+        let d12 = _dur(1, 2)
+
+        #expect(parseTempo("3/8 1/4=44") == _tempo([d38, d14], 44))
+        #expect(parseTempo("3/8 1/4 = 44") == _tempo([d38, d14], 44))
+        #expect(parseTempo("1/4 1/4 1/4=120") == _tempo([d14, d14, d14], 120))
+        #expect(parseTempo("1/2 1/4=60") == _tempo([d12, d14], 60))
+        #expect(parseTempo("1/4 3/8 1/4 3/8=40") == _tempo([d14, d38, d14, d38], 40))
+    }
+
+    @Test
     func parseTempo_failure() {
         #expect(parseTempo("") == nil)
         #expect(parseTempo("120") == nil)
@@ -240,8 +261,26 @@ extension ABCParseFunctionsTests {
         #expect(parseTempo("\"Andante mosso\" 1/4 = 110") == _tempo(1, 4, 110, "Andante mosso"))
         #expect(parseTempo("1/2=120") == _tempo(1, 2, 120))
         #expect(parseTempo("1/4 = 110 \"Andante mosso\"") == _tempo(1, 4, 110, "Andante mosso"))
-        // #expect(parseTempo("1/4 3/8 1/4 3/8=40") == _makeTempo(5, 4, 40))
         #expect(parseTempo("3/8=50 \"Slowly\"") == _tempo(3, 8, 50, "Slowly"))
+    }
+
+    @Test
+    func parseTimeSignature_complex_failure() {
+        #expect(parseTimeSignature("(2+3+2)/3") == nil)     // bad denominator
+        #expect(parseTimeSignature("(2+3+2)") == nil)       // missing denominator
+        #expect(parseTimeSignature("+3/8") == nil)          // leading +
+        #expect(parseTimeSignature("2+/8") == nil)          // trailing +
+        #expect(parseTimeSignature("2+0/8") == nil)         // zero numerator part
+    }
+
+    @Test
+    func parseTimeSignature_complex_success() {
+        #expect(parseTimeSignature("(2+3+2)/8") == _tsig([2, 3, 2], 8))
+        #expect(parseTimeSignature("2+3+2/8") == _tsig([2, 3, 2], 8))
+        #expect(parseTimeSignature("(3+3)/8") == _tsig([3, 3], 8))
+        #expect(parseTimeSignature("3+3/8") == _tsig([3, 3], 8))
+        #expect(parseTimeSignature("(2+3)/4") == _tsig([2, 3], 4))
+        #expect(parseTimeSignature("3+3+2/8") == _tsig([3, 3, 2], 8))
     }
 
     @Test
@@ -298,6 +337,23 @@ extension ABCParseFunctionsTests {
         #expect(parseUnitNoteLength("1/128") == _dur(1, 128))
         #expect(parseUnitNoteLength("1/256") == _dur(1, 256))
         #expect(parseUnitNoteLength("1/512") == _dur(1, 512))
+    }
+
+    @Test
+    func parseUserDefinedSymbol_failure() {
+        #expect(parseUserDefinedSymbol("") == nil)
+        #expect(parseUserDefinedSymbol("~") == nil)
+        #expect(parseUserDefinedSymbol("~=") == nil)
+        #expect(parseUserDefinedSymbol("= !roll!") == nil)
+    }
+
+    @Test
+    func parseUserDefinedSymbol_success() {
+        #expect(parseUserDefinedSymbol("T=!trill!") == _udef("T", "!trill!"))
+        #expect(parseUserDefinedSymbol("T = !trill!") == _udef("T", "!trill!"))
+        #expect(parseUserDefinedSymbol("~=!roll!") == _udef("~", "!roll!"))
+        #expect(parseUserDefinedSymbol("~ = !roll!") == _udef("~", "!roll!"))
+        #expect(parseUserDefinedSymbol("H=!fermata!") == _udef("H", "!fermata!"))
     }
 
     @Test

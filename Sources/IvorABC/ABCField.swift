@@ -81,7 +81,7 @@ public enum ABCField {
     case unitNoteLength(ABCDuration)
 
     /// A user-defined field (`U:`).
-    case userDefined(String)
+    case userDefined(ABCUserDefinedSymbol)
 
     /// A voice field (`V:`).
     case voice(ABCVoice)

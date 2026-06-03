@@ -48,6 +48,9 @@ public enum ABCParseError {
     /// The parser encountered an invalid unit note length.
     case invalidUnitNoteLength(Substring)
 
+    /// The parser encountered an invalid user-defined symbol mapping.
+    case invalidUserDefinedSymbol(Substring)
+
     /// The parser encountered an invalid version string.
     case invalidVersion(Substring)
 
@@ -120,6 +123,9 @@ extension ABCParseError: EnhancedError {
 
         case let .invalidUnitNoteLength(value):
             "Invalid unit note length: ‘\(value)’"
+
+        case let .invalidUserDefinedSymbol(value):
+            "Invalid user-defined symbol: ‘\(value)’"
 
         case let .invalidVersion(value):
             "Invalid version: ‘\(value)’"

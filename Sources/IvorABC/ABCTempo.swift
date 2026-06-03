@@ -5,27 +5,31 @@ public struct ABCTempo {
 
     // MARK: Public Initializers
 
-    /// Creates a new tempo specification with the provided duration, rate, and
+    /// Creates a new tempo specification with the provided durations, rate, and
     /// text.
     ///
-    /// - Parameter duration: The note duration on which the tempo rate is
-    ///                       based, or `nil` if not specified.
-    /// - Parameter rate:     The tempo rate in beats per minute, or `nil` if
-    ///                       not specified.
-    /// - Parameter text:     The optional tempo description text.
-    public init(duration: ABCDuration?,
+    /// - Parameter durations: The note durations that together form the beat
+    ///                        unit on which the tempo rate is based. Empty if
+    ///                        not specified. For a compound beat such as
+    ///                        `Q:1/4 3/8 1/4 3/8=40`, this array has more than
+    ///                        one element.
+    /// - Parameter rate:      The tempo rate in beats per minute, or `nil` if
+    ///                        not specified.
+    /// - Parameter text:      The optional tempo description text.
+    public init(durations: [ABCDuration],
                 rate: UInt?,
                 text: String?) {
-        self.duration = duration
+        self.durations = durations
         self.rate = rate
         self.text = text
     }
 
     // MARK: Public Instance Properties
 
-    /// The note duration on which the tempo rate is based, or `nil` if not
-    /// specified.
-    public let duration: ABCDuration?
+    /// The note durations that together form the beat unit on which the tempo
+    /// rate is based. Empty if not specified. For a compound beat such as
+    /// `Q:1/4 3/8 1/4 3/8=40`, this array has more than one element.
+    public let durations: [ABCDuration]
 
     /// The tempo rate in beats per minute, or `nil` if not specified.
     public let rate: UInt?

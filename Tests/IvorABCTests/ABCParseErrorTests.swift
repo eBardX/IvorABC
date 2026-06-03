@@ -131,6 +131,13 @@ extension ABCParseErrorTests {
     }
 
     @Test
+    func message_invalidUserDefinedSymbol() {
+        let error = ABCParseError.invalidUserDefinedSymbol("~")
+
+        #expect(error.message.contains("~"))
+    }
+
+    @Test
     func message_invalidVoice() {
         let error = ABCParseError.invalidVoice("")
 

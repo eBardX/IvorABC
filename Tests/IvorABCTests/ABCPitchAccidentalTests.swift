@@ -11,9 +11,11 @@ struct ABCPitchAccidentalTests {
 extension ABCPitchAccidentalTests {
     @Test
     func allCasesAreDistinct() {
-        let allCases: [ABCPitch.Accidental] = [
-            .doubleFlat, .flat, .natural, .sharp, .doubleSharp
-        ]
+        let allCases: [ABCPitch.Accidental] = [.doubleFlat,
+                                               .flat,
+                                               .natural,
+                                               .sharp,
+                                               .doubleSharp]
 
         for i in allCases.indices {
             for j in allCases.indices where i != j {

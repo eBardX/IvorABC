@@ -167,6 +167,12 @@ extension ABCSymbolMatcher {
         return .inlineField(field)
     }
 
+    private mutating func _matchOverlay() throws -> ABCSymbol? {
+        try tokenMatcher.readMustMatch(.overlay)
+
+        return .overlay
+    }
+
     private mutating func _matchNote(_ context: inout ABCParseContext) throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.note)
 
@@ -248,6 +254,10 @@ extension ABCSymbolMatcher {
 
         if tokenMatcher.nextMatches(.note) {
             return try _matchNote(&context)
+        }
+
+        if tokenMatcher.nextMatches(.overlay) {
+            return try _matchOverlay()
         }
 
         if tokenMatcher.nextMatches(.rest) {

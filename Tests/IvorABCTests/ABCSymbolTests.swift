@@ -94,6 +94,7 @@ extension ABCSymbolTests {
     func inequality() {
         #expect(ABCSymbol.annotation("foo") != .annotation("bar"))
         #expect(ABCSymbol.annotation("foo") != .chordSymbol("foo"))
+        #expect(ABCSymbol.overlay != .slur("("))
         #expect(ABCSymbol.tuplet(3, 2, 3) != .tuplet(3, 2, 4))
     }
 }

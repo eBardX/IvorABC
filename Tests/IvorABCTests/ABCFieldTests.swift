@@ -17,7 +17,7 @@ extension ABCFieldTests {
                                          .parts(""),
                                          .refNumber(ABCRefNumber(uintValue: 1)),
                                          .symbolLine(""),
-                                         .tempo(ABCTempo(duration: nil,
+                                         .tempo(ABCTempo(durations: [],
                                                          rate: nil,
                                                          text: nil)),
                                          .title(""),
@@ -50,7 +50,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined("")]
+                                       .userDefined(_udef("~", "!roll!"))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -89,14 +89,14 @@ extension ABCFieldTests {
                                        .remark(""),
                                        .rhythm(""),
                                        .symbolLine(""),
-                                       .tempo(ABCTempo(duration: nil,
+                                       .tempo(ABCTempo(durations: [],
                                                        rate: nil,
                                                        text: nil)),
                                        .title(""),
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined(""),
+                                       .userDefined(_udef("~", "!roll!")),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 
@@ -136,7 +136,7 @@ extension ABCFieldTests {
                                        .remark(""),
                                        .rhythm(""),
                                        .source(""),
-                                       .tempo(ABCTempo(duration: nil,
+                                       .tempo(ABCTempo(durations: [],
                                                        rate: nil,
                                                        text: nil)),
                                        .title(""),
@@ -144,7 +144,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined(""),
+                                       .userDefined(_udef("~", "!roll!")),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 

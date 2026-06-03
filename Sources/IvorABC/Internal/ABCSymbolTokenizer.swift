@@ -59,6 +59,7 @@ extension ABCSymbolTokenizer {
                                                             Rule(/]/, .chordEnd),
                                                             Rule(/\{\/?/, .graceNotesBegin),
                                                             Rule(/\}/, .graceNotesEnd),
+                                                            Rule(/&/, .overlay),
                                                             Rule(/\(/, .slurBegin),
                                                             Rule(/\)/, .slurEnd),
                                                             Rule(regex: /[$\\]$/,
@@ -86,6 +87,7 @@ extension Tokenizer.Token.Kind {
     internal static let graceNotesEnd      = Self("graceNotesEnd")
     internal static let inlineField        = Self("inlineField")
     internal static let note               = Self("note")
+    internal static let overlay            = Self("overlay")
     internal static let rest               = Self("rest")
     internal static let slurBegin          = Self("slurBegin")
     internal static let slurEnd            = Self("slurEnd")

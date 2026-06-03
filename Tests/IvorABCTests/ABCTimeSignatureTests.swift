@@ -39,7 +39,7 @@ extension ABCTimeSignatureTests {
         #expect(ABCTimeSignature.common != .empty)
         #expect(ABCTimeSignature.common != .explicit(frac))
         #expect(ABCTimeSignature.explicit(frac) != .explicit(ABCFraction(numerator: 4,
-                                                                          denominator: 4,
-                                                                          reduce: false)))
+                                                                         denominator: 4,
+                                                                         reduce: false)))
     }
 }

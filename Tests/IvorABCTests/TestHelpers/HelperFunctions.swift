@@ -251,7 +251,7 @@ func expectFieldIsUnitNoteLength(_ field: ABCField,
 }
 
 func expectFieldIsUserDefined(_ field: ABCField,
-                              _ expected: String,
+                              _ expected: ABCUserDefinedSymbol,
                               sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .userDefined(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
@@ -302,6 +302,7 @@ func == (lhs: ParseTupletResult?,
 
 // MARK: - Factory Functions
 
+// swiftlint:disable:next identifier_name
 func _dur(_ numerator: UInt,
           _ denominator: UInt) -> ABCDuration {
     ABCDuration(numerator: numerator,
@@ -309,6 +310,7 @@ func _dur(_ numerator: UInt,
                 reduce: true)
 }
 
+// swiftlint:disable:next identifier_name
 func _pit(_ letter: ABCPitch.Letter,
           _ accidental: ABCPitch.Accidental,
           _ octave: ABCPitch.Octave) -> ABCPitch {
@@ -317,33 +319,46 @@ func _pit(_ letter: ABCPitch.Letter,
              octave: octave)
 }
 
+// swiftlint:disable:next identifier_name
 func _rnum(_ uintValue: UInt) -> ABCRefNumber {
     ABCRefNumber(uintValue: uintValue)
 }
 
+// swiftlint:disable:next identifier_name
 func _tempo(_ numerator: UInt,
             _ denominator: UInt,
             _ rate: UInt) -> ABCTempo {
-    ABCTempo(duration: _dur(numerator, denominator),
+    ABCTempo(durations: [_dur(numerator, denominator)],
              rate: rate,
              text: nil)
 }
 
+// swiftlint:disable:next identifier_name
 func _tempo(_ numerator: UInt,
             _ denominator: UInt,
             _ rate: UInt,
             _ text: String) -> ABCTempo {
-    ABCTempo(duration: _dur(numerator, denominator),
+    ABCTempo(durations: [_dur(numerator, denominator)],
              rate: rate,
              text: text)
 }
 
+// swiftlint:disable:next identifier_name
+func _tempo(_ durations: [ABCDuration],
+            _ rate: UInt) -> ABCTempo {
+    ABCTempo(durations: durations,
+             rate: rate,
+             text: nil)
+}
+
+// swiftlint:disable:next identifier_name
 func _tempo(_ text: String) -> ABCTempo {
-    ABCTempo(duration: nil,
+    ABCTempo(durations: [],
              rate: nil,
              text: text)
 }
 
+// swiftlint:disable:next identifier_name
 func _tsig(_ numerator: UInt,
            _ denominator: UInt) -> ABCTimeSignature {
     .explicit(ABCFraction(numerator: numerator,
@@ -351,6 +366,20 @@ func _tsig(_ numerator: UInt,
                           reduce: false))
 }
 
+// swiftlint:disable:next identifier_name
+func _tsig(_ numerators: [UInt],
+           _ denominator: UInt) -> ABCTimeSignature {
+    .complex(numerators, denominator)
+}
+
+// swiftlint:disable:next identifier_name
+func _udef(_ symbol: Character,
+           _ decoration: String) -> ABCUserDefinedSymbol {
+    ABCUserDefinedSymbol(symbol: symbol,
+                         decoration: decoration)
+}
+
+// swiftlint:disable:next identifier_name
 func _voice(_ id: String,
             _ properties: [String: String] = [:]) -> ABCVoice {
     ABCVoice(id: id,
