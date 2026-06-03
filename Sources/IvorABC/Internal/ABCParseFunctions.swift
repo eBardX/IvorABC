@@ -133,16 +133,19 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .source(normalize(vtext))
 
     case "s" where !isInline:
-        return .symbolLine(normalize(vtext))
+        guard let sl = parseSymbolLine(vtext)
+        else { throw ABCParseError.invalidSymbolLine(vtext) }
+
+        return .symbolLine(sl)
 
     case "T" where !isInline:
         return .title(normalize(vtext))
 
     case "U":
-        guard let uds = parseUserDefinedSymbol(vtext)
-        else { throw ABCParseError.invalidUserDefinedSymbol(vtext) }
+        guard let uds = parseUserSymbol(vtext)
+        else { throw ABCParseError.invalidUserSymbol(vtext) }
 
-        return .userDefined(uds)
+        return .userSymbol(uds)
 
     case "V":
         guard let voice = parseVoice(vtext)
@@ -154,7 +157,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .lyrics(normalize(vtext))
 
     case "w" where !isInline:
-        return .alignedLyrics(normalize(vtext))
+        return .alignedLyrics(parseAlignedLyrics(vtext))
 
     case "X" where !isInline:
         guard let rn = parseRefNumber(vtext)
@@ -170,6 +173,87 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     }
 
     throw ABCParseError.invalidField(isInline, tidyInput)
+}
+
+internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
+    var segments: [ABCAlignedLyrics.Segment] = []
+    var input = tidyInput
+    var currentText = ""
+    var hasText = false
+    var precedingHyphen = false
+
+    func flush() {
+        guard hasText
+        else { return }
+
+        segments.append(precedingHyphen
+                        ? .continuation(currentText)
+                        : .syllable(currentText))
+
+        currentText = ""
+        hasText = false
+        precedingHyphen = false
+    }
+
+    while let ch = input.first {
+        input = input.dropFirst()
+
+        switch ch {
+        case "\\":
+            if let next = input.first {
+                currentText.append(next)
+
+                input = input.dropFirst()
+                hasText = true
+            }
+
+        case " ",
+             "\t":
+            flush()
+
+            precedingHyphen = false
+
+        case "-":
+            flush()
+
+            precedingHyphen = true
+
+        case "_":
+            flush()
+
+            segments.append(.hold)
+
+            precedingHyphen = false
+
+        case "*":
+            flush()
+
+            segments.append(.skip)
+
+            precedingHyphen = false
+
+        case "|":
+            flush()
+
+            segments.append(.barAlign)
+
+            precedingHyphen = false
+
+        case "~":
+            currentText.append(" ")
+
+            hasText = true
+
+        default:
+            currentText.append(ch)
+
+            hasText = true
+        }
+    }
+
+    flush()
+
+    return ABCAlignedLyrics(segments: segments)
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
@@ -298,6 +382,58 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
     return (String(restLetter), duration)
 }
 
+internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
+    var tokens: [ABCSymbolLine.Token] = []
+    var input = tidyInput
+
+    while !input.isEmpty {
+        input = trimPrefix(input)
+
+        guard !input.isEmpty
+        else { break }
+
+        switch input.first {
+        case "*":
+            tokens.append(.skip)
+
+            input = input.dropFirst()
+
+        case "!":
+            let rest = input.dropFirst()
+
+            guard let closeIdx = rest.firstIndex(of: "!"),
+                  !rest[..<closeIdx].isEmpty,
+                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
+            else { return nil }
+
+            tokens.append(.decoration(String(input[...closeIdx])))
+
+            input = rest[rest.index(after: closeIdx)...]
+
+        case "\"":
+            let rest = input.dropFirst()
+
+            guard let closeIdx = rest.firstIndex(of: "\"")
+            else { return nil }
+
+            let content = String(rest[..<closeIdx])
+
+            if let first = content.first, "_@^<>".contains(first) {
+                tokens.append(.annotation(content))
+            } else {
+                tokens.append(.chordSymbol(content))
+            }
+
+            input = rest[rest.index(after: closeIdx)...]
+
+        default:
+            return nil
+        }
+    }
+
+    return ABCSymbolLine(tokens: tokens)
+}
+
 internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
     guard !tidyInput.isEmpty
     else { return nil }
@@ -412,7 +548,7 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     return (pcount, qcount, rcount)
 }
 
-internal func parseUserDefinedSymbol(_ tidyInput: Substring) -> ABCUserDefinedSymbol? {
+internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard let symbol = tidyInput.first
     else { return nil }
 
@@ -426,8 +562,8 @@ internal func parseUserDefinedSymbol(_ tidyInput: Substring) -> ABCUserDefinedSy
     guard !decoration.isEmpty
     else { return nil }
 
-    return ABCUserDefinedSymbol(symbol: symbol,
-                                decoration: decoration)
+    return ABCUserSymbol(symbol: symbol,
+                         decoration: decoration)
 }
 
 internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
@@ -516,8 +652,8 @@ private typealias PitchLetterResult             = (letter: ABCPitch.Letter, octa
 
 private let accidentalCS: Set<Character>  = ["_", "^", "="]
 private let durationCS: Set<Character>    = ["/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let octaveCS: Set<Character>      = [",", "'"]
+private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
 
 private let modes: [String: ABCKeySignature.Mode] = ["": .major,

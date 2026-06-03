@@ -1,17 +1,17 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
-/// An ABC user-defined symbol mapping (`U:`).
+/// An ABC user symbol mapping (`U:`).
 ///
 /// Maps a single character to a decoration, for example:
 /// ```
 /// U: ~ = !roll!
 /// U: T = !trill!
 /// ```
-public struct ABCUserDefinedSymbol {
+public struct ABCUserSymbol {
 
     // MARK: Public Initializers
 
-    /// Creates a new user-defined symbol mapping.
+    /// Creates a new user symbol mapping.
     ///
     /// - Parameter symbol:     The character being mapped.
     /// - Parameter decoration: The decoration the symbol maps to.
@@ -32,10 +32,10 @@ public struct ABCUserDefinedSymbol {
 
 // MARK: - Equatable
 
-extension ABCUserDefinedSymbol: Equatable {
+extension ABCUserSymbol: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCUserDefinedSymbol: Sendable {
+extension ABCUserSymbol: Sendable {
 }

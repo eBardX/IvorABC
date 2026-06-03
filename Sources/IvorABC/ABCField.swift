@@ -3,7 +3,7 @@
 /// An ABC field.
 public enum ABCField {
     /// An aligned lyrics field (`w:`).
-    case alignedLyrics(String)
+    case alignedLyrics(ABCAlignedLyrics)
 
     /// An area field (`A:`).
     case area(String)
@@ -66,7 +66,7 @@ public enum ABCField {
     case source(String)
 
     /// A symbol line field (`s:`).
-    case symbolLine(String)
+    case symbolLine(ABCSymbolLine)
 
     /// A tempo field (`Q:`).
     case tempo(ABCTempo)
@@ -80,8 +80,8 @@ public enum ABCField {
     /// A unit note length field (`L:`).
     case unitNoteLength(ABCDuration)
 
-    /// A user-defined field (`U:`).
-    case userDefined(ABCUserDefinedSymbol)
+    /// A user symbol field (`U:`).
+    case userSymbol(ABCUserSymbol)
 
     /// A voice field (`V:`).
     case voice(ABCVoice)
@@ -98,24 +98,24 @@ extension ABCField {
     public var isValidInFileHeader: Bool {
         switch self {
         case .area,
-                .book,
-                .composer,
-                .continuation,
-                .discography,
-                .fileURL,
-                .group,
-                .history,
-                .instruction,
-                .macro,
-                .meter,
-                .notes,
-                .origin,
-                .remark,
-                .rhythm,
-                .source,
-                .transcription,
-                .unitNoteLength,
-                .userDefined:
+             .book,
+             .composer,
+             .continuation,
+             .discography,
+             .fileURL,
+             .group,
+             .history,
+             .instruction,
+             .macro,
+             .meter,
+             .notes,
+             .origin,
+             .remark,
+             .rhythm,
+             .source,
+             .transcription,
+             .unitNoteLength,
+             .userSymbol:
             true
 
         default:
@@ -127,22 +127,22 @@ extension ABCField {
     public var isValidInTuneBody: Bool {
         switch self {
         case .alignedLyrics,
-                .continuation,
-                .instruction,
-                .key,
-                .lyrics,
-                .macro,
-                .meter,
-                .notes,
-                .parts,
-                .remark,
-                .rhythm,
-                .symbolLine,
-                .tempo,
-                .title,
-                .unitNoteLength,
-                .userDefined,
-                .voice:
+             .continuation,
+             .instruction,
+             .key,
+             .lyrics,
+             .macro,
+             .meter,
+             .notes,
+             .parts,
+             .remark,
+             .rhythm,
+             .symbolLine,
+             .tempo,
+             .title,
+             .unitNoteLength,
+             .userSymbol,
+             .voice:
             true
 
         default:
@@ -154,31 +154,31 @@ extension ABCField {
     public var isValidInTuneHeader: Bool {
         switch self {
         case .area,
-                .book,
-                .composer,
-                .continuation,
-                .discography,
-                .fileURL,
-                .group,
-                .history,
-                .instruction,
-                .key,
-                .lyrics,
-                .macro,
-                .meter,
-                .notes,
-                .origin,
-                .parts,
-                .refNumber,
-                .remark,
-                .rhythm,
-                .source,
-                .tempo,
-                .title,
-                .transcription,
-                .unitNoteLength,
-                .userDefined,
-                .voice:
+             .book,
+             .composer,
+             .continuation,
+             .discography,
+             .fileURL,
+             .group,
+             .history,
+             .instruction,
+             .key,
+             .lyrics,
+             .macro,
+             .meter,
+             .notes,
+             .origin,
+             .parts,
+             .refNumber,
+             .remark,
+             .rhythm,
+             .source,
+             .tempo,
+             .title,
+             .transcription,
+             .unitNoteLength,
+             .userSymbol,
+             .voice:
             true
 
         default:

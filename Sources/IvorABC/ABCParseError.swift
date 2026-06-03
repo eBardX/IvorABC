@@ -33,6 +33,9 @@ public enum ABCParseError {
     /// The parser encountered an invalid rest.
     case invalidRest(Substring)
 
+    /// The parser encountered an invalid symbol line.
+    case invalidSymbolLine(Substring)
+
     /// The parser encountered an invalid sequence of music code symbols.
     case invalidSymbols(Substring)
 
@@ -49,7 +52,7 @@ public enum ABCParseError {
     case invalidUnitNoteLength(Substring)
 
     /// The parser encountered an invalid user-defined symbol mapping.
-    case invalidUserDefinedSymbol(Substring)
+    case invalidUserSymbol(Substring)
 
     /// The parser encountered an invalid version string.
     case invalidVersion(Substring)
@@ -109,6 +112,9 @@ extension ABCParseError: EnhancedError {
         case let .invalidRest(value):
             "Invalid rest: ‘\(value)’"
 
+        case let .invalidSymbolLine(value):
+            "Invalid symbol line: ‘\(value)’"
+
         case let .invalidSymbols(value):
             "Invalid music code symbols: ‘\(value)’"
 
@@ -124,7 +130,7 @@ extension ABCParseError: EnhancedError {
         case let .invalidUnitNoteLength(value):
             "Invalid unit note length: ‘\(value)’"
 
-        case let .invalidUserDefinedSymbol(value):
+        case let .invalidUserSymbol(value):
             "Invalid user-defined symbol: ‘\(value)’"
 
         case let .invalidVersion(value):

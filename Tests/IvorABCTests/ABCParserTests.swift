@@ -166,26 +166,6 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_overlay_singleMarker() throws {
-        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDEF&GABC|\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-        let tune = try #require(tunebook.tunes.first)
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
-            guard case let .symbols(s) = entry
-            else { return nil }
-
-            return s
-        }.first)
-
-        let overlayIndices = symbols.indices.filter { symbols[$0] == .overlay }
-
-        #expect(overlayIndices.count == 1)
-    }
-
-    @Test
     func parse_overlay_multipleMarkers() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDEF&GABG&CDEF|\n"
         let data = Data(input.utf8)
@@ -241,5 +221,25 @@ extension ABCParserTests {
         #expect(notesAfter.count == 2)
         #expect(notesAfter[0].pitch.letter == .e)
         #expect(notesAfter[1].pitch.letter == .g)
+    }
+
+    @Test
+    func parse_overlay_singleMarker() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDEF&GABC|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let overlayIndices = symbols.indices.filter { symbols[$0] == .overlay }
+
+        #expect(overlayIndices.count == 1)
     }
 }

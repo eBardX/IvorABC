@@ -11,12 +11,12 @@ struct ABCFieldTests {
 extension ABCFieldTests {
     @Test
     func isValidInFileHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(""),
+        let invalidFields: [ABCField] = [.alignedLyrics(_alyrics()),
                                          .key(.empty),
                                          .lyrics(""),
                                          .parts(""),
                                          .refNumber(ABCRefNumber(uintValue: 1)),
-                                         .symbolLine(""),
+                                         .symbolLine(_sline()),
                                          .tempo(ABCTempo(durations: [],
                                                          rate: nil,
                                                          text: nil)),
@@ -50,7 +50,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined(_udef("~", "!roll!"))]
+                                       .userSymbol(_usym("~", "!roll!"))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -78,7 +78,7 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneBody_validFields() {
-        let validFields: [ABCField] = [.alignedLyrics(""),
+        let validFields: [ABCField] = [.alignedLyrics(_alyrics()),
                                        .instruction(""),
                                        .key(.empty),
                                        .lyrics(""),
@@ -88,7 +88,7 @@ extension ABCFieldTests {
                                        .parts(""),
                                        .remark(""),
                                        .rhythm(""),
-                                       .symbolLine(""),
+                                       .symbolLine(_sline()),
                                        .tempo(ABCTempo(durations: [],
                                                        rate: nil,
                                                        text: nil)),
@@ -96,7 +96,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined(_udef("~", "!roll!")),
+                                       .userSymbol(_usym("~", "!roll!")),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 
@@ -107,8 +107,8 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(""),
-                                         .symbolLine("")]
+        let invalidFields: [ABCField] = [.alignedLyrics(_alyrics()),
+                                         .symbolLine(_sline())]
 
         for field in invalidFields {
             #expect(!field.isValidInTuneHeader)
@@ -144,7 +144,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userDefined(_udef("~", "!roll!")),
+                                       .userSymbol(_usym("~", "!roll!")),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 

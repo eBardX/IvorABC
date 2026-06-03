@@ -89,6 +89,13 @@ extension ABCParseErrorTests {
     }
 
     @Test
+    func message_invalidSymbolLine() {
+        let error = ABCParseError.invalidSymbolLine("bogus")
+
+        #expect(error.message.contains("bogus"))
+    }
+
+    @Test
     func message_invalidSymbols() {
         let error = ABCParseError.invalidSymbols("@@@")
 
@@ -124,17 +131,17 @@ extension ABCParseErrorTests {
     }
 
     @Test
+    func message_invalidUserSymbol() {
+        let error = ABCParseError.invalidUserSymbol("~")
+
+        #expect(error.message.contains("~"))
+    }
+
+    @Test
     func message_invalidVersion() {
         let error = ABCParseError.invalidVersion("abc")
 
         #expect(error.message.contains("abc"))
-    }
-
-    @Test
-    func message_invalidUserDefinedSymbol() {
-        let error = ABCParseError.invalidUserDefinedSymbol("~")
-
-        #expect(error.message.contains("~"))
     }
 
     @Test

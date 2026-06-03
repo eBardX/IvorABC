@@ -6,7 +6,7 @@ import Testing
 // MARK: - ABCField Expectations
 
 func expectFieldIsAlignedLyrics(_ field: ABCField,
-                                _ expected: String,
+                                _ expected: ABCAlignedLyrics,
                                 sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .alignedLyrics(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
@@ -207,7 +207,7 @@ func expectFieldIsSource(_ field: ABCField,
 }
 
 func expectFieldIsSymbolLine(_ field: ABCField,
-                             _ expected: String,
+                             _ expected: ABCSymbolLine,
                              sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .symbolLine(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
@@ -250,13 +250,13 @@ func expectFieldIsUnitNoteLength(_ field: ABCField,
     }
 }
 
-func expectFieldIsUserDefined(_ field: ABCField,
-                              _ expected: ABCUserDefinedSymbol,
-                              sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .userDefined(v) = field {
+func expectFieldIsUserSymbol(_ field: ABCField,
+                             _ expected: ABCUserSymbol,
+                             sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .userSymbol(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
     } else {
-        Issue.record("Expected .userDefined", sourceLocation: sourceLocation)
+        Issue.record("Expected .userSymbol", sourceLocation: sourceLocation)
     }
 }
 
@@ -303,6 +303,11 @@ func == (lhs: ParseTupletResult?,
 // MARK: - Factory Functions
 
 // swiftlint:disable:next identifier_name
+func _alyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAlignedLyrics {
+    ABCAlignedLyrics(segments: segments)
+}
+
+// swiftlint:disable:next identifier_name
 func _dur(_ numerator: UInt,
           _ denominator: UInt) -> ABCDuration {
     ABCDuration(numerator: numerator,
@@ -322,6 +327,11 @@ func _pit(_ letter: ABCPitch.Letter,
 // swiftlint:disable:next identifier_name
 func _rnum(_ uintValue: UInt) -> ABCRefNumber {
     ABCRefNumber(uintValue: uintValue)
+}
+
+// swiftlint:disable:next identifier_name
+func _sline(_ tokens: [ABCSymbolLine.Token] = []) -> ABCSymbolLine {
+    ABCSymbolLine(tokens: tokens)
 }
 
 // swiftlint:disable:next identifier_name
@@ -373,10 +383,10 @@ func _tsig(_ numerators: [UInt],
 }
 
 // swiftlint:disable:next identifier_name
-func _udef(_ symbol: Character,
-           _ decoration: String) -> ABCUserDefinedSymbol {
-    ABCUserDefinedSymbol(symbol: symbol,
-                         decoration: decoration)
+func _usym(_ symbol: Character,
+           _ decoration: String) -> ABCUserSymbol {
+    ABCUserSymbol(symbol: symbol,
+                  decoration: decoration)
 }
 
 // swiftlint:disable:next identifier_name

@@ -49,7 +49,8 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseField_success() throws {
-        try expectFieldIsAlignedLyrics(parseField("w:la la la"), "la la la")
+        try expectFieldIsAlignedLyrics(parseField("w:la la la"),
+                                       _alyrics([.syllable("la"), .syllable("la"), .syllable("la")]))
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
         try expectFieldIsComposer(parseField("C:J.S. Bach"), "J.S. Bach")
@@ -70,12 +71,13 @@ extension ABCParseFunctionsTests {
         try expectFieldIsRemark(parseField("r:editorial note"), "editorial note")
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")
         try expectFieldIsSource(parseField("S:collected by ..."), "collected by ...")
-        try expectFieldIsSymbolLine(parseField("s:!p! * * *"), "!p! * * *")
+        try expectFieldIsSymbolLine(parseField("s:!p! * * *"),
+                                    _sline([.decoration("!p!"), .skip, .skip, .skip]))
         try expectFieldIsTempo(parseField("Q:1/4=120"))
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
-        try expectFieldIsUserDefined(parseField("U:~=!roll!"), _udef("~", "!roll!"))
+        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), _usym("~", "!roll!"))
         try expectFieldIsVoice(parseField("V:1"))
     }
 
@@ -228,6 +230,31 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
+    func parseSymbolLine_failure() {
+        #expect(parseSymbolLine("bogus") == nil)
+        #expect(parseSymbolLine("!p! bogus !f!") == nil)
+        #expect(parseSymbolLine(".") == nil)
+        #expect(parseSymbolLine("~") == nil)
+        #expect(parseSymbolLine("!!") == nil)
+    }
+
+    @Test
+    func parseSymbolLine_success() {
+        #expect(parseSymbolLine("") == _sline())
+        #expect(parseSymbolLine("*") == _sline([.skip]))
+        #expect(parseSymbolLine("**") == _sline([.skip, .skip]))
+        #expect(parseSymbolLine("!p!") == _sline([.decoration("!p!")]))
+        #expect(parseSymbolLine("!pp!") == _sline([.decoration("!pp!")]))
+        #expect(parseSymbolLine("\"Am\"") == _sline([.chordSymbol("Am")]))
+        #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation("^forte")]))
+        #expect(parseSymbolLine("\"_text\"") == _sline([.annotation("_text")]))
+        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration("!p!"), .skip, .skip, .skip]))
+        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration("!pp!"), .skip, .decoration("!f!")]))
+        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration("!trill!")]))
+        #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation("^p"), .chordSymbol("Am"), .skip]))
+    }
+
+    @Test
     func parseTempo_compoundBeat_failure() {
         #expect(parseTempo("3/8+1/4=44") == nil)
         #expect(parseTempo("1/4+1/4+1/4=120") == nil)
@@ -340,20 +367,20 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseUserDefinedSymbol_failure() {
-        #expect(parseUserDefinedSymbol("") == nil)
-        #expect(parseUserDefinedSymbol("~") == nil)
-        #expect(parseUserDefinedSymbol("~=") == nil)
-        #expect(parseUserDefinedSymbol("= !roll!") == nil)
+    func parseUserSymbol_failure() {
+        #expect(parseUserSymbol("") == nil)
+        #expect(parseUserSymbol("~") == nil)
+        #expect(parseUserSymbol("~=") == nil)
+        #expect(parseUserSymbol("= !roll!") == nil)
     }
 
     @Test
-    func parseUserDefinedSymbol_success() {
-        #expect(parseUserDefinedSymbol("T=!trill!") == _udef("T", "!trill!"))
-        #expect(parseUserDefinedSymbol("T = !trill!") == _udef("T", "!trill!"))
-        #expect(parseUserDefinedSymbol("~=!roll!") == _udef("~", "!roll!"))
-        #expect(parseUserDefinedSymbol("~ = !roll!") == _udef("~", "!roll!"))
-        #expect(parseUserDefinedSymbol("H=!fermata!") == _udef("H", "!fermata!"))
+    func parseUserSymbol_success() {
+        #expect(parseUserSymbol("T=!trill!") == _usym("T", "!trill!"))
+        #expect(parseUserSymbol("T = !trill!") == _usym("T", "!trill!"))
+        #expect(parseUserSymbol("~=!roll!") == _usym("~", "!roll!"))
+        #expect(parseUserSymbol("~ = !roll!") == _usym("~", "!roll!"))
+        #expect(parseUserSymbol("H=!fermata!") == _usym("H", "!fermata!"))
     }
 
     @Test
