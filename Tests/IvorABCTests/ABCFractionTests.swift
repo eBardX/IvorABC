@@ -10,7 +10,7 @@ struct ABCFractionTests {
 
 extension ABCFractionTests {
     @Test
-    func test_initReducesFractionByGCD() {
+    func init_reducesFractionByGCD() {
         let fraction = ABCFraction(numerator: 6,
                                    denominator: 4,
                                    reduce: true)
@@ -20,7 +20,7 @@ extension ABCFractionTests {
     }
 
     @Test
-    func test_initReducesLargeValues() {
+    func init_reducesLargeValues() {
         let fraction = ABCFraction(numerator: 120,
                                    denominator: 360,
                                    reduce: true)
@@ -30,7 +30,7 @@ extension ABCFractionTests {
     }
 
     @Test
-    func test_initWithDenominatorOneSkipsReduction() {
+    func init_withDenominatorOneSkipsReduction() {
         let fraction = ABCFraction(numerator: 5,
                                    denominator: 1,
                                    reduce: true)
@@ -40,7 +40,7 @@ extension ABCFractionTests {
     }
 
     @Test
-    func test_initWithReduceFalsePreservesFraction() {
+    func init_withReduceFalsePreservesFraction() {
         let fraction = ABCFraction(numerator: 6,
                                    denominator: 4,
                                    reduce: false)
@@ -50,7 +50,7 @@ extension ABCFractionTests {
     }
 
     @Test
-    func test_initWithZeroNumeratorSetsDenominatorToOne() {
+    func init_withZeroNumeratorSetsDenominatorToOne() {
         let fraction = ABCFraction(numerator: 0,
                                    denominator: 8,
                                    reduce: true)
@@ -60,7 +60,7 @@ extension ABCFractionTests {
     }
 
     @Test
-    func test_noReductionNeededWhenAlreadyReduced() {
+    func noReductionNeededWhenAlreadyReduced() {
         let fraction = ABCFraction(numerator: 3,
                                    denominator: 8,
                                    reduce: true)

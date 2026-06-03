@@ -3,28 +3,28 @@
 @testable import IvorABC
 import Testing
 
-struct ABCParseFunctions {
+struct ABCParseFunctionsTests {
 }
 
 // MARK: -
 
-extension ABCParseFunctions {
+extension ABCParseFunctionsTests {
     @Test
-    func test_normalize() {
-        #expect(normalize("  xyzzy  \\% keep  ") == "xyzzy \\% keep")
-        #expect(normalize("  xyzzy  \\% keep  % ignore  ") == "xyzzy \\% keep % ignore")
-        #expect(normalize("  xyzzy  % ignore  ") == "xyzzy % ignore")
-        #expect(normalize("  xyzzy  %ignore \\% keep  ") == "xyzzy %ignore \\% keep")
+    func normalize() {
+        #expect(IvorABC.normalize("  xyzzy  \\% keep  ") == "xyzzy \\% keep")
+        #expect(IvorABC.normalize("  xyzzy  \\% keep  % ignore  ") == "xyzzy \\% keep % ignore")
+        #expect(IvorABC.normalize("  xyzzy  % ignore  ") == "xyzzy % ignore")
+        #expect(IvorABC.normalize("  xyzzy  %ignore \\% keep  ") == "xyzzy %ignore \\% keep")
     }
 
     @Test
-    func test_parseDuration_failure() {
+    func parseDuration_failure() {
         #expect(parseDuration("") == nil)
         #expect(parseDuration("3//2") == nil)
     }
 
     @Test
-    func test_parseDuration_success() {
+    func parseDuration_success() {
         #expect(parseDuration("/") == _dur(1, 2))
         #expect(parseDuration("//") == _dur(1, 4))
         #expect(parseDuration("///") == _dur(1, 8))
@@ -38,7 +38,7 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseField_failure() {
+    func parseField_failure() {
         #expect(throws: ABCParseError.self) { try parseField("[K:bogus") }
         #expect(throws: ABCParseError.self) { try parseField("K:B##") }
         #expect(throws: ABCParseError.self) { try parseField("Q:120") }
@@ -47,7 +47,7 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseField_success() throws {
+    func parseField_success() throws {
         try expectFieldIsAlignedLyrics(parseField("w:la la la"), "la la la")
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
@@ -79,13 +79,13 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseKeySignature_failure() {
+    func parseKeySignature_failure() {
         #expect(parseKeySignature("B##") == nil)
         #expect(parseKeySignature("C# neutral") == nil)
     }
 
     @Test
-    func test_parseKeySignature_success() {
+    func parseKeySignature_success() {
         #expect(parseKeySignature("") == .empty)
         #expect(parseKeySignature("ADor") == .standard(.a, .dorian, []))
         #expect(parseKeySignature("AMix") == .standard(.a, .mixolydian, []))
@@ -110,12 +110,12 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseNote_failure() {
+    func parseNote_failure() {
         #expect(parseNote("") == nil)
     }
 
     @Test
-    func test_parseNote_success() {
+    func parseNote_success() {
         #expect(parseNote("_d") == ((.d, .flat, 5), nil, false))
         #expect(parseNote("_d''/") == ((.d, .flat, 7), _dur(1, 2), false))
         #expect(parseNote("=A") == ((.a, .natural, 4), nil, false))
@@ -155,7 +155,7 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parsePitch_failure() {
+    func parsePitch_failure() {
         #expect(parsePitch("") == nil)
         #expect(parsePitch("___b") == nil)
         #expect(parsePitch("^_d") == nil)
@@ -164,7 +164,7 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parsePitch_success() {
+    func parsePitch_success() {
         #expect(parsePitch("__b") == (.b, .doubleFlat, 5))
         #expect(parsePitch("__E','") == (.e, .doubleFlat, 5))
         #expect(parsePitch("__G',',") == (.g, .doubleFlat, 4))
@@ -196,20 +196,20 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseRefNumber_failure() {
+    func parseRefNumber_failure() {
         #expect(parseRefNumber("") == nil)
         #expect(parseRefNumber("0") == nil)
     }
 
     @Test
-    func test_parseRefNumber_success() {
+    func parseRefNumber_success() {
         #expect(parseRefNumber("1") == _rnum(1))
         #expect(parseRefNumber("007") == _rnum(7))
         #expect(parseRefNumber("5836472") == _rnum(5_836_472))
     }
 
     @Test
-    func test_parseRest_failure() {
+    func parseRest_failure() {
         #expect(parseRest("") == nil)
         #expect(parseRest("X3/2") == nil)
         #expect(parseRest("y") == nil)
@@ -217,7 +217,7 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseRest_success() {
+    func parseRest_success() {
         #expect(parseRest("x") == ("x", nil))
         #expect(parseRest("x//") == ("x", _dur(1, 4)))
         #expect(parseRest("X2") == ("X", _dur(2, 1)))
@@ -227,14 +227,14 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseTempo_failure() {
+    func parseTempo_failure() {
         #expect(parseTempo("") == nil)
         #expect(parseTempo("120") == nil)
         #expect(parseTempo("C = 120") == nil)
     }
 
     @Test
-    func test_parseTempo_success() {
+    func parseTempo_success() {
         #expect(parseTempo("\"Allegro\" 1/4=120") == _tempo(1, 4, 120, "Allegro"))
         #expect(parseTempo("\"Andante\"") == _tempo("Andante"))
         #expect(parseTempo("\"Andante mosso\" 1/4 = 110") == _tempo(1, 4, 110, "Andante mosso"))
@@ -245,13 +245,13 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseTimeSignature_failure() {
+    func parseTimeSignature_failure() {
         #expect(parseTimeSignature("") == nil)
         #expect(parseTimeSignature("4/3") == nil)
     }
 
     @Test
-    func test_parseTimeSignature_success() {
+    func parseTimeSignature_success() {
         #expect(parseTimeSignature("C") == .common)
         #expect(parseTimeSignature("C|") == .cut)
         #expect(parseTimeSignature("12/8") == _tsig(12, 8))
@@ -262,13 +262,13 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseTuplet_failure() {
+    func parseTuplet_failure() {
         #expect(parseTuplet("") == nil)
         #expect(parseTuplet("(3:::") == nil)
     }
 
     @Test
-    func test_parseTuplet_success() {
+    func parseTuplet_success() {
         #expect(parseTuplet("(3") == (3, nil, nil))
         #expect(parseTuplet("(3::") == (3, nil, nil))
         #expect(parseTuplet("(3:2") == (3, 2, nil))
@@ -279,14 +279,14 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseUnitNoteLength_failure() {
+    func parseUnitNoteLength_failure() {
         #expect(parseUnitNoteLength("") == nil)
         #expect(parseUnitNoteLength("0") == nil)
         #expect(parseUnitNoteLength("1//") == nil)
     }
 
     @Test
-    func test_parseUnitNoteLength_success() {
+    func parseUnitNoteLength_success() {
         #expect(parseUnitNoteLength("1") == _dur(1, 1))
         #expect(parseUnitNoteLength("1/1") == _dur(1, 1))
         #expect(parseUnitNoteLength("1/2") == _dur(1, 2))
@@ -301,12 +301,12 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_parseVoice_failure() {
+    func parseVoice_failure() {
         #expect(parseVoice("") == nil)
     }
 
     @Test
-    func test_parseVoice_success() {
+    func parseVoice_success() {
         #expect(parseVoice("1 clef=treble name=\"Soprano\"sname=\"A\"") == _voice("1", ["clef": "treble",
                                                                                         "name": "Soprano",
                                                                                         "sname": "A"]))
@@ -327,132 +327,44 @@ extension ABCParseFunctions {
     }
 
     @Test
-    func test_tidy() {
-        #expect(tidy("  xyzzy  \\% keep  ") == "xyzzy  \\% keep")
-        #expect(tidy("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep")
-        #expect(tidy("  xyzzy  % ignore  ") == "xyzzy")
-        #expect(tidy("  xyzzy  %ignore \\% keep  ") == "xyzzy")
+    func tidy() {
+        #expect(IvorABC.tidy("  xyzzy  \\% keep  ") == "xyzzy  \\% keep")
+        #expect(IvorABC.tidy("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep")
+        #expect(IvorABC.tidy("  xyzzy  % ignore  ") == "xyzzy")
+        #expect(IvorABC.tidy("  xyzzy  %ignore \\% keep  ") == "xyzzy")
     }
 
     @Test
-    func test_trim() {
-        #expect(trim("  xyzzy  \\% keep  ") == "xyzzy  \\% keep")
-        #expect(trim("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep  % ignore")
-        #expect(trim("  xyzzy  % ignore  ") == "xyzzy  % ignore")
-        #expect(trim("  xyzzy  %ignore \\% keep  ") == "xyzzy  %ignore \\% keep")
+    func trim() {
+        #expect(IvorABC.trim("  xyzzy  \\% keep  ") == "xyzzy  \\% keep")
+        #expect(IvorABC.trim("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep  % ignore")
+        #expect(IvorABC.trim("  xyzzy  % ignore  ") == "xyzzy  % ignore")
+        #expect(IvorABC.trim("  xyzzy  %ignore \\% keep  ") == "xyzzy  %ignore \\% keep")
     }
 
     @Test
-    func test_trimPrefix() {
-        #expect(trimPrefix("  xyzzy  \\% keep  ") == "xyzzy  \\% keep  ")
-        #expect(trimPrefix("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep  % ignore  ")
-        #expect(trimPrefix("  xyzzy  % ignore  ") == "xyzzy  % ignore  ")
-        #expect(trimPrefix("  xyzzy  %ignore \\% keep  ") == "xyzzy  %ignore \\% keep  ")
+    func trimPrefix() {
+        #expect(IvorABC.trimPrefix("  xyzzy  \\% keep  ") == "xyzzy  \\% keep  ")
+        #expect(IvorABC.trimPrefix("  xyzzy  \\% keep  % ignore  ") == "xyzzy  \\% keep  % ignore  ")
+        #expect(IvorABC.trimPrefix("  xyzzy  % ignore  ") == "xyzzy  % ignore  ")
+        #expect(IvorABC.trimPrefix("  xyzzy  %ignore \\% keep  ") == "xyzzy  %ignore \\% keep  ")
     }
 
     @Test
-    func test_trimSuffix() {
-        #expect(trimSuffix("  xyzzy  \\% keep  ") == "  xyzzy  \\% keep")
-        #expect(trimSuffix("  xyzzy  \\% keep  % ignore  ") == "  xyzzy  \\% keep  % ignore")
-        #expect(trimSuffix("  xyzzy  % ignore  ") == "  xyzzy  % ignore")
-        #expect(trimSuffix("  xyzzy  %ignore \\% keep  ") == "  xyzzy  %ignore \\% keep")
+    func trimSuffix() {
+        #expect(IvorABC.trimSuffix("  xyzzy  \\% keep  ") == "  xyzzy  \\% keep")
+        #expect(IvorABC.trimSuffix("  xyzzy  \\% keep  % ignore  ") == "  xyzzy  \\% keep  % ignore")
+        #expect(IvorABC.trimSuffix("  xyzzy  % ignore  ") == "  xyzzy  % ignore")
+        #expect(IvorABC.trimSuffix("  xyzzy  %ignore \\% keep  ") == "  xyzzy  %ignore \\% keep")
     }
 
     @Test
-    func test_uncomment() {
-        #expect(uncomment("% this is a comment").isEmpty)
-        #expect(uncomment("this is not a comment") == "this is not a comment")
-        #expect(uncomment("  xyzzy  \\% keep  ") == "  xyzzy  \\% keep  ")
-        #expect(uncomment("  xyzzy  \\% keep  % ignore  ") == "  xyzzy  \\% keep  ")
-        #expect(uncomment("  xyzzy  % ignore  ") == "  xyzzy  ")
-        #expect(uncomment("  xyzzy  %ignore \\% keep  ") == "  xyzzy  ")
+    func uncomment() {
+        #expect(IvorABC.uncomment("% this is a comment").isEmpty)
+        #expect(IvorABC.uncomment("this is not a comment") == "this is not a comment")
+        #expect(IvorABC.uncomment("  xyzzy  \\% keep  ") == "  xyzzy  \\% keep  ")
+        #expect(IvorABC.uncomment("  xyzzy  \\% keep  % ignore  ") == "  xyzzy  \\% keep  ")
+        #expect(IvorABC.uncomment("  xyzzy  % ignore  ") == "  xyzzy  ")
+        #expect(IvorABC.uncomment("  xyzzy  %ignore \\% keep  ") == "  xyzzy  ")
     }
-}
-
-// MARK: - Private Functions
-
-// swiftlint:disable:next static_operator
-private func == (lhs: ParseNoteResult?,
-                 rhs: ParseNoteResult?) -> Bool {
-    lhs?.duration == rhs?.duration
-    && lhs?.isTied == rhs?.isTied
-    && lhs?.pitch == rhs?.pitch
-}
-
-// swiftlint:disable:next static_operator
-private func == (lhs: ParsePitchResult?,
-                 rhs: ParsePitchResult?) -> Bool {
-    lhs?.accidental == rhs?.accidental
-    && lhs?.letter == rhs?.letter
-    && lhs?.octave == rhs?.octave
-}
-
-// swiftlint:disable:next static_operator
-private func == (lhs: ParseRestResult?,
-                 rhs: ParseRestResult?) -> Bool {
-    lhs?.kind == rhs?.kind
-    && lhs?.duration == rhs?.duration
-}
-
-// swiftlint:disable:next static_operator
-private func == (lhs: ParseTupletResult?,
-                 rhs: ParseTupletResult?) -> Bool {
-    lhs?.pcount == rhs?.pcount
-    && lhs?.qcount == rhs?.qcount
-    && lhs?.rcount == rhs?.rcount
-}
-
-private func _dur(_ numerator: UInt,
-                  _ denominator: UInt) -> ABCDuration {
-    ABCDuration(numerator: numerator,
-                denominator: denominator,
-                reduce: true)
-}
-
-private func _pit(_ letter: ABCPitch.Letter,
-                  _ accidental: ABCPitch.Accidental,
-                  _ octave: ABCPitch.Octave) -> ABCPitch {
-    ABCPitch(letter: letter,
-             accidental: accidental,
-             octave: octave)
-}
-
-private func _rnum(_ uintValue: UInt) -> ABCRefNumber {
-    ABCRefNumber(uintValue: uintValue)
-}
-
-private func _tempo(_ numerator: UInt,
-                    _ denominator: UInt,
-                    _ rate: UInt) -> ABCTempo {
-    ABCTempo(duration: _dur(numerator, denominator),
-             rate: rate,
-             text: nil)
-}
-
-private func _tempo(_ numerator: UInt,
-                    _ denominator: UInt,
-                    _ rate: UInt,
-                    _ text: String) -> ABCTempo {
-    ABCTempo(duration: _dur(numerator, denominator),
-             rate: rate,
-             text: text)
-}
-
-private func _tempo(_ text: String) -> ABCTempo {
-    ABCTempo(duration: nil,
-             rate: nil,
-             text: text)
-}
-
-private func _tsig(_ numerator: UInt,
-                   _ denominator: UInt) -> ABCTimeSignature {
-    .explicit(ABCFraction(numerator: numerator,
-                          denominator: denominator,
-                          reduce: false))
-}
-
-private func _voice(_ id: String,
-                    _ properties: [String: String] = [:]) -> ABCVoice {
-    ABCVoice(id: id,
-             properties: properties)
 }

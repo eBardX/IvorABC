@@ -10,7 +10,7 @@ struct ABCVoiceTests {
 
 extension ABCVoiceTests {
     @Test
-    func test_nameFromName() {
+    func name_fromName() {
         let voice = ABCVoice(id: "1",
                              properties: ["name": "Soprano"])
 
@@ -18,7 +18,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_nameFromNm() {
+    func name_fromNm() {
         let voice = ABCVoice(id: "1",
                              properties: ["nm": "Alto"])
 
@@ -26,7 +26,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_nameNil() {
+    func name_nil() {
         let voice = ABCVoice(id: "1",
                              properties: [:])
 
@@ -34,7 +34,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_namePrefersNameOverNm() {
+    func name_prefersNameOverNm() {
         let voice = ABCVoice(id: "1",
                              properties: ["name": "Soprano",
                                           "nm": "S"])
@@ -43,7 +43,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_subnameFromSname() {
+    func subname_fromSname() {
         let voice = ABCVoice(id: "1",
                              properties: ["sname": "S.I"])
 
@@ -51,7 +51,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_subnameFromSnm() {
+    func subname_fromSnm() {
         let voice = ABCVoice(id: "1",
                              properties: ["snm": "T.II"])
 
@@ -59,7 +59,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_subnameFromSubname() {
+    func subname_fromSubname() {
         let voice = ABCVoice(id: "1",
                              properties: ["subname": "First"])
 
@@ -67,7 +67,7 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_subnameNil() {
+    func subname_nil() {
         let voice = ABCVoice(id: "1",
                              properties: [:])
 
@@ -75,21 +75,21 @@ extension ABCVoiceTests {
     }
 
     @Test
-    func test_subnamePrefersSubnameOverSname() {
+    func subname_prefersSnamOverSnm() {
+        let voice = ABCVoice(id: "1",
+                             properties: ["sname": "1st",
+                                          "snm": "I"])
+
+        #expect(voice.subname == "1st")
+    }
+
+    @Test
+    func subname_prefersSubnameOverSname() {
         let voice = ABCVoice(id: "1",
                              properties: ["subname": "First",
                                           "sname": "1st",
                                           "snm": "I"])
 
         #expect(voice.subname == "First")
-    }
-
-    @Test
-    func test_subnamePrefersSnamOverSnm() {
-        let voice = ABCVoice(id: "1",
-                             properties: ["sname": "1st",
-                                          "snm": "I"])
-
-        #expect(voice.subname == "1st")
     }
 }

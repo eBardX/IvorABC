@@ -10,28 +10,28 @@ struct ABCRestTests {
 
 extension ABCRestTests {
     @Test
-    func test_multiMeasureInvisible() {
+    func multiMeasureInvisible() {
         let rest = ABCRest.multiMeasure(true, 4)
 
         #expect(rest.isInvisible)
     }
 
     @Test
-    func test_multiMeasureIsMultiMeasure() {
+    func multiMeasureIsMultiMeasure() {
         let rest = ABCRest.multiMeasure(false, 2)
 
         #expect(rest.isMultiMeasure)
     }
 
     @Test
-    func test_multiMeasureVisible() {
+    func multiMeasureVisible() {
         let rest = ABCRest.multiMeasure(false, 3)
 
         #expect(!rest.isInvisible)
     }
 
     @Test
-    func test_regularInvisible() {
+    func regularInvisible() {
         let duration = ABCDuration(numerator: 1,
                                    denominator: 4,
                                    reduce: false)
@@ -41,7 +41,7 @@ extension ABCRestTests {
     }
 
     @Test
-    func test_regularIsNotMultiMeasure() {
+    func regularIsNotMultiMeasure() {
         let duration = ABCDuration(numerator: 1,
                                    denominator: 4,
                                    reduce: false)
@@ -51,7 +51,7 @@ extension ABCRestTests {
     }
 
     @Test
-    func test_regularVisible() {
+    func regularVisible() {
         let duration = ABCDuration(numerator: 1,
                                    denominator: 8,
                                    reduce: false)

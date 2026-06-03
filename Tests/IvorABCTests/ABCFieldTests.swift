@@ -10,7 +10,7 @@ struct ABCFieldTests {
 
 extension ABCFieldTests {
     @Test
-    func test_isValidInFileHeader_invalidFields() {
+    func isValidInFileHeader_invalidFields() {
         let invalidFields: [ABCField] = [.alignedLyrics(""),
                                          .key(.empty),
                                          .lyrics(""),
@@ -30,7 +30,7 @@ extension ABCFieldTests {
     }
 
     @Test
-    func test_isValidInFileHeader_validFields() {
+    func isValidInFileHeader_validFields() {
         let validFields: [ABCField] = [.area(""),
                                        .book(""),
                                        .composer(""),
@@ -58,7 +58,7 @@ extension ABCFieldTests {
     }
 
     @Test
-    func test_isValidInTuneBody_invalidFields() {
+    func isValidInTuneBody_invalidFields() {
         let invalidFields: [ABCField] = [.area(""),
                                          .book(""),
                                          .composer(""),
@@ -77,7 +77,7 @@ extension ABCFieldTests {
     }
 
     @Test
-    func test_isValidInTuneBody_validFields() {
+    func isValidInTuneBody_validFields() {
         let validFields: [ABCField] = [.alignedLyrics(""),
                                        .instruction(""),
                                        .key(.empty),
@@ -106,7 +106,7 @@ extension ABCFieldTests {
     }
 
     @Test
-    func test_isValidInTuneHeader_invalidFields() {
+    func isValidInTuneHeader_invalidFields() {
         let invalidFields: [ABCField] = [.alignedLyrics(""),
                                          .symbolLine("")]
 
@@ -116,7 +116,7 @@ extension ABCFieldTests {
     }
 
     @Test
-    func test_isValidInTuneHeader_validFields() {
+    func isValidInTuneHeader_validFields() {
         let validFields: [ABCField] = [.area(""),
                                        .book(""),
                                        .composer(""),

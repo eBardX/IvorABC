@@ -10,59 +10,59 @@ struct CharacterExtensionsTests {
 
 extension CharacterExtensionsTests {
     @Test
-    func test_isABCAlphanumericWithDigit() {
+    func isABCAlphanumeric_withDigit() {
         let char: Character = "5"
 
         #expect(char.isABCAlphanumeric)
     }
 
     @Test
-    func test_isABCAlphanumericWithLetter() {
+    func isABCAlphanumeric_withLetter() {
         let char: Character = "a"
 
         #expect(char.isABCAlphanumeric)
     }
 
     @Test
-    func test_isABCAlphanumericWithSymbol() {
+    func isABCAlphanumeric_withSymbol() {
         let char: Character = "!"
 
         #expect(!char.isABCAlphanumeric)
     }
 
     @Test
-    func test_isABCDigitFalse() {
+    func isABCDigit_false() {
         #expect(!Character("a").isABCDigit)
         #expect(!Character("/").isABCDigit)
     }
 
     @Test
-    func test_isABCDigitTrue() {
+    func isABCDigit_true() {
         for char in "0123456789" {
             #expect(char.isABCDigit)
         }
     }
 
     @Test
-    func test_isABCDirectiveNameHeadFalse() {
+    func isABCDirectiveNameHead_false() {
         #expect(!Character("0").isABCDirectiveNameHead)
         #expect(!Character("-").isABCDirectiveNameHead)
     }
 
     @Test
-    func test_isABCDirectiveNameHeadTrue() {
+    func isABCDirectiveNameHead_true() {
         #expect(Character("a").isABCDirectiveNameHead)
         #expect(Character("Z").isABCDirectiveNameHead)
     }
 
     @Test
-    func test_isABCDirectiveNameTailFalse() {
+    func isABCDirectiveNameTail_false() {
         #expect(!Character("!").isABCDirectiveNameTail)
         #expect(!Character(" ").isABCDirectiveNameTail)
     }
 
     @Test
-    func test_isABCDirectiveNameTailTrue() {
+    func isABCDirectiveNameTail_true() {
         #expect(Character("a").isABCDirectiveNameTail)
         #expect(Character("0").isABCDirectiveNameTail)
         #expect(Character("-").isABCDirectiveNameTail)
@@ -70,28 +70,28 @@ extension CharacterExtensionsTests {
     }
 
     @Test
-    func test_isABCHexDigitFalse() {
+    func isABCHexDigit_false() {
         #expect(!Character("g").isABCHexDigit)
         #expect(!Character("G").isABCHexDigit)
         #expect(!Character("z").isABCHexDigit)
     }
 
     @Test
-    func test_isABCHexDigitTrue() {
+    func isABCHexDigit_true() {
         for char in "0123456789ABCDEFabcdef" {
             #expect(char.isABCHexDigit)
         }
     }
 
     @Test
-    func test_isABCLetterFalse() {
+    func isABCLetter_false() {
         #expect(!Character("0").isABCLetter)
         #expect(!Character("!").isABCLetter)
         #expect(!Character(" ").isABCLetter)
     }
 
     @Test
-    func test_isABCLetterTrue() {
+    func isABCLetter_true() {
         for char in "abcdefghijklmnopqrstuvwxyz" {
             #expect(char.isABCLetter)
         }
@@ -102,14 +102,14 @@ extension CharacterExtensionsTests {
     }
 
     @Test
-    func test_isABCWhitespaceFalse() {
+    func isABCWhitespace_false() {
         #expect(!Character("a").isABCWhitespace)
         #expect(!Character("\n").isABCWhitespace)
         #expect(!Character("\r").isABCWhitespace)
     }
 
     @Test
-    func test_isABCWhitespaceTrue() {
+    func isABCWhitespace_true() {
         #expect(Character("\t").isABCWhitespace)
         #expect(Character(" ").isABCWhitespace)
     }

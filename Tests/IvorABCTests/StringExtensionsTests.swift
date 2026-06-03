@@ -10,37 +10,37 @@ struct StringExtensionsTests {
 
 extension StringExtensionsTests {
     @Test
-    func test_normalizedABCWhitespaceCollapses() {
+    func normalizedABCWhitespace_collapses() {
         #expect("  x  y zz    y".normalizedABCWhitespace() == "x y zz y")
     }
 
     @Test
-    func test_normalizedABCWhitespaceEmptyString() {
+    func normalizedABCWhitespace_emptyString() {
         #expect("".normalizedABCWhitespace().isEmpty)
     }
 
     @Test
-    func test_normalizedABCWhitespaceNoTrimLeading() {
+    func normalizedABCWhitespace_noTrimLeading() {
         #expect("  abc  ".normalizedABCWhitespace(trimLeadingWhitespace: false) == " abc")
     }
 
     @Test
-    func test_normalizedABCWhitespaceNoTrimTrailing() {
+    func normalizedABCWhitespace_noTrimTrailing() {
         #expect("  abc  ".normalizedABCWhitespace(trimTrailingWhitespace: false) == "abc ")
     }
 
     @Test
-    func test_normalizedABCWhitespaceOnlyWhitespace() {
+    func normalizedABCWhitespace_onlyWhitespace() {
         #expect("   ".normalizedABCWhitespace().isEmpty)
     }
 
     @Test
-    func test_normalizedABCWhitespaceTabsAndSpaces() {
+    func normalizedABCWhitespace_tabsAndSpaces() {
         #expect("a\t\tb".normalizedABCWhitespace() == "a b")
     }
 
     @Test
-    func test_normalizedABCWhitespaceTrimsBothEnds() {
+    func normalizedABCWhitespace_trimsBothEnds() {
         #expect("  abc  ".normalizedABCWhitespace() == "abc")
     }
 }

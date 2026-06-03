@@ -10,17 +10,17 @@ struct ABCVersionTests {
 
 extension ABCVersionTests {
     @Test
-    func test_currentMajor() {
+    func currentMajor() {
         #expect(ABCVersion.currentMajor == 2)
     }
 
     @Test
-    func test_currentMinor() {
+    func currentMinor() {
         #expect(ABCVersion.currentMinor == 1)
     }
 
     @Test
-    func test_initStoresValues() {
+    func init_storesValues() {
         let version = ABCVersion(major: 3,
                                  minor: 5)
 

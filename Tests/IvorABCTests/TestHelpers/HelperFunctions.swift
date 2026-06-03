@@ -266,3 +266,93 @@ func expectFieldIsVoice(_ field: ABCField,
         Issue.record("Expected .voice", sourceLocation: sourceLocation)
     }
 }
+
+// MARK: - Parse Result Comparisons
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseNoteResult?,
+         rhs: ParseNoteResult?) -> Bool {
+    lhs?.duration == rhs?.duration
+    && lhs?.isTied == rhs?.isTied
+    && lhs?.pitch == rhs?.pitch
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParsePitchResult?,
+         rhs: ParsePitchResult?) -> Bool {
+    lhs?.accidental == rhs?.accidental
+    && lhs?.letter == rhs?.letter
+    && lhs?.octave == rhs?.octave
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseRestResult?,
+         rhs: ParseRestResult?) -> Bool {
+    lhs?.kind == rhs?.kind
+    && lhs?.duration == rhs?.duration
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseTupletResult?,
+         rhs: ParseTupletResult?) -> Bool {
+    lhs?.pcount == rhs?.pcount
+    && lhs?.qcount == rhs?.qcount
+    && lhs?.rcount == rhs?.rcount
+}
+
+// MARK: - Factory Functions
+
+func _dur(_ numerator: UInt,
+          _ denominator: UInt) -> ABCDuration {
+    ABCDuration(numerator: numerator,
+                denominator: denominator,
+                reduce: true)
+}
+
+func _pit(_ letter: ABCPitch.Letter,
+          _ accidental: ABCPitch.Accidental,
+          _ octave: ABCPitch.Octave) -> ABCPitch {
+    ABCPitch(letter: letter,
+             accidental: accidental,
+             octave: octave)
+}
+
+func _rnum(_ uintValue: UInt) -> ABCRefNumber {
+    ABCRefNumber(uintValue: uintValue)
+}
+
+func _tempo(_ numerator: UInt,
+            _ denominator: UInt,
+            _ rate: UInt) -> ABCTempo {
+    ABCTempo(duration: _dur(numerator, denominator),
+             rate: rate,
+             text: nil)
+}
+
+func _tempo(_ numerator: UInt,
+            _ denominator: UInt,
+            _ rate: UInt,
+            _ text: String) -> ABCTempo {
+    ABCTempo(duration: _dur(numerator, denominator),
+             rate: rate,
+             text: text)
+}
+
+func _tempo(_ text: String) -> ABCTempo {
+    ABCTempo(duration: nil,
+             rate: nil,
+             text: text)
+}
+
+func _tsig(_ numerator: UInt,
+           _ denominator: UInt) -> ABCTimeSignature {
+    .explicit(ABCFraction(numerator: numerator,
+                          denominator: denominator,
+                          reduce: false))
+}
+
+func _voice(_ id: String,
+            _ properties: [String: String] = [:]) -> ABCVoice {
+    ABCVoice(id: id,
+             properties: properties)
+}
