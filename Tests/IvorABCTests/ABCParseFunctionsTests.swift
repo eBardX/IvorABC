@@ -66,7 +66,8 @@ extension ABCParseFunctionsTests {
         try expectFieldIsMeter(parseField("M:4/4"))
         try expectFieldIsNotes(parseField("N:See also"), "See also")
         try expectFieldIsOrigin(parseField("O:Ireland"), "Ireland")
-        try expectFieldIsParts(parseField("P:AABB"), "AABB")
+        try expectFieldIsParts(parseField("P:AABB"),
+                               _pseq([_ppart("A"), _ppart("A"), _ppart("B"), _ppart("B")]))
         try expectFieldIsRefNumber(parseField("X:1"))
         try expectFieldIsRemark(parseField("r:editorial note"), "editorial note")
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")

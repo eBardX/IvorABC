@@ -160,7 +160,7 @@ func expectFieldIsOrigin(_ field: ABCField,
 }
 
 func expectFieldIsParts(_ field: ABCField,
-                        _ expected: String,
+                        _ expected: ABCPartSequence,
                         sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .parts(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
@@ -322,6 +322,23 @@ func _pit(_ letter: ABCPitch.Letter,
     ABCPitch(letter: letter,
              accidental: accidental,
              octave: octave)
+}
+
+// swiftlint:disable:next identifier_name
+func _pgroup(_ items: [ABCPartSequence.Item],
+             _ count: UInt = 1) -> ABCPartSequence.Item {
+    .group(items, count)
+}
+
+// swiftlint:disable:next identifier_name
+func _ppart(_ letter: Character,
+            _ count: UInt = 1) -> ABCPartSequence.Item {
+    .part(letter, count)
+}
+
+// swiftlint:disable:next identifier_name
+func _pseq(_ items: [ABCPartSequence.Item] = []) -> ABCPartSequence {
+    ABCPartSequence(items: items)
 }
 
 // swiftlint:disable:next identifier_name

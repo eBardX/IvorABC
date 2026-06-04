@@ -115,7 +115,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .origin(normalize(vtext))
 
     case "P":
-        return .parts(normalize(vtext))
+        guard let ps = parsePartSequence(vtext)
+        else { throw ABCParseError.invalidPartSequence(vtext) }
+
+        return .parts(ps)
 
     case "Q":
         guard let tempo = parseTempo(vtext)
@@ -301,6 +304,16 @@ internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
     }
 
     return (pitch, duration, isTied)
+}
+
+internal func parsePartSequence(_ tidyInput: Substring) -> ABCPartSequence? {
+    var input = tidyInput
+
+    guard let items = _parsePartItems(&input,
+                                      terminator: nil)
+    else { return nil }
+
+    return ABCPartSequence(items: items)
 }
 
 internal func parsePitch(_ tidyInput: Substring) -> ParsePitchResult? {
@@ -928,6 +941,68 @@ private func _parseVoiceProperty(_ tidyInput: Substring) -> ParseVoicePropertyRe
     }
 
     return (String(key), String(value), trimPrefix(rest))
+}
+
+private func _parsePartCount(_ input: inout Substring) -> UInt {
+    var digits = ""
+
+    while let ch = input.first, ch.isABCDigit {
+        digits.append(ch)
+        input = input.dropFirst()
+    }
+
+    return UInt(digits) ?? 1
+}
+
+private func _parsePartItems(_ input: inout Substring,
+                             terminator: Character?) -> [ABCPartSequence.Item]? {
+    var items: [ABCPartSequence.Item] = []
+
+    while true {
+        while input.first?.isABCWhitespace == true {
+            input = input.dropFirst()
+        }
+
+        if let term = terminator {
+            guard let ch = input.first
+            else { return nil }
+
+     // unmatched "("
+
+            if ch == term {
+                input = input.dropFirst()
+
+                return items
+            }
+        } else {
+            if input.isEmpty {
+                return items
+            }
+        }
+
+        let ch = input[input.startIndex]
+
+        input = input.dropFirst()
+
+        switch ch {
+        case "(":
+            guard let groupItems = _parsePartItems(&input,
+                                                   terminator: ")")
+            else { return nil }
+
+            let count = _parsePartCount(&input)
+
+            items.append(.group(groupItems, count))
+
+        case "A"..."Z":
+            let count = _parsePartCount(&input)
+
+            items.append(.part(ch, count))
+
+        default:
+            return nil
+        }
+    }
 }
 
 private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring, Bool) {

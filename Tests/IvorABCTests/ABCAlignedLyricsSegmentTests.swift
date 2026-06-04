@@ -12,10 +12,10 @@ extension ABCAlignedLyricsSegmentTests {
     @Test
     func allCasesAreDistinct() {
         let allCases: [ABCAlignedLyrics.Segment] = [.barAlign,
-                                                     .continuation("b"),
-                                                     .hold,
-                                                     .skip,
-                                                     .syllable("a")]
+                                                    .continuation("b"),
+                                                    .hold,
+                                                    .skip,
+                                                    .syllable("a")]
 
         for i in allCases.indices {
             for j in allCases.indices where i != j {

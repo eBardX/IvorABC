@@ -24,6 +24,9 @@ public enum ABCParseError {
     /// The parser encountered an invalid note.
     case invalidNote(Substring)
 
+    /// The parser encountered an invalid part sequence.
+    case invalidPartSequence(Substring)
+
     /// The parser encountered an invalid pitch.
     case invalidPitch(Substring)
 
@@ -102,6 +105,9 @@ extension ABCParseError: EnhancedError {
 
         case let .invalidNote(value):
             "Invalid note: ‘\(value)’"
+
+        case let .invalidPartSequence(value):
+            "Invalid part sequence: ‘\(value)’"
 
         case let .invalidPitch(value):
             "Invalid pitch: ‘\(value)’"

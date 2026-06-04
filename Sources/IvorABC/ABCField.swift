@@ -51,7 +51,22 @@ public enum ABCField {
     case origin(String)
 
     /// A parts field (`P:`).
-    case parts(String)
+    ///
+    /// The associated ``ABCPartSequence`` models the field value for both of
+    /// the two positions in which `P:` may appear:
+    ///
+    /// - **Tune header** — a part play-order declaration such as `P:A2B(CD)3`.
+    ///   The sequence may contain multiple items, nested groups, and repeat
+    ///   counts greater than one.
+    /// - **Tune body** — a part-start marker such as `P:A`. The sequence
+    ///   contains exactly one ``ABCPartSequence/Item/part(_:_:)`` item with a
+    ///   repeat count of `1`, although the parser does not enforce this.
+    ///
+    /// Because the parser processes fields without positional context, the
+    /// caller must examine the surrounding entry stream to determine which
+    /// interpretation applies. See ``ABCPartSequence`` for a full discussion of
+    /// the dual-use design and the obligations this places on the caller.
+    case parts(ABCPartSequence)
 
     /// A reference number field (`X:`).
     case refNumber(ABCRefNumber)
