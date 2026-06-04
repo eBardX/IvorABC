@@ -62,7 +62,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsInstruction(parseField("I:linebreak $"), "linebreak $")
         try expectFieldIsKey(parseField("K:G"))
         try expectFieldIsLyrics(parseField("W:do re mi"), "do re mi")
-        try expectFieldIsMacro(parseField("m:~G3 = G{A}G2"), "~G3 = G{A}G2")
+        try expectFieldIsMacro(parseField("m:~G3 = G{A}G2"), ABCMacro(trigger: "~G3", replacement: "G{A}G2"))
         try expectFieldIsMeter(parseField("M:4/4"))
         try expectFieldIsNotes(parseField("N:See also"), "See also")
         try expectFieldIsOrigin(parseField("O:Ireland"), "Ireland")

@@ -123,7 +123,7 @@ func expectFieldIsLyrics(_ field: ABCField,
 }
 
 func expectFieldIsMacro(_ field: ABCField,
-                        _ expected: String,
+                        _ expected: ABCMacro,
                         sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .macro(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)

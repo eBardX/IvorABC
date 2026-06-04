@@ -21,6 +21,9 @@ public enum ABCParseError {
     /// The parser encountered an invalid key signature.
     case invalidKeySignature(Substring)
 
+    /// The parser encountered an invalid macro definition.
+    case invalidMacro(Substring)
+
     /// The parser encountered an invalid note.
     case invalidNote(Substring)
 
@@ -102,6 +105,9 @@ extension ABCParseError: EnhancedError {
 
         case let .invalidKeySignature(value):
             "Invalid key signature: ‘\(value)’"
+
+        case let .invalidMacro(value):
+            "Invalid macro: ‘\(value)’"
 
         case let .invalidNote(value):
             "Invalid note: ‘\(value)’"

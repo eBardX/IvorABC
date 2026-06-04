@@ -61,6 +61,13 @@ extension ABCParseErrorTests {
     }
 
     @Test
+    func message_invalidMacro() {
+        let error = ABCParseError.invalidMacro("~G3")
+
+        #expect(error.message.contains("~G3"))
+    }
+
+    @Test
     func message_invalidNote() {
         let error = ABCParseError.invalidNote("xyz")
 

@@ -39,7 +39,7 @@ public enum ABCField {
     case lyrics(String)
 
     /// A macro field (`m:`).
-    case macro(String)
+    case macro(ABCMacro)
 
     /// A meter (time signature) field (`M:`).
     case meter(ABCTimeSignature)

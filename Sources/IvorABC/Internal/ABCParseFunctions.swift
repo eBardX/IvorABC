@@ -106,7 +106,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .meter(ts)
 
     case "m":
-        return .macro(normalize(vtext))
+        guard let macro = parseMacro(vtext)
+        else { throw ABCParseError.invalidMacro(vtext) }
+
+        return .macro(macro)
 
     case "N":
         return .notes(normalize(vtext))
@@ -313,6 +316,21 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
     }
 
     return .standard(tonic, mode, accidentals, clef)
+}
+
+internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
+    guard let eqIdx = tidyInput.firstIndex(of: "=")
+    else { return nil }
+
+    let trigger = String(trim(tidyInput[..<eqIdx]))
+    let replacement = String(trim(tidyInput[tidyInput.index(after: eqIdx)...]))
+
+    guard !trigger.isEmpty,
+          !replacement.isEmpty
+    else { return nil }
+
+    return ABCMacro(trigger: trigger,
+                    replacement: replacement)
 }
 
 internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
