@@ -260,11 +260,43 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
-    if let ks = _parseKeySignatureSpecial(tidyInput) {
-        return ks
+    // Partition whitespace-split tokens into key=value property tokens (clef,
+    // transpose, etc.) and everything else (tonic, mode, accidentals).
+    // A property token contains '=' at any position other than index 0;
+    // '=' at index 0 is the natural-sign accidental prefix (e.g. "=F").
+    var propertyTokens: [Substring] = []
+    var otherTokens: [Substring] = []
+
+    for token in tidyInput.split(whereSeparator: \.isABCWhitespace) {
+        if let eqIdx = token.firstIndex(of: "="), eqIdx != token.startIndex {
+            propertyTokens.append(token)
+        } else {
+            otherTokens.append(token)
+        }
     }
 
-    let result = tidyInput.splitBeforeFirst(accidentalCS)
+    let clef: ABCClef?
+
+    if propertyTokens.isEmpty {
+        clef = nil
+    } else {
+        guard let c = _parseKeySignatureClef(propertyTokens)
+        else { return nil }
+
+        clef = c
+    }
+
+    let keyInput = Substring(otherTokens.joined(separator: " "))
+
+    if let special = _parseKeySignatureSpecial(keyInput) {
+        if let clef, case .empty = special {
+            return .clefOnly(clef)
+        }
+
+        return special
+    }
+
+    let result = keyInput.splitBeforeFirst(accidentalCS)
 
     guard let (tonic, mode) = _parseKeySignatureTonicMode(trimSuffix(result.head))
     else { return nil }
@@ -280,7 +312,7 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
         accidentals = []
     }
 
-    return .standard(tonic, mode, accidentals)
+    return .standard(tonic, mode, accidentals, clef)
 }
 
 internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
@@ -831,6 +863,49 @@ private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySig
     }
 
     return accidentals
+}
+
+private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
+    var clef = ABCClef()
+
+    for token in propertyTokens {
+        guard let eqIdx = token.firstIndex(of: "=")
+        else { return nil }
+
+        let key = String(token[token.startIndex..<eqIdx]).lowercased()
+        let value = String(token[token.index(after: eqIdx)...])
+
+        switch key {
+        case "clef":
+            clef.name = value
+
+        case "middle":
+            clef.middle = value
+
+        case "octave":
+            guard let n = Int(value)
+            else { return nil }
+
+            clef.octave = n
+
+        case "stafflines":
+            guard let n = Int(value)
+            else { return nil }
+
+            clef.stafflines = n
+
+        case "transpose":
+            guard let n = Int(value)
+            else { return nil }
+
+            clef.transpose = n
+
+        default:
+            return nil
+        }
+    }
+
+    return clef
 }
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {

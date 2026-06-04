@@ -227,7 +227,7 @@ extension ABCParseContext {
         var accidentals = _determineBaseAccidentals(in: keySignature)
 
         switch keySignature {
-        case let .standard(_, _, pitches):
+        case let .standard(_, _, pitches, _):
             for pitch in pitches {
                 accidentals[pitch.letter] = pitch.accidental
             }
@@ -252,7 +252,10 @@ extension ABCParseContext {
                     .f: .sharp,
                     .g: .natural]
 
-        case let .standard(tonic, mode, _):
+        case .clefOnly:
+            return [:]
+
+        case let .standard(tonic, mode, _, _):
             guard let emode = _determineEffectiveMode(for: mode),
                   let count = accidentalCounts[tonic]?[emode]
             else { return [:] }

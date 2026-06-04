@@ -83,31 +83,60 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
+    func parseKeySignature_clef() {
+        var bassClef = ABCClef()
+
+        bassClef.name = "bass"
+
+        var trebleClef = ABCClef()
+
+        trebleClef.name = "treble"
+
+        var transposeClef = ABCClef()
+
+        transposeClef.transpose = -2
+
+        var combinedClef = ABCClef()
+
+        combinedClef.name = "bass"
+        combinedClef.transpose = -2
+
+        #expect(parseKeySignature("G clef=bass") == .standard(.g, .major, [], bassClef))
+        #expect(parseKeySignature("C transpose=-2") == .standard(.c, .major, [], transposeClef))
+        #expect(parseKeySignature("G clef=bass transpose=-2") == .standard(.g, .major, [], combinedClef))
+        #expect(parseKeySignature("clef=treble") == .clefOnly(trebleClef))
+        #expect(parseKeySignature("none clef=treble") == .clefOnly(trebleClef))
+    }
+
+    @Test
     func parseKeySignature_failure() {
         #expect(parseKeySignature("B##") == nil)
         #expect(parseKeySignature("C# neutral") == nil)
+        #expect(parseKeySignature("G clef=bass unknown=x") == nil)
+        #expect(parseKeySignature("G transpose=abc") == nil)
     }
 
     @Test
     func parseKeySignature_success() {
         #expect(parseKeySignature("") == .empty)
-        #expect(parseKeySignature("ADor") == .standard(.a, .dorian, []))
-        #expect(parseKeySignature("AMix") == .standard(.a, .mixolydian, []))
-        #expect(parseKeySignature("D =c") == .standard(.d, .major, [_pit(.c, .natural, 5)]))
+        #expect(parseKeySignature("ADor") == .standard(.a, .dorian, [], nil))
+        #expect(parseKeySignature("AMix") == .standard(.a, .mixolydian, [], nil))
+        #expect(parseKeySignature("D =c") == .standard(.d, .major, [_pit(.c, .natural, 5)], nil))
         #expect(parseKeySignature("D exp _b _e ^f") == .standard(.d,
                                                                  .explicit,
                                                                  [_pit(.b, .flat, 5),
                                                                   _pit(.e, .flat, 5),
-                                                                  _pit(.f, .sharp, 5)]))
-        #expect(parseKeySignature("D maj =c") == .standard(.d, .major, [_pit(.c, .natural, 5)]))
-        #expect(parseKeySignature("D Phr ^f") == .standard(.d, .phrygian, [_pit(.f, .sharp, 5)]))
-        #expect(parseKeySignature("D") == .standard(.d, .major, []))
-        #expect(parseKeySignature("Dm") == .standard(.d, .minor, []))
-        #expect(parseKeySignature("Eb") == .standard(.eFlat, .major, []))
-        #expect(parseKeySignature("F# mixolydian") == .standard(.fSharp, .mixolydian, []))
-        #expect(parseKeySignature("F#Mix") == .standard(.fSharp, .mixolydian, []))
-        #expect(parseKeySignature("F#MIX") == .standard(.fSharp, .mixolydian, []))
-        #expect(parseKeySignature("G") == .standard(.g, .major, []))
+                                                                  _pit(.f, .sharp, 5)],
+                                                                 nil))
+        #expect(parseKeySignature("D maj =c") == .standard(.d, .major, [_pit(.c, .natural, 5)], nil))
+        #expect(parseKeySignature("D Phr ^f") == .standard(.d, .phrygian, [_pit(.f, .sharp, 5)], nil))
+        #expect(parseKeySignature("D") == .standard(.d, .major, [], nil))
+        #expect(parseKeySignature("Dm") == .standard(.d, .minor, [], nil))
+        #expect(parseKeySignature("Eb") == .standard(.eFlat, .major, [], nil))
+        #expect(parseKeySignature("F# mixolydian") == .standard(.fSharp, .mixolydian, [], nil))
+        #expect(parseKeySignature("F#Mix") == .standard(.fSharp, .mixolydian, [], nil))
+        #expect(parseKeySignature("F#MIX") == .standard(.fSharp, .mixolydian, [], nil))
+        #expect(parseKeySignature("G") == .standard(.g, .major, [], nil))
         #expect(parseKeySignature("HP") == .highlandPipes)
         #expect(parseKeySignature("Hp") == .highlandPipesPreset)
         #expect(parseKeySignature("none") == .empty)

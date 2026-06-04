@@ -2,6 +2,9 @@
 
 /// An ABC key signature.
 public enum ABCKeySignature {
+    /// A clef-only specification (no tonic), e.g., `K:clef=treble`.
+    case clefOnly(ABCClef)
+
     /// An empty (key-less) key signature.
     case empty
 
@@ -11,9 +14,9 @@ public enum ABCKeySignature {
     /// A Highland pipes key signature with preset accidentals F♯, C♯, G♯ (`K:Hp`).
     case highlandPipesPreset
 
-    /// A standard key signature with the specified tonic, mode, and
-    /// accidentals.
-    case standard(Tonic, Mode, [Accidental])
+    /// A standard key signature with the specified tonic, mode, accidentals,
+    /// and optional clef properties.
+    case standard(Tonic, Mode, [Accidental], ABCClef?)
 }
 
 // MARK: -
