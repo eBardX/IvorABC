@@ -72,6 +72,43 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
+    func tokenize_chordBeginEnd_withSuffix() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("[CE]2")
+
+        #expect(tokens.count == 5)
+        #expect(tokens[0].kind == .chordBegin)
+        #expect(tokens[1].kind == .note)
+        #expect(tokens[2].kind == .note)
+        #expect(tokens[3].kind == .chordEnd)
+        #expect(tokens[4].kind == .chordSuffix)
+        #expect(tokens[4].value == "2")
+    }
+
+    @Test
+    func tokenize_chordSuffix_fractionDuration() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("[CE]/2")
+
+        #expect(tokens.count == 5)
+        #expect(tokens[4].kind == .chordSuffix)
+        #expect(tokens[4].value == "/2")
+    }
+
+    @Test
+    func tokenize_chordSuffix_tie() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("[CE]-")
+
+        #expect(tokens.count == 5)
+        #expect(tokens[4].kind == .chordSuffix)
+        #expect(tokens[4].value == "-")
+    }
+
+    @Test
     func tokenize_chordSymbol() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
@@ -92,6 +129,17 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
+    func tokenize_decoration_legacyPlusSyntax() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("+trill+")
+
+        #expect(tokens.count == 1)
+        #expect(tokens[0].kind == .decoration)
+        #expect(tokens[0].value == "+trill+")
+    }
+
+    @Test
     func tokenize_decoration_longform() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
@@ -109,6 +157,27 @@ extension ABCSymbolTokenizerTests {
 
         #expect(tokens.count == 1)
         #expect(tokens[0].kind == .decoration)
+    }
+
+    @Test
+    func tokenize_spacer() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("y")
+
+        #expect(tokens.count == 1)
+        #expect(tokens[0].kind == .spacer)
+    }
+
+    @Test
+    func tokenize_spacer_withDuration() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("y2")
+
+        #expect(tokens.count == 1)
+        #expect(tokens[0].kind == .spacer)
+        #expect(tokens[0].value == "y2")
     }
 
     @Test

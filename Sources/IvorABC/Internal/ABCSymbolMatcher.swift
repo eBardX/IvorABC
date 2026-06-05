@@ -65,13 +65,10 @@ extension ABCSymbolMatcher {
         return baseDuration
     }
 
-    private func _makePitch(_ result: ParsePitchResult,
-                            _ context: inout ABCParseContext) -> ABCPitch {
-        let accidental = result.accidental ?? context.accidentalsInKey[result.letter] ?? .natural
-
-        return ABCPitch(letter: result.letter,
-                        accidental: accidental,
-                        octave: result.octave)
+    private func _makePitch(_ result: ParsePitchResult) -> ABCPitch {
+        ABCPitch(letter: result.letter,
+                 accidental: result.accidental ?? .natural,
+                 octave: result.octave)
     }
 
     private mutating func _matchBarRepeat() throws -> ABCSymbol? {
@@ -97,7 +94,24 @@ extension ABCSymbolMatcher {
 
         try tokenMatcher.readMustMatch(.chordEnd)
 
-        return .chord(chord)
+        let duration: ABCDuration
+        let isTied: Bool
+
+        if let suffixToken = tokenMatcher.readIfMatches(.chordSuffix) {
+            let value = suffixToken.value
+
+            isTied = value.hasSuffix("-")
+
+            let durationText = isTied ? value.dropLast() : value
+
+            duration = _makeDuration(durationText.isEmpty ? nil : parseDuration(durationText),
+                                     &context)
+        } else {
+            duration = _makeDuration(nil, &context)
+            isTied = false
+        }
+
+        return .chord(chord, duration, isTied)
     }
 
     private mutating func _matchChordNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -108,7 +122,7 @@ extension ABCSymbolMatcher {
         else { throw ABCParseError.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
-        let pitch = _makePitch(result.pitch, &context)
+        let pitch = _makePitch(result.pitch)
 
         return ABCNote(pitch: pitch,
                        duration: duration,
@@ -137,7 +151,7 @@ extension ABCSymbolMatcher {
         else { throw ABCParseError.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
-        let pitch = _makePitch(result.pitch, &context)
+        let pitch = _makePitch(result.pitch)
 
         return ABCNote(pitch: pitch,
                        duration: duration,
@@ -180,7 +194,7 @@ extension ABCSymbolMatcher {
         else { throw ABCParseError.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
-        let pitch = _makePitch(result.pitch, &context)
+        let pitch = _makePitch(result.pitch)
 
         let note = ABCNote(pitch: pitch,
                            duration: duration,
@@ -221,6 +235,14 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch([.slurBegin, .slurEnd])
 
         return .slur(String(token.value))
+    }
+
+    private mutating func _matchSpacer(_ context: inout ABCParseContext) throws -> ABCSymbol? {
+        let token = try tokenMatcher.readMustMatch(.spacer)
+        let rest = token.value.dropFirst()
+        let duration = _makeDuration(rest.isEmpty ? nil : parseDuration(rest), &context)
+
+        return .spacer(duration)
     }
 
     private mutating func _matchSymbol(_ context: inout ABCParseContext) throws -> ABCSymbol? { // swiftlint:disable:this cyclomatic_complexity
@@ -266,6 +288,10 @@ extension ABCSymbolMatcher {
 
         if tokenMatcher.nextMatches([.slurBegin, .slurEnd]) {
             return try _matchSlur()
+        }
+
+        if tokenMatcher.nextMatches(.spacer) {
+            return try _matchSpacer(&context)
         }
 
         if tokenMatcher.nextMatches(.tuplet) {

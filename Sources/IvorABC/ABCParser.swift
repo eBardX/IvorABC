@@ -39,19 +39,20 @@ extension ABCParser {
 
         let rawLines = input.split(separator: /\n|(?:\r\n?)/,
                                    omittingEmptySubsequences: false)
+        let lines = _joinContinuationLines(rawLines)
 
         var context = ABCParseContext()
 
         //
         // First line MUST be a valid fileID:
         //
-        guard let firstText = rawLines.first,
+        guard let firstText = lines.first,
               let firstLine = try _parseLine(firstText, &context)
         else { throw ABCParseError.missingFileID }
 
         let fileID = try _validateFileID(firstLine)
 
-        let bodyLines = Array(rawLines.dropFirst())
+        let bodyLines = Array(lines.dropFirst())
 
         var idx = bodyLines.startIndex
         var restLines: [Line] = []
@@ -107,6 +108,30 @@ extension ABCParser {
     private static let expectedFileIDPrefix         = "%abc"
 
     // MARK: Private Instance Methods
+
+    private func _joinContinuationLines(_ rawLines: [Substring]) -> [Substring] {
+        var result: [Substring] = []
+        var pending: String?
+
+        for line in rawLines {
+            let stripped = String(trimSuffix(uncomment(line)))
+
+            if stripped.hasSuffix("\\") {
+                pending = (pending ?? "") + stripped.dropLast()
+            } else if let buf = pending {
+                result.append(Substring(buf + String(line)))
+                pending = nil
+            } else {
+                result.append(line)
+            }
+        }
+
+        if let buf = pending {
+            result.append(Substring(buf))
+        }
+
+        return result
+    }
 
     private func _makeTunebook(_ fileID: ABCFileID,
                                _ restLines: [Line]) throws -> ABCTunebook {

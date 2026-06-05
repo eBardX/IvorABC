@@ -14,7 +14,12 @@ public enum ABCSymbol {
     case brokenRhythm(String)
 
     /// A chord.
-    case chord([ABCNote])
+    ///
+    /// The associated `[ABCNote]` value holds the notes in the chord. The
+    /// `ABCDuration` value is the chord-level duration (i.e. the duration
+    /// written after the closing `]`). The `Bool` value indicates whether the
+    /// chord is tied to the next chord or note.
+    case chord([ABCNote], ABCDuration, Bool)
 
     /// A chord symbol.
     case chordSymbol(String)
@@ -42,6 +47,11 @@ public enum ABCSymbol {
 
     /// A slur marker.
     case slur(String)
+
+    /// A typesetting spacer (`y`).
+    ///
+    /// The associated `ABCDuration` value is the width of the spacer.
+    case spacer(ABCDuration)
 
     /// A tuplet specification.
     ///

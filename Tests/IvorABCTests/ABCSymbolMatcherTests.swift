@@ -32,9 +32,49 @@ extension ABCSymbolMatcherTests {
                                                      isTied: false),
                                              ABCNote(pitch: _pit(.e, .natural, 4),
                                                      duration: _dur(1, 8),
-                                                     isTied: false)])]
+                                                     isTied: false)],
+                                            _dur(1, 8),
+                                            false)]
 
         #expect(symbols == expected)
+    }
+
+    @Test
+    func matchSymbols_chord_duration() throws {
+        let symbols = try _matchSymbols("[CEG]2")
+
+        if case let .chord(notes, duration, isTied) = try #require(symbols.first) {
+            #expect(notes.count == 3)
+            #expect(duration == _dur(1, 4))
+            #expect(!isTied)
+        } else {
+            Issue.record("Expected .chord")
+        }
+    }
+
+    @Test
+    func matchSymbols_chord_fractionDuration() throws {
+        let symbols = try _matchSymbols("[CEG]/2")
+
+        if case let .chord(notes, duration, isTied) = try #require(symbols.first) {
+            #expect(notes.count == 3)
+            #expect(duration == _dur(1, 16))
+            #expect(!isTied)
+        } else {
+            Issue.record("Expected .chord")
+        }
+    }
+
+    @Test
+    func matchSymbols_chord_tied() throws {
+        let symbols = try _matchSymbols("[CEG]-")
+
+        if case let .chord(notes, _, isTied) = try #require(symbols.first) {
+            #expect(notes.count == 3)
+            #expect(isTied)
+        } else {
+            Issue.record("Expected .chord")
+        }
     }
 
     @Test
@@ -94,7 +134,7 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_keyContextAffectsAccidentals() throws {
+    func matchSymbols_keyContextDoesNotAffectAccidentals() throws {
         var ctx = ABCParseContext()
 
         ctx.update(with: .key(.standard(.g, .major, [], nil)))
@@ -103,7 +143,7 @@ extension ABCSymbolMatcherTests {
 
         if case let .note(note) = try #require(symbols.first) {
             #expect(note.pitch.letter == .f)
-            #expect(note.pitch.accidental == .sharp)
+            #expect(note.pitch.accidental == .natural)
         } else {
             Issue.record("Expected .note")
         }
@@ -153,6 +193,27 @@ extension ABCSymbolMatcherTests {
         let symbols = try _matchSymbols("(3")
 
         #expect(symbols == [.tuplet(3, 2, 3)])
+    }
+
+    @Test
+    func matchSymbols_decoration_legacyPlusSyntax() throws {
+        let symbols = try _matchSymbols("+trill+")
+
+        #expect(symbols == [.decoration("+trill+")])
+    }
+
+    @Test
+    func matchSymbols_spacer() throws {
+        let symbols = try _matchSymbols("y")
+
+        #expect(symbols == [.spacer(_dur(1, 8))])
+    }
+
+    @Test
+    func matchSymbols_spacer_withDuration() throws {
+        let symbols = try _matchSymbols("y2")
+
+        #expect(symbols == [.spacer(_dur(1, 4))])
     }
 
     @Test

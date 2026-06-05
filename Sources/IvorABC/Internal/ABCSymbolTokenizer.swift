@@ -52,11 +52,13 @@ extension ABCSymbolTokenizer {
                                                             Rule(regexInlineField, .inlineField),
                                                             Rule(regexNote, .note),
                                                             Rule(regexRest, .rest),
+                                                            Rule(regexSpacer, .spacer),
                                                             Rule(regexTuplet, .tuplet),
                                                             Rule(regexVariantEnding, .variantEnding),
                                                             Rule(/`+/, .backquotes),
                                                             Rule(/\[/, .chordBegin),
                                                             Rule(/]/, .chordEnd),
+                                                            Rule(regexChordSuffix, .chordSuffix),
                                                             Rule(/\{\/?/, .graceNotesBegin),
                                                             Rule(/\}/, .graceNotesEnd),
                                                             Rule(/&/, .overlay),
@@ -81,6 +83,7 @@ extension Tokenizer.Token.Kind {
     internal static let brokenRhythm       = Self("brokenRhythm")
     internal static let chordBegin         = Self("chordBegin")
     internal static let chordEnd           = Self("chordEnd")
+    internal static let chordSuffix        = Self("chordSuffix")
     internal static let chordSymbol        = Self("chordSymbol")
     internal static let decoration         = Self("decoration")
     internal static let graceNotesBegin    = Self("graceNotesBegin")
@@ -91,6 +94,7 @@ extension Tokenizer.Token.Kind {
     internal static let rest               = Self("rest")
     internal static let slurBegin          = Self("slurBegin")
     internal static let slurEnd            = Self("slurEnd")
+    internal static let spacer             = Self("spacer")
     internal static let tuplet             = Self("tuplet")
     internal static let variantEnding      = Self("variantEnding")
 }

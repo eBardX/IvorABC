@@ -30,7 +30,7 @@ extension ABCSymbolTests {
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        #expect(ABCSymbol.chord([note]) == .chord([note]))
+        #expect(ABCSymbol.chord([note], duration, false) == .chord([note], duration, false))
     }
 
     @Test
@@ -78,6 +78,13 @@ extension ABCSymbolTests {
     @Test
     func equality_slur() {
         #expect(ABCSymbol.slur("(") == .slur("("))
+    }
+
+    @Test
+    func equality_spacer() {
+        let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
+
+        #expect(ABCSymbol.spacer(duration) == .spacer(duration))
     }
 
     @Test

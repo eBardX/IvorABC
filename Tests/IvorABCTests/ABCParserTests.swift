@@ -11,101 +11,6 @@ struct ABCParserTests {
 
 extension ABCParserTests {
     @Test
-    func parseEmptyTunebook() throws {
-        let input = "%abc-2.1\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.version.major == 2)
-        #expect(tunebook.version.minor == 1)
-        #expect(tunebook.headers.isEmpty)
-        #expect(tunebook.tunes.isEmpty)
-    }
-
-    @Test
-    func parseInvalidUTF8Throws() {
-        let data = Data([0xff, 0xfe])
-        let parser = ABCParser()
-
-        #expect(throws: ABCParseError.self) {
-            try parser.parse(data)
-        }
-    }
-
-    @Test
-    func parseMinimalTune() throws {
-        let input = "%abc-2.1\n\nX:1\nT:Test Tune\nK:C\nCDEF|GABc|\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.tunes.count == 1)
-
-        let tune = tunebook.tunes[0]
-
-        #expect(!tune.entries.isEmpty)
-    }
-
-    @Test
-    func parseMissingFileIDThrows() {
-        let input = "X:1\nT:Test\nK:C\nabc\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        #expect(throws: ABCParseError.self) {
-            try parser.parse(data)
-        }
-    }
-
-    @Test
-    func parseMultipleTunes() throws {
-        let input = "%abc-2.1\n\nX:1\nT:First\nK:C\nCDEF|\n\nX:2\nT:Second\nK:G\nGABc|\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.tunes.count == 2)
-    }
-
-    @Test
-    func parseTuneWithDirective() throws {
-        let input = "%abc-2.1\n\nX:1\nT:Test\n%%pagewidth 21cm\nK:C\nCDEF|\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.tunes.count == 1)
-    }
-
-    @Test
-    func parseTunebookWithFileHeaders() throws {
-        let input = "%abc-2.1\nM:4/4\nL:1/8\n\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.headers.count == 2)
-        #expect(tunebook.tunes.count == 1)
-    }
-
-    @Test
-    func parseUnsupportedVersionThrows() {
-        let input = "%abc-3.0\nX:1\nT:Test\nK:C\nabc\n"
-        let data = Data(input.utf8)
-        let parser = ABCParser()
-
-        #expect(throws: ABCParseError.self) {
-            try parser.parse(data)
-        }
-    }
-
-    @Test
     func parse_beginEndBlock_beginValueStored() throws {
         let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\n"
         let data = Data(input.utf8)
@@ -213,6 +118,20 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_emptyTunebook() throws {
+        let input = "%abc-2.1\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.version.major == 2)
+        #expect(tunebook.version.minor == 1)
+        #expect(tunebook.headers.isEmpty)
+        #expect(tunebook.tunes.isEmpty)
+    }
+
+    @Test
     func parse_instruction_equivalentToDirective() throws {
         let directiveInput = "%abc-2.1\n\nX:1\nT:Test\nK:C\n%%pagewidth 21cm\nCDEF|\n"
         let instructionInput = "%abc-2.1\n\nX:1\nT:Test\nK:C\nI:pagewidth 21cm\nCDEF|\n"
@@ -222,6 +141,16 @@ extension ABCParserTests {
         let instructionTunebook = try parser.parse(Data(instructionInput.utf8))
 
         #expect(directiveTunebook.tunes[0] == instructionTunebook.tunes[0])
+    }
+
+    @Test
+    func parse_invalidUTF8_throws() {
+        let data = Data([0xff, 0xfe])
+        let parser = ABCParser()
+
+        #expect(throws: ABCParseError.self) {
+            try parser.parse(data)
+        }
     }
 
     @Test
@@ -255,7 +184,10 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_keyHp_presetAccidentals() throws {
+    func parse_keyHp_presetAccidentalsInContext() throws {
+        // K:Hp sets accidentalsInKey (C♯, F♯, G♮), but the parser stores written
+        // pitch only — no implicit accidentals are folded into notes. The preset
+        // accidentals are available via the parse context for callers who need them.
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:Hp\nCFG|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
@@ -277,11 +209,82 @@ extension ABCParserTests {
 
         #expect(notes.count == 3)
         #expect(notes[0].pitch.letter == .c)
-        #expect(notes[0].pitch.accidental == .sharp)
+        #expect(notes[0].pitch.accidental == .natural)
         #expect(notes[1].pitch.letter == .f)
-        #expect(notes[1].pitch.accidental == .sharp)
+        #expect(notes[1].pitch.accidental == .natural)
         #expect(notes[2].pitch.letter == .g)
         #expect(notes[2].pitch.accidental == .natural)
+    }
+
+    @Test
+    func parse_lineContinuation_joinsContinuedLines() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDE\\\nFGA|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+
+        // Continued lines should merge into one .symbols entry
+        let symbolEntries = tune.entries.filter {
+            if case .symbols = $0 {
+                return true
+            }
+
+            return false
+        }
+
+        #expect(symbolEntries.count == 1)
+
+        if case let .symbols(symbols) = symbolEntries[0] {
+            let notes = symbols.compactMap { sym -> ABCNote? in
+                guard case let .note(n) = sym
+                else { return nil }
+
+                return n
+            }
+
+            #expect(notes.count == 6)
+        } else {
+            Issue.record("Expected .symbols")
+        }
+    }
+
+    @Test
+    func parse_minimalTune() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test Tune\nK:C\nCDEF|GABc|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.tunes.count == 1)
+
+        let tune = tunebook.tunes[0]
+
+        #expect(!tune.entries.isEmpty)
+    }
+
+    @Test
+    func parse_missingFileID_throws() {
+        let input = "X:1\nT:Test\nK:C\nabc\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        #expect(throws: ABCParseError.self) {
+            try parser.parse(data)
+        }
+    }
+
+    @Test
+    func parse_multipleTunes() throws {
+        let input = "%abc-2.1\n\nX:1\nT:First\nK:C\nCDEF|\n\nX:2\nT:Second\nK:G\nGABc|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.tunes.count == 2)
     }
 
     @Test
@@ -360,5 +363,39 @@ extension ABCParserTests {
         let overlayIndices = symbols.indices.filter { symbols[$0] == .overlay }
 
         #expect(overlayIndices.count == 1)
+    }
+
+    @Test
+    func parse_tunebookWithFileHeaders() throws {
+        let input = "%abc-2.1\nM:4/4\nL:1/8\n\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.headers.count == 2)
+        #expect(tunebook.tunes.count == 1)
+    }
+
+    @Test
+    func parse_tuneWithDirective() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\n%%pagewidth 21cm\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.tunes.count == 1)
+    }
+
+    @Test
+    func parse_unsupportedVersion_throws() {
+        let input = "%abc-3.0\nX:1\nT:Test\nK:C\nabc\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        #expect(throws: ABCParseError.self) {
+            try parser.parse(data)
+        }
     }
 }

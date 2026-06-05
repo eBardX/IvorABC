@@ -47,6 +47,18 @@ extension ABCSymbolTokenizer {
         }
     }
 
+    internal nonisolated(unsafe) static let regexChordSuffix = Regex {
+        ChoiceOf {
+            Regex {
+                duration
+                Optionally {
+                    "-"
+                }
+            }
+            "-"
+        }
+    }
+
     internal nonisolated(unsafe) static let regexChordSymbol = Regex {
         "\""
         chordPitch
@@ -78,6 +90,13 @@ extension ABCSymbolTokenizer {
                 }
                 "!"
             }
+            Regex {
+                "+"
+                OneOrMore {
+                    decorationLegacyNameCC
+                }
+                "+"
+            }
         }
     }
 
@@ -107,6 +126,13 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexRest = Regex {
         restCC
+        Optionally {
+            duration
+        }
+    }
+
+    internal nonisolated(unsafe) static let regexSpacer = Regex {
+        "y"
         Optionally {
             duration
         }
@@ -210,21 +236,22 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private static let accidentalCC          = CharacterClass(.anyOf("=^_"))
-    private static let alphaNumericCC        = digitCC.union(letterCC)
-    private static let annotationCC          = CharacterClass(.anyOf("_@^<>"))
-    private static let chordAccidentalCC     = CharacterClass(.anyOf("b#"))
-    private static let chordPitchLetterCC    = CharacterClass("A"..."G")
-    private static let chordTypeLetterCC     = alphaNumericCC.union(.anyOf("+"))
-    private static let decorationNameCC      = alphaNumericCC.union(.anyOf(".()+<>"))
-    private static let decorationShorthandCC = CharacterClass(.anyOf(".~HLMOPSTuv"))
-    private static let digitCC               = CharacterClass("0"..."9")
-    private static let letterCC              = CharacterClass("A"..."Z",
-                                                              "a"..."z")
-    private static let octaveCC              = CharacterClass(.anyOf("',"))
-    private static let pitchLetterCC         = CharacterClass("A"..."G",
-                                                              "a"..."g")
-    private static let repeatDigitCC         = CharacterClass("1"..."9")
-    private static let restCC                = CharacterClass(.anyOf("XZxz"))
-    private static let tupletDigitCC         = CharacterClass("2"..."9")
+    private static let accidentalCC           = CharacterClass(.anyOf("=^_"))
+    private static let alphaNumericCC         = digitCC.union(letterCC)
+    private static let annotationCC           = CharacterClass(.anyOf("_@^<>"))
+    private static let chordAccidentalCC      = CharacterClass(.anyOf("b#"))
+    private static let chordPitchLetterCC     = CharacterClass("A"..."G")
+    private static let chordTypeLetterCC      = alphaNumericCC.union(.anyOf("+"))
+    private static let decorationLegacyNameCC = alphaNumericCC.union(.anyOf(".()<>"))
+    private static let decorationNameCC       = alphaNumericCC.union(.anyOf(".()+<>"))
+    private static let decorationShorthandCC  = CharacterClass(.anyOf(".~HLMOPSTuv"))
+    private static let digitCC                = CharacterClass("0"..."9")
+    private static let letterCC               = CharacterClass("A"..."Z",
+                                                               "a"..."z")
+    private static let octaveCC               = CharacterClass(.anyOf("',"))
+    private static let pitchLetterCC          = CharacterClass("A"..."G",
+                                                               "a"..."g")
+    private static let repeatDigitCC          = CharacterClass("1"..."9")
+    private static let restCC                 = CharacterClass(.anyOf("XZxz"))
+    private static let tupletDigitCC          = CharacterClass("2"..."9")
 }

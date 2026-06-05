@@ -7,6 +7,11 @@
 /// m: ~G2 = {A}G{F}G
 /// m: ~n = !n!
 /// ```
+///
+/// Macros are stored verbatim and are **not** expanded during parsing.
+/// Static and transposing macro variants are not distinguished.
+/// Callers that need macro expansion must implement it themselves using
+/// the `trigger` and `replacement` strings.
 public struct ABCMacro {
 
     // MARK: Public Initializers
