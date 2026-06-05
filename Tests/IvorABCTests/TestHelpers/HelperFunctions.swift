@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 // MARK: - ABCField Expectations
 
@@ -96,7 +97,7 @@ func expectFieldIsHistory(_ field: ABCField,
 }
 
 func expectFieldIsInstruction(_ field: ABCField,
-                              _ expected: String,
+                              _ expected: ABCDirective,
                               sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .instruction(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
@@ -313,6 +314,23 @@ func _dur(_ numerator: UInt,
     ABCDuration(numerator: numerator,
                 denominator: denominator,
                 reduce: true)
+}
+
+// swiftlint:disable:next identifier_name
+func _matchSymbols(_ input: String,
+                   context: inout ABCParseContext) throws -> [ABCSymbol] {
+    let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+    let tokens = try tokenizer.tokenize(input)
+    var matcher = ABCSymbolMatcher(tokens: tokens)
+
+    return try matcher.matchSymbols(&context)
+}
+
+// swiftlint:disable:next identifier_name
+func _matchSymbols(_ input: String) throws -> [ABCSymbol] {
+    var ctx = ABCParseContext()
+
+    return try _matchSymbols(input, context: &ctx)
 }
 
 // swiftlint:disable:next identifier_name

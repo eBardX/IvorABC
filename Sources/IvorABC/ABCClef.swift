@@ -5,20 +5,21 @@ public struct ABCClef {
 
     // MARK: Public Instance Properties
 
-    /// The note shown in the middle of the staff (e.g., `"B"`).
+    /// The note shown in the middle of the staff (e.g., `"B"`), or `nil` if
+    /// not specified.
     public var middle: String?
 
     /// The clef name (e.g., `"treble"`, `"bass"`, `"alto"`, `"tenor"`,
-    /// `"perc"`, `"none"`).
+    /// `"perc"`, `"none"`), or `nil` if not specified.
     public var name: String?
 
-    /// Transposition in octaves.
+    /// Transposition in octaves, or `nil` if not specified.
     public var octave: Int?
 
-    /// The number of staff lines.
+    /// The number of staff lines, or `nil` if not specified.
     public var stafflines: Int?
 
-    /// Transposition in semitones.
+    /// Transposition in semitones, or `nil` if not specified.
     public var transpose: Int?
 }
 

@@ -106,6 +106,125 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_beginEndBlock_beginValueStored() throws {
+        let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+            guard case let .directive(d) = header
+            else { return nil }
+
+            return d
+        }.first)
+
+        #expect(directive.name == "text")
+        #expect(directive.value == "justify")
+        #expect(directive.content == ["Some text"])
+    }
+
+    @Test
+    func parse_beginEndBlock_beginWithInlineComment() throws {
+        let input = "%abc-2.1\n%%begintext%this is a comment\nLine one\n%%endtext\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+            guard case let .directive(d) = header
+            else { return nil }
+
+            return d
+        }.first)
+
+        #expect(directive.name == "text")
+        #expect(directive.value.isEmpty)
+        #expect(directive.content == ["Line one"])
+    }
+
+    @Test
+    func parse_beginEndBlock_contentStoredAsLines() throws {
+        let input = "%abc-2.1\n%%begintext\nLine one\nLine two\n%%endtext\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+            guard case let .directive(d) = header
+            else { return nil }
+
+            return d
+        }.first)
+
+        #expect(directive.name == "text")
+        #expect(directive.value.isEmpty)
+        #expect(directive.content == ["Line one", "Line two"])
+    }
+
+    @Test
+    func parse_beginEndBlock_endWithInlineComment() throws {
+        let input = "%abc-2.1\n%%begintext\nLine one\n%%endtext%this is a comment\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+            guard case let .directive(d) = header
+            else { return nil }
+
+            return d
+        }.first)
+
+        #expect(directive.name == "text")
+        #expect(directive.value.isEmpty)
+        #expect(directive.content == ["Line one"])
+    }
+
+    @Test
+    func parse_beginEndBlock_inTuneBody() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nK:C\n%%beginsvg\n<rect/>\n%%endsvg\nCDEF|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+        let directive = try #require(tune.entries.compactMap { entry -> ABCDirective? in
+            guard case let .directive(d) = entry
+            else { return nil }
+
+            return d
+        }.first)
+
+        #expect(directive.name == "svg")
+        #expect(directive.value.isEmpty)
+        #expect(directive.content == ["<rect/>"])
+    }
+
+    @Test
+    func parse_beginEndBlock_unclosedThrows() {
+        let input = "%abc-2.1\n%%begintext\nLine one\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        #expect(throws: ABCParseError.self) {
+            try parser.parse(data)
+        }
+    }
+
+    @Test
+    func parse_instruction_equivalentToDirective() throws {
+        let directiveInput = "%abc-2.1\n\nX:1\nT:Test\nK:C\n%%pagewidth 21cm\nCDEF|\n"
+        let instructionInput = "%abc-2.1\n\nX:1\nT:Test\nK:C\nI:pagewidth 21cm\nCDEF|\n"
+        let parser = ABCParser()
+
+        let directiveTunebook = try parser.parse(Data(directiveInput.utf8))
+        let instructionTunebook = try parser.parse(Data(instructionInput.utf8))
+
+        #expect(directiveTunebook.tunes[0] == instructionTunebook.tunes[0])
+    }
+
+    @Test
     func parse_keyHP_noAccidentals() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:HP\nCFG|\n"
         let data = Data(input.utf8)

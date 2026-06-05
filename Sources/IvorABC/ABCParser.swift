@@ -51,9 +51,44 @@ extension ABCParser {
 
         let fileID = try _validateFileID(firstLine)
 
+        let bodyLines = Array(rawLines.dropFirst())
+
+        var idx = bodyLines.startIndex
         var restLines: [Line] = []
 
-        for text in rawLines.dropFirst() {
+        while idx < bodyLines.endIndex {
+            let text = bodyLines[idx]
+
+            idx += 1
+
+            if let (name, beginValue) = _parseBeginDirective(text) {
+                let endDirective = Self.expectedEndDirectivePrefix + name
+
+                var contentLines: [String] = []
+                var foundEnd = false
+
+                while idx < bodyLines.endIndex {
+                    let contentText = bodyLines[idx]
+
+                    idx += 1
+
+                    if _isEndDirectiveLine(contentText, endDirective) {
+                        foundEnd = true
+                        break
+                    }
+
+                    contentLines.append(String(contentText))
+                }
+
+                guard foundEnd
+                else { throw ABCParseError.unmatchedBeginDirective(name) }
+
+                restLines.append(.directive(ABCDirective(name: name,
+                                                         value: beginValue,
+                                                         content: contentLines)))
+                continue
+            }
+
             guard let line = try _parseLine(text, &context)
             else { continue }
 
@@ -66,8 +101,10 @@ extension ABCParser {
 
     // MARK: Private Type Properties
 
-    private static let expectedDirectivePrefix = "%%"
-    private static let expectedFileIDPrefix    = "%abc"
+    private static let expectedBeginDirectivePrefix = "%%begin"
+    private static let expectedDirectivePrefix      = "%%"
+    private static let expectedEndDirectivePrefix   = "%%end"
+    private static let expectedFileIDPrefix         = "%abc"
 
     // MARK: Private Instance Methods
 
@@ -93,10 +130,37 @@ extension ABCParser {
         return tunes
     }
 
+    private func _isEndDirectiveLine(_ input: Substring,
+                                     _ endDirective: String) -> Bool {
+        guard input.hasPrefix(endDirective)
+        else { return false }
+
+        let rest = uncomment(input.dropFirst(endDirective.count))
+
+        return rest.isEmpty || rest.allSatisfy { $0.isABCWhitespace }
+    }
+
+    private func _parseBeginDirective(_ input: Substring) -> (name: String, value: String)? {
+        let beginPrefix = Self.expectedBeginDirectivePrefix
+
+        guard input.hasPrefix(beginPrefix)
+        else { return nil }
+
+        let afterBegin = uncomment(input.dropFirst(beginPrefix.count))
+        let nameInput = afterBegin.prefix { !$0.isABCWhitespace }
+
+        guard let name = parseDirectiveName(nameInput)
+        else { return nil }
+
+        let value = String(trimPrefix(afterBegin.dropFirst(nameInput.count)))
+
+        return (name, value)
+    }
+
     private func _parseDirective(_ tidyInput: Substring) throws -> ABCDirective {
         let result = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
 
-        guard let name = _parseDirectiveName(result.head)
+        guard let name = parseDirectiveName(result.head)
         else { throw ABCParseError.invalidDirective(Self.expectedDirectivePrefix + tidyInput) }
 
         let value = String(trimPrefix(result.tail ?? ""))
@@ -118,15 +182,6 @@ extension ABCParser {
         return .directive(directive)
     }
 
-    private func _parseDirectiveName(_ tidyInput: Substring) -> String? {
-        guard let head = tidyInput.first,
-              head.isABCDirectiveNameHead,
-              tidyInput.dropFirst().allSatisfy({ $0.isABCDirectiveNameTail })
-        else { return nil }
-
-        return Self.expectedDirectivePrefix + tidyInput
-    }
-
     private func _parseEmptyLine(_ input: Substring) throws -> Line? {
         guard input.isEmpty || input.allSatisfy({ $0.isABCWhitespace })
         else { return nil }
@@ -140,6 +195,18 @@ extension ABCParser {
               letter.isABCLetter || letter == "+",
               input.dropFirst().first == ":"
         else { return nil }
+
+        if letter == "I" {
+            let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
+            let result = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
+
+            guard let name = parseDirectiveName(result.head)
+            else { throw ABCParseError.invalidDirective(input) }
+
+            let value = String(trimPrefix(result.tail ?? ""))
+
+            return .directive(ABCDirective(name: name, value: value))
+        }
 
         let tidyInput = trimSuffix(uncomment(input))
 

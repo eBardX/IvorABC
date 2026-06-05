@@ -29,8 +29,13 @@ public enum ABCField {
     /// A history field (`H:`).
     case history(String)
 
-    /// An instruction field (`I:`).
-    case instruction(String)
+    /// An inline instruction field (`[I:]`).
+    ///
+    /// Standalone `I:name value` lines are parsed as ``ABCDirective`` and
+    /// emitted as ``ABCEntry/directive(_:)`` — identical to `%%name value`.
+    /// This case is only produced for inline `[I:name value]` fields embedded
+    /// in a music body line.
+    case instruction(ABCDirective)
 
     /// A key signature field (`K:`).
     case key(ABCKeySignature)
@@ -120,7 +125,6 @@ extension ABCField {
              .fileURL,
              .group,
              .history,
-             .instruction,
              .macro,
              .meter,
              .notes,
@@ -176,7 +180,6 @@ extension ABCField {
              .fileURL,
              .group,
              .history,
-             .instruction,
              .key,
              .lyrics,
              .macro,

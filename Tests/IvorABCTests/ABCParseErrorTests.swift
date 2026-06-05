@@ -173,6 +173,14 @@ extension ABCParseErrorTests {
     }
 
     @Test
+    func message_unmatchedBeginDirective() {
+        let error = ABCParseError.unmatchedBeginDirective("text")
+
+        #expect(error.message.contains("%%begintext"))
+        #expect(error.message.contains("%%endtext"))
+    }
+
+    @Test
     func message_unsupportedVersion() {
         let version = ABCVersion(major: 3, minor: 0)
         let error = ABCParseError.unsupportedVersion(version)

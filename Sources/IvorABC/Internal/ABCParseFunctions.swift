@@ -56,6 +56,7 @@ internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
                        reduce: true)
 }
 
+// swiftlint:disable:next cyclomatic_complexity
 internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     let (ntext, vtext, isInline) = try _splitField(tidyInput)
 
@@ -85,7 +86,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .history(normalize(vtext))
 
     case "I":
-        return .instruction(normalize(vtext))
+        guard let dir = _parseInstruction(vtext)
+        else { throw ABCParseError.invalidField(isInline, tidyInput) }
+
+        return .instruction(dir)
 
     case "K":
         guard let ks = parseKeySignature(vtext)
@@ -260,6 +264,15 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
     flush()
 
     return ABCAlignedLyrics(segments: segments)
+}
+
+internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
+    guard let head = tidyInput.first,
+          head.isABCDirectiveNameHead,
+          tidyInput.dropFirst().allSatisfy({ $0.isABCDirectiveNameTail })
+    else { return nil }
+
+    return String(tidyInput)
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
@@ -862,6 +875,18 @@ private func _parseFraction(_ tidyInput: Substring) -> ABCFraction? {
     return ABCFraction(numerator: numerator,
                        denominator: denominator,
                        reduce: false)
+}
+
+private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
+    let result = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
+
+    guard let name = parseDirectiveName(result.head)
+    else { return nil }
+
+    let value = String(trimPrefix(result.tail ?? ""))
+
+    return ABCDirective(name: name,
+                        value: value)
 }
 
 private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.Accidental]? {

@@ -15,7 +15,7 @@ public struct ABCTempo {
     ///                        one element.
     /// - Parameter rate:      The tempo rate in beats per minute, or `nil` if
     ///                        not specified.
-    /// - Parameter text:      The optional tempo description text.
+    /// - Parameter text:      The tempo description text, or `nil` if not specified.
     public init(durations: [ABCDuration],
                 rate: UInt?,
                 text: String?) {
@@ -34,7 +34,7 @@ public struct ABCTempo {
     /// The tempo rate in beats per minute, or `nil` if not specified.
     public let rate: UInt?
 
-    /// The optional tempo description text.
+    /// The tempo description text, or `nil` if not specified.
     public let text: String?
 }
 

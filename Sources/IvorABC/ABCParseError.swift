@@ -72,6 +72,9 @@ public enum ABCParseError {
     /// The input is missing the required file identifier on the first line.
     case missingFileID
 
+    /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
+    case unmatchedBeginDirective(String)
+
     /// The file identifier specifies a version of ABC that is not supported.
     case unsupportedVersion(ABCVersion)
 }
@@ -156,6 +159,9 @@ extension ABCParseError: EnhancedError {
 
         case .missingFileID:
             "Missing required file ID"
+
+        case let .unmatchedBeginDirective(name):
+            "‘%%begin\(name)’ has no matching ‘%%end\(name)’"
 
         case let .unsupportedVersion(version):
             "Unsupported ABC version: \(version.major).\(version.minor)"

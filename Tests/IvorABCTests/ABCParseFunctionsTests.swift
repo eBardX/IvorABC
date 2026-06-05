@@ -59,7 +59,8 @@ extension ABCParseFunctionsTests {
         try expectFieldIsFileURL(parseField("F:https://example.com"), "https://example.com")
         try expectFieldIsGroup(parseField("G:Reels"), "Reels")
         try expectFieldIsHistory(parseField("H:Traditional"), "Traditional")
-        try expectFieldIsInstruction(parseField("I:linebreak $"), "linebreak $")
+        try expectFieldIsInstruction(parseField("I:linebreak $"),
+                                     ABCDirective(name: "linebreak", value: "$"))
         try expectFieldIsKey(parseField("K:G"))
         try expectFieldIsLyrics(parseField("W:do re mi"), "do re mi")
         try expectFieldIsMacro(parseField("m:~G3 = G{A}G2"), ABCMacro(trigger: "~G3", replacement: "G{A}G2"))

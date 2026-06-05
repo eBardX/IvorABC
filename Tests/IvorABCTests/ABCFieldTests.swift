@@ -38,7 +38,6 @@ extension ABCFieldTests {
                                        .fileURL(""),
                                        .group(""),
                                        .history(""),
-                                       .instruction(""),
                                        .macro(ABCMacro(trigger: "~G2",
                                                        replacement: "{A}G{F}G")),
                                        .meter(.common),
@@ -80,7 +79,7 @@ extension ABCFieldTests {
     @Test
     func isValidInTuneBody_validFields() {
         let validFields: [ABCField] = [.alignedLyrics(_alyrics()),
-                                       .instruction(""),
+                                       .instruction(ABCDirective(name: "linebreak", value: "")),
                                        .key(.empty),
                                        .lyrics(""),
                                        .macro(ABCMacro(trigger: "~G2",
@@ -126,7 +125,6 @@ extension ABCFieldTests {
                                        .fileURL(""),
                                        .group(""),
                                        .history(""),
-                                       .instruction(""),
                                        .key(.empty),
                                        .lyrics(""),
                                        .macro(ABCMacro(trigger: "~G2",
