@@ -160,6 +160,19 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
+    func tokenize_decoration_shorthand_fullRedefinableRange() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+        let letters = "HIJKLMNOPQRSTUVWhijklmnopqrstuvw"
+
+        for letter in letters {
+            let tokens = try tokenizer.tokenize(String(letter))
+
+            #expect(tokens.count == 1, "Expected 1 token for '\(letter)'")
+            #expect(tokens[0].kind == .decoration, "Expected .decoration for '\(letter)'")
+        }
+    }
+
+    @Test
     func tokenize_spacer() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 

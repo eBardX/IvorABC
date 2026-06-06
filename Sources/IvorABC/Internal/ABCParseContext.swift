@@ -6,12 +6,14 @@ internal struct ABCParseContext {
 
     internal init() {
         self.accidentalsInKey = [:]
+        self.definedUserSymbols = []
         self.isCompoundMeter = false
     }
 
     // MARK: Internal Instance Properties
 
     internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
+    internal var definedUserSymbols: Set<Character>
     internal var isCompoundMeter: Bool
 
     internal var baseDuration: ABCDuration {
@@ -41,6 +43,9 @@ extension ABCParseContext {
 
         case let .unitNoteLength(duration):
             durationFromUnitNoteLength = duration
+
+        case let .userSymbol(userSymbol):
+            definedUserSymbols.insert(userSymbol.symbol)
 
         default:
             break

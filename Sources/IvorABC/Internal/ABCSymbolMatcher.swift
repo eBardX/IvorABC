@@ -33,6 +33,10 @@ extension ABCSymbolMatcher {
         return symbols
     }
 
+    // MARK: Private Type Properties
+
+    private static let builtinShorthands: Set<Character> = [".", "~", "H", "L", "M", "O", "P", "S", "T", "u", "v"]
+
     // MARK: Private Type Methods
 
     private func _determineQCount(_ pcount: UInt,
@@ -137,10 +141,18 @@ extension ABCSymbolMatcher {
         return .chordSymbol(chordSymbol)
     }
 
-    private mutating func _matchDecoration() throws -> ABCSymbol? {
+    private mutating func _matchDecoration(_ context: inout ABCParseContext) throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.decoration)
+        let value = token.value
 
-        return .decoration(String(token.value))
+        if value.count == 1,
+           let letter = value.first,
+           !Self.builtinShorthands.contains(letter),
+           !context.definedUserSymbols.contains(letter) {
+            throw ABCParseError.invalidSymbols(value)
+        }
+
+        return .decoration(String(value))
     }
 
     private mutating func _matchGraceNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -263,7 +275,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.decoration) {
-            return try _matchDecoration()
+            return try _matchDecoration(&context)
         }
 
         if tokenMatcher.nextMatches(.graceNotesBegin) {

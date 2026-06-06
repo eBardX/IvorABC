@@ -92,6 +92,24 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
+    func matchSymbols_decoration_undefinedUserSymbol_throws() {
+        #expect(throws: (any Error).self) {
+            try _matchSymbols("W")
+        }
+    }
+
+    @Test
+    func matchSymbols_decoration_userDefinedSymbol() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .userSymbol(_usym("W", "!trill!")))
+
+        let symbols = try _matchSymbols("W", context: &ctx)
+
+        #expect(symbols == [.decoration("W")])
+    }
+
+    @Test
     func matchSymbols_empty() throws {
         let symbols = try _matchSymbols("")
 

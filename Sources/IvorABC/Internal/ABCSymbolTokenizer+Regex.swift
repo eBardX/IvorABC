@@ -244,7 +244,9 @@ extension ABCSymbolTokenizer {
     private static let chordTypeLetterCC      = alphaNumericCC.union(.anyOf("+"))
     private static let decorationLegacyNameCC = alphaNumericCC.union(.anyOf(".()<>"))
     private static let decorationNameCC       = alphaNumericCC.union(.anyOf(".()+<>"))
-    private static let decorationShorthandCC  = CharacterClass(.anyOf(".~HLMOPSTuv"))
+    private static let decorationShorthandCC  = CharacterClass(.anyOf(".~"),
+                                                               "H"..."W",
+                                                               "h"..."w")
     private static let digitCC                = CharacterClass("0"..."9")
     private static let letterCC               = CharacterClass("A"..."Z",
                                                                "a"..."z")

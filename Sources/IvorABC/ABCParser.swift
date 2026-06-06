@@ -5,16 +5,25 @@ public import Foundation
 private import XestiTools
 
 /// A parser for ABC notation.
+///
+/// By default the parser operates in ``Strictness/strict`` mode, which requires
+/// a valid `%abc-2.1` file identifier on the first line and throws
+/// ``ABCParseError`` on any deviation from the standard. Pass
+/// `strictness: .lenient` to ``init(strictness:)`` for a mode that tolerates
+/// common real-world deviations and emits ``ABCDiagnostic`` values in place of
+/// errors.
 public struct ABCParser {
 
     // MARK: Public Initializers
 
     /// Creates a new ABC parser with the specified strictness.
     ///
-    /// - Parameter strictness: Controls how the parser handles deviations
-    ///                         from the ABC notation standard. Defaults to
-    ///                         ``Strictness/strict``, which preserves the
-    ///                         existing throwing behavior.
+    /// - Parameter strictness: The strictness mode for this parser. Pass
+    ///                         ``Strictness/strict`` (the default) to require
+    ///                         full ABC 2.1 conformance, or
+    ///                         ``Strictness/lenient`` to tolerate real-world
+    ///                         deviations with ``ABCDiagnostic`` recovery
+    ///                         messages.
     public init(strictness: Strictness = .strict) {
         self.strictness = strictness
         self.tokenizer = ABCSymbolTokenizer(tracing: .silent)
@@ -33,6 +42,10 @@ extension ABCParser {
     // MARK: Public Instance Methods
 
     /// Parses ABC notation data and returns the resulting tunebook.
+    ///
+    /// Any ``ABCDiagnostic`` values generated in ``Strictness/lenient`` mode
+    /// are silently discarded. Use ``parseWithDiagnostics(_:)`` to retrieve
+    /// them.
     ///
     /// - Parameter data: The UTF-8 encoded ABC notation data to parse.
     ///

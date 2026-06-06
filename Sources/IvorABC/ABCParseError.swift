@@ -46,6 +46,10 @@ public enum ABCParseError {
     case invalidSymbols(Substring)
 
     /// The parser encountered an invalid tempo specification.
+    ///
+    /// In ``ABCParser/Strictness/lenient`` mode, a bare-integer tempo
+    /// (e.g. `Q:120`) is recovered instead and reported as
+    /// ``ABCDiagnostic/bareTempoRate(_:)``.
     case invalidTempo(Substring)
 
     /// The parser encountered an invalid time signature.
@@ -67,15 +71,24 @@ public enum ABCParseError {
     case invalidVoice(Substring)
 
     /// The parser encountered a field in a location where it is not permitted.
+    ///
+    /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
+    /// instead and reported as ``ABCDiagnostic/misplacedField(_:)``.
     case misplacedField(ABCField)
 
     /// The input is missing the required file identifier on the first line.
+    ///
+    /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
+    /// instead and reported as ``ABCDiagnostic/missingFileID``.
     case missingFileID
 
     /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
     case unmatchedBeginDirective(String)
 
     /// The file identifier specifies a version of ABC that is not supported.
+    ///
+    /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
+    /// instead and reported as ``ABCDiagnostic/unsupportedVersion(_:)``.
     case unsupportedVersion(ABCVersion)
 }
 
