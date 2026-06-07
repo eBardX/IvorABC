@@ -39,7 +39,7 @@ extension ABCParseContext {
 
         case let .meter(timeSignature):
             durationFromMeter = Self._determineDuration(from: timeSignature)
-            isCompoundMeter = Self._determineIsCompoundMeter(from: timeSignature)
+            isCompoundMeter = timeSignature.isCompound
 
         case let .unitNoteLength(duration):
             durationFromUnitNoteLength = duration
@@ -296,16 +296,6 @@ extension ABCParseContext {
 
         default:
             mode
-        }
-    }
-
-    private static func _determineIsCompoundMeter(from timeSignature: ABCTimeSignature) -> Bool {
-        switch timeSignature {
-        case let .explicit(fraction):
-            [6, 9, 12, 15, 18].contains(fraction.numerator)
-
-        default:
-            false
         }
     }
 }

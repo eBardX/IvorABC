@@ -39,23 +39,6 @@ extension ABCSymbolMatcher {
 
     // MARK: Private Type Methods
 
-    private func _determineQCount(_ pcount: UInt,
-                                  _ context: inout ABCParseContext) -> UInt {
-        switch pcount {
-        case 2,
-             4,
-             8:
-            3
-
-        case 3,
-             6:
-            2
-
-        default:
-            context.isCompoundMeter ? 3 : 2
-        }
-    }
-
     private func _makeDuration(_ duration: ABCDuration?,
                                _ context: inout ABCParseContext) -> ABCDuration {
         let baseDuration = context.baseDuration
@@ -73,6 +56,12 @@ extension ABCSymbolMatcher {
         ABCPitch(letter: result.letter,
                  accidental: result.accidental ?? .natural,
                  octave: result.octave)
+    }
+
+    private mutating func _matchAnnotation() throws -> ABCSymbol? {
+        let token = try tokenMatcher.readMustMatch(.annotation)
+
+        return .annotation(String(token.value.dropFirst().dropLast()))
     }
 
     private mutating func _matchBarRepeat() throws -> ABCSymbol? {
@@ -258,6 +247,10 @@ extension ABCSymbolMatcher {
     }
 
     private mutating func _matchSymbol(_ context: inout ABCParseContext) throws -> ABCSymbol? { // swiftlint:disable:this cyclomatic_complexity
+        if tokenMatcher.nextMatches(.annotation) {
+            return try _matchAnnotation()
+        }
+
         if tokenMatcher.nextMatches(.barRepeat) {
             return try _matchBarRepeat()
         }
@@ -307,7 +300,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.tuplet) {
-            return try _matchTuplet(&context)
+            return try _matchTuplet()
         }
 
         if tokenMatcher.nextMatches(.variantEnding) {
@@ -319,17 +312,13 @@ extension ABCSymbolMatcher {
         return nil
     }
 
-    private mutating func _matchTuplet(_ context: inout ABCParseContext) throws -> ABCSymbol? {
+    private mutating func _matchTuplet() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.tuplet)
 
         guard let result = parseTuplet(token.value)
         else { throw ABCParseError.invalidTuplet(token.value) }
 
-        let pcount = result.pcount
-        let qcount = result.qcount ?? _determineQCount(pcount, &context)
-        let rcount = result.rcount ?? pcount
-
-        return .tuplet(pcount, qcount, rcount)
+        return .tuplet(result.pcount, result.qcount, result.rcount)
     }
 
     private mutating func _matchVariantEnding() throws -> ABCSymbol? {

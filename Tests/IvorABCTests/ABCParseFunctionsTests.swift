@@ -104,6 +104,7 @@ extension ABCParseFunctionsTests {
 
         #expect(parseKeySignature("G clef=bass") == .standard(.g, .major, [], bassClef))
         #expect(parseKeySignature("C transpose=-2") == .standard(.c, .major, [], transposeClef))
+        #expect(parseKeySignature("C major transpose=-2") == .standard(.c, .major, [], transposeClef))
         #expect(parseKeySignature("G clef=bass transpose=-2") == .standard(.g, .major, [], combinedClef))
         #expect(parseKeySignature("clef=treble") == .clefOnly(trebleClef))
         #expect(parseKeySignature("none clef=treble") == .clefOnly(trebleClef))

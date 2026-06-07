@@ -56,6 +56,96 @@ internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
                        reduce: true)
 }
 
+internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
+    var segments: [ABCAlignedLyrics.Segment] = []
+    var input = tidyInput
+    var currentText = ""
+    var hasText = false
+    var precedingHyphen = false
+
+    func flush() {
+        guard hasText
+        else { return }
+
+        segments.append(precedingHyphen
+                        ? .continuation(currentText)
+                        : .syllable(currentText))
+
+        currentText = ""
+        hasText = false
+        precedingHyphen = false
+    }
+
+    while let ch = input.first {
+        input = input.dropFirst()
+
+        switch ch {
+        case "\\":
+            if let next = input.first {
+                currentText.append(next)
+
+                input = input.dropFirst()
+                hasText = true
+            }
+
+        case " ",
+             "\t":
+            flush()
+
+            precedingHyphen = false
+
+        case "-":
+            flush()
+
+            precedingHyphen = true
+
+        case "_":
+            flush()
+
+            segments.append(.hold)
+
+            precedingHyphen = false
+
+        case "*":
+            flush()
+
+            segments.append(.skip)
+
+            precedingHyphen = false
+
+        case "|":
+            flush()
+
+            segments.append(.barAlign)
+
+            precedingHyphen = false
+
+        case "~":
+            currentText.append(" ")
+
+            hasText = true
+
+        default:
+            currentText.append(ch)
+
+            hasText = true
+        }
+    }
+
+    flush()
+
+    return ABCAlignedLyrics(segments: segments)
+}
+
+internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
+    guard let head = tidyInput.first,
+          head.isABCDirectiveNameHead,
+          tidyInput.dropFirst().allSatisfy({ $0.isABCDirectiveNameTail })
+    else { return nil }
+
+    return String(tidyInput)
+}
+
 // swiftlint:disable:next cyclomatic_complexity
 internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     let (ntext, vtext, isInline) = try _splitField(tidyInput)
@@ -183,96 +273,6 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     }
 
     throw ABCParseError.invalidField(isInline, tidyInput)
-}
-
-internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
-    var segments: [ABCAlignedLyrics.Segment] = []
-    var input = tidyInput
-    var currentText = ""
-    var hasText = false
-    var precedingHyphen = false
-
-    func flush() {
-        guard hasText
-        else { return }
-
-        segments.append(precedingHyphen
-                        ? .continuation(currentText)
-                        : .syllable(currentText))
-
-        currentText = ""
-        hasText = false
-        precedingHyphen = false
-    }
-
-    while let ch = input.first {
-        input = input.dropFirst()
-
-        switch ch {
-        case "\\":
-            if let next = input.first {
-                currentText.append(next)
-
-                input = input.dropFirst()
-                hasText = true
-            }
-
-        case " ",
-             "\t":
-            flush()
-
-            precedingHyphen = false
-
-        case "-":
-            flush()
-
-            precedingHyphen = true
-
-        case "_":
-            flush()
-
-            segments.append(.hold)
-
-            precedingHyphen = false
-
-        case "*":
-            flush()
-
-            segments.append(.skip)
-
-            precedingHyphen = false
-
-        case "|":
-            flush()
-
-            segments.append(.barAlign)
-
-            precedingHyphen = false
-
-        case "~":
-            currentText.append(" ")
-
-            hasText = true
-
-        default:
-            currentText.append(ch)
-
-            hasText = true
-        }
-    }
-
-    flush()
-
-    return ABCAlignedLyrics(segments: segments)
-}
-
-internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
-    guard let head = tidyInput.first,
-          head.isABCDirectiveNameHead,
-          tidyInput.dropFirst().allSatisfy({ $0.isABCDirectiveNameTail })
-    else { return nil }
-
-    return String(tidyInput)
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
@@ -624,6 +624,15 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     return (pcount, qcount, rcount)
 }
 
+internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
+    guard let duration = _parseDuration(tidyInput),
+          duration.numerator > 0,
+          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512].contains(duration.denominator)
+    else { return nil }
+
+    return duration
+}
+
 internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard let symbol = tidyInput.first
     else { return nil }
@@ -640,15 +649,6 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
 
     return ABCUserSymbol(symbol: symbol,
                          decoration: decoration)
-}
-
-internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
-    guard let duration = _parseDuration(tidyInput),
-          duration.numerator > 0,
-          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512].contains(duration.denominator)
-    else { return nil }
-
-    return duration
 }
 
 internal func parseVoice(_ tidyInput: Substring) -> ABCVoice? {
@@ -743,7 +743,6 @@ private let modes: [String: ABCKeySignature.Mode] = ["": .major,
                                                      "maj": .major,
                                                      "min": .minor,
                                                      "mix": .mixolydian,
-                                                     "mixo": .mixolydian,
                                                      "phr": .phrygian]
 
 private let pitchAccidentals: [Substring: ABCPitch.Accidental] = ["_": .flat,

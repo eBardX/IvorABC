@@ -18,6 +18,22 @@ public enum ABCTimeSignature {
     case explicit(ABCFraction)
 }
 
+// MARK: -
+
+extension ABCTimeSignature {
+
+    // MARK: Public Instance Properties
+
+    /// Whether this time signature is a compound meter (i.e. beats subdivide
+    /// into three), such as 6/8, 9/8, 12/8, or 15/8.
+    public var isCompound: Bool {
+        guard case let .explicit(fraction) = self
+        else { return false }
+
+        return [6, 9, 12, 15, 18].contains(fraction.numerator)
+    }
+}
+
 // MARK: - Equatable
 
 extension ABCTimeSignature: Equatable {
