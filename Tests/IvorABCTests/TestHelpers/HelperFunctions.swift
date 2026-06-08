@@ -46,16 +46,6 @@ func expectFieldIsComposer(_ field: ABCField,
     }
 }
 
-func expectFieldIsContinuation(_ field: ABCField,
-                               _ expected: String,
-                               sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .continuation(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
-    } else {
-        Issue.record("Expected .continuation", sourceLocation: sourceLocation)
-    }
-}
-
 func expectFieldIsDiscography(_ field: ABCField,
                               _ expected: String,
                               sourceLocation: SourceLocation = #_sourceLocation) {

@@ -26,7 +26,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_chord() {
-        let pitch = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
@@ -40,12 +40,12 @@ extension ABCSymbolTests {
 
     @Test
     func equality_decoration() {
-        #expect(ABCSymbol.decoration("!p!") == .decoration("!p!"))
+        #expect(ABCSymbol.decoration(ABCDecoration(name: "p")) == .decoration(ABCDecoration(name: "p")))
     }
 
     @Test
     func equality_graceNotes() {
-        let pitch = ABCPitch(letter: .g, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .g, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
@@ -60,7 +60,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_note() {
-        let pitch = ABCPitch(letter: .a, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .a, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
@@ -103,5 +103,55 @@ extension ABCSymbolTests {
         #expect(ABCSymbol.annotation("foo") != .chordSymbol("foo"))
         #expect(ABCSymbol.overlay != .slur("("))
         #expect(ABCSymbol.tuplet(3, 2, 3) != .tuplet(3, 2, 4))
+    }
+}
+
+// MARK: -
+
+extension ABCSymbolTests {
+
+    @Test
+    func resolveBrokenRhythm_nonBrokenRhythm_returnsNil() {
+        let note = ABCSymbol.note(ABCNote(pitch: _pit(.c, .natural, 4),
+                                          duration: _dur(1, 4),
+                                          isTied: false))
+
+        #expect(note.resolveBrokenRhythm(left: _dur(1, 4), right: _dur(1, 4)) == nil)
+    }
+
+    @Test
+    func resolveBrokenRhythm_singleRight_dotsDurationAndHalvesNext() {
+        let result = ABCSymbol.brokenRhythm(">").resolveBrokenRhythm(left: _dur(1, 4),
+                                                                     right: _dur(1, 4))
+
+        #expect(result?.left == _dur(3, 8))
+        #expect(result?.right == _dur(1, 8))
+    }
+
+    @Test
+    func resolveBrokenRhythm_doubleRight_lengthensAndShortens() {
+        let result = ABCSymbol.brokenRhythm(">>").resolveBrokenRhythm(left: _dur(1, 4),
+                                                                      right: _dur(1, 4))
+
+        #expect(result?.left == _dur(7, 16))
+        #expect(result?.right == _dur(1, 16))
+    }
+
+    @Test
+    func resolveBrokenRhythm_tripleRight_lengthensAndShortens() {
+        let result = ABCSymbol.brokenRhythm(">>>").resolveBrokenRhythm(left: _dur(1, 4),
+                                                                       right: _dur(1, 4))
+
+        #expect(result?.left == _dur(15, 32))
+        #expect(result?.right == _dur(1, 32))
+    }
+
+    @Test
+    func resolveBrokenRhythm_singleLeft_halvesAndDots() {
+        let result = ABCSymbol.brokenRhythm("<").resolveBrokenRhythm(left: _dur(1, 4),
+                                                                     right: _dur(1, 4))
+
+        #expect(result?.left == _dur(1, 8))
+        #expect(result?.right == _dur(3, 8))
     }
 }

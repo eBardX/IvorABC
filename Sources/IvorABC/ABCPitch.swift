@@ -13,7 +13,8 @@ public struct ABCPitch {
     /// Creates a new pitch with the provided letter, accidental, and octave.
     ///
     /// - Parameter letter:     The letter name of the pitch.
-    /// - Parameter accidental: The accidental of the pitch.
+    /// - Parameter accidental: The accidental of the pitch. Use `.omitted` when
+    ///                         no accidental was written in the source.
     /// - Parameter octave:     The octave number of the pitch.
     public init(letter: Letter,
                 accidental: Accidental,
@@ -25,7 +26,8 @@ public struct ABCPitch {
 
     // MARK: Public Instance Properties
 
-    /// The accidental of this pitch.
+    /// The accidental of this pitch. `.omitted` means no accidental was written
+    /// in the source.
     public let accidental: Accidental
 
     /// The letter name of this pitch.

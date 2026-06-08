@@ -68,8 +68,7 @@ extension ABCSymbolTokenizer {
                                                                  disposition: .skip(nil)),
                                                             Rule(regex: /[$\\](?=\s)/,
                                                                  disposition: .skip(nil)),
-                                                            Rule(regex: /\s+/,
-                                                                 disposition: .skip(nil)),
+                                                            Rule(/\s+/, .whitespace),
                                                             Rule(regex: /%.*$/,
                                                                  disposition: .skip(nil))]
 }
@@ -97,4 +96,5 @@ extension Tokenizer.Token.Kind {
     internal static let spacer             = Self("spacer")
     internal static let tuplet             = Self("tuplet")
     internal static let variantEnding      = Self("variantEnding")
+    internal static let whitespace         = Self("whitespace")
 }

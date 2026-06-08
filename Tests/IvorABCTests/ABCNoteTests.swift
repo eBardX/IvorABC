@@ -11,7 +11,7 @@ struct ABCNoteTests {
 extension ABCNoteTests {
     @Test
     func equality() {
-        let pitch = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let a = ABCNote(pitch: pitch, duration: duration, isTied: false)
         let b = ABCNote(pitch: pitch, duration: duration, isTied: false)
@@ -21,11 +21,11 @@ extension ABCNoteTests {
 
     @Test
     func inequality() {
-        let pitch = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let base = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        let diffPitch = ABCNote(pitch: ABCPitch(letter: .d, accidental: .natural, octave: 4),
+        let diffPitch = ABCNote(pitch: ABCPitch(letter: .d, accidental: .omitted, octave: 4),
                                 duration: duration,
                                 isTied: false)
         let diffDuration = ABCNote(pitch: pitch,

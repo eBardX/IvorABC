@@ -23,7 +23,7 @@ extension ABCEntryTests {
 
     @Test
     func equality_symbols() {
-        let pitch = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
         let symbols: [ABCSymbol] = [.note(note)]

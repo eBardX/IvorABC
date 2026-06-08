@@ -11,8 +11,8 @@ struct ABCSymbolLineTests {
 extension ABCSymbolLineTests {
     @Test
     func equality() {
-        let sl1 = ABCSymbolLine(tokens: [.decoration("!trill!"), .skip])
-        let sl2 = ABCSymbolLine(tokens: [.decoration("!trill!"), .skip])
+        let sl1 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "trill")), .skip])
+        let sl2 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "trill")), .skip])
 
         #expect(sl1 == sl2)
     }
@@ -27,7 +27,7 @@ extension ABCSymbolLineTests {
 
     @Test
     func inequality_differentToken() {
-        let sl1 = ABCSymbolLine(tokens: [.decoration("!p!")])
+        let sl1 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p"))])
         let sl2 = ABCSymbolLine(tokens: [.skip])
 
         #expect(sl1 != sl2)
@@ -42,8 +42,8 @@ extension ABCSymbolLineTests {
 
     @Test
     func tokens_mixed() {
-        let sl = ABCSymbolLine(tokens: [.decoration("!p!"), .skip, .chordSymbol("Am"), .annotation("^forte")])
+        let sl = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation("^forte")])
 
-        #expect(sl.tokens == [.decoration("!p!"), .skip, .chordSymbol("Am"), .annotation("^forte")])
+        #expect(sl.tokens == [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation("^forte")])
     }
 }

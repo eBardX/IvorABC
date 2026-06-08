@@ -13,7 +13,7 @@ extension ABCSymbolLineTokenTests {
     func allCasesAreDistinct() {
         let allCases: [ABCSymbolLine.Token] = [.annotation("^forte"),
                                                .chordSymbol("Am"),
-                                               .decoration("!p!"),
+                                               .decoration(ABCDecoration(name: "p")),
                                                .skip]
 
         for i in allCases.indices {
@@ -27,7 +27,7 @@ extension ABCSymbolLineTokenTests {
     func equality() {
         #expect(ABCSymbolLine.Token.annotation("^forte") == .annotation("^forte"))
         #expect(ABCSymbolLine.Token.chordSymbol("Am") == .chordSymbol("Am"))
-        #expect(ABCSymbolLine.Token.decoration("!p!") == .decoration("!p!"))
+        #expect(ABCSymbolLine.Token.decoration(ABCDecoration(name: "p")) == .decoration(ABCDecoration(name: "p")))
         #expect(ABCSymbolLine.Token.skip == .skip)
     }
 
@@ -35,6 +35,6 @@ extension ABCSymbolLineTokenTests {
     func inequality_differentAssociatedValues() {
         #expect(ABCSymbolLine.Token.annotation("^forte") != .annotation("_soft"))
         #expect(ABCSymbolLine.Token.chordSymbol("Am") != .chordSymbol("G"))
-        #expect(ABCSymbolLine.Token.decoration("!p!") != .decoration("!f!"))
+        #expect(ABCSymbolLine.Token.decoration(ABCDecoration(name: "p")) != .decoration(ABCDecoration(name: "f")))
     }
 }

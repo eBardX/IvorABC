@@ -137,9 +137,14 @@ extension ABCFormatter.Writer {
 
     private mutating func _writeSymbolsLine(_ symbols: [ABCSymbol]) throws {
         var line = ""
-        var needSpace = false
 
         for symbol in symbols {
+            if case .beamBreak = symbol {
+                line.append(" ")
+
+                continue
+            }
+
             // Keep duration state current for inline fields within the line.
             if case let .inlineField(.meter(ts)) = symbol {
                 meter = ts
@@ -147,24 +152,7 @@ extension ABCFormatter.Writer {
                 unitNoteLength = dur
             }
 
-            let rendered = try formatSymbol(symbol, unitNoteLength, meter)
-
-            switch symbol {
-            case .decoration,
-                 .graceNotes:
-                line.append(rendered)
-
-                needSpace = false
-
-            default:
-                if needSpace {
-                    line.append(" ")
-                }
-
-                line.append(rendered)
-
-                needSpace = true
-            }
+            try line.append(formatSymbol(symbol, unitNoteLength, meter))
         }
 
         buffer.append(line)

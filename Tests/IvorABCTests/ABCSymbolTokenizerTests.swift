@@ -124,8 +124,9 @@ extension ABCSymbolTokenizerTests {
 
         let tokens = try tokenizer.tokenize("C % comment")
 
-        #expect(tokens.count == 1)
+        #expect(tokens.count == 2)
         #expect(tokens[0].kind == .note)
+        #expect(tokens[1].kind == .whitespace)
     }
 
     @Test
@@ -339,12 +340,16 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
-    func tokenize_whitespaceSkipped() throws {
+    func tokenize_whitespaceEmitted() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("C D E")
 
-        #expect(tokens.count == 3)
-        #expect(tokens.allSatisfy { $0.kind == .note })
+        #expect(tokens.count == 5)
+        #expect(tokens[0].kind == .note)
+        #expect(tokens[1].kind == .whitespace)
+        #expect(tokens[2].kind == .note)
+        #expect(tokens[3].kind == .whitespace)
+        #expect(tokens[4].kind == .note)
     }
 }

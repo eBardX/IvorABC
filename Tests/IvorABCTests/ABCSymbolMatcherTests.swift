@@ -27,10 +27,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord() throws {
         let symbols = try _matchSymbols("[CE]")
 
-        let expected: [ABCSymbol] = [.chord([ABCNote(pitch: _pit(.c, .natural, 4),
+        let expected: [ABCSymbol] = [.chord([ABCNote(pitch: _pit(.c, .omitted, 4),
                                                      duration: _dur(1, 8),
                                                      isTied: false),
-                                             ABCNote(pitch: _pit(.e, .natural, 4),
+                                             ABCNote(pitch: _pit(.e, .omitted, 4),
                                                      duration: _dur(1, 8),
                                                      isTied: false)],
                                             _dur(1, 8),
@@ -88,7 +88,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_decoration() throws {
         let symbols = try _matchSymbols("~")
 
-        #expect(symbols == [.decoration("~")])
+        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
     }
 
     @Test
@@ -106,7 +106,7 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try _matchSymbols("W", context: &ctx)
 
-        #expect(symbols == [.decoration("W")])
+        #expect(symbols == [.decoration(ABCDecoration(name: "trill", shorthand: "W"))])
     }
 
     @Test
@@ -120,7 +120,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_graceNotes() throws {
         let symbols = try _matchSymbols("{C}")
 
-        let expected: [ABCSymbol] = [.graceNotes(false, [ABCNote(pitch: _pit(.c, .natural, 4),
+        let expected: [ABCSymbol] = [.graceNotes(false, [ABCNote(pitch: _pit(.c, .omitted, 4),
                                                                  duration: _dur(1, 8),
                                                                  isTied: false)])]
 
@@ -161,7 +161,7 @@ extension ABCSymbolMatcherTests {
 
         if case let .note(note) = try #require(symbols.first) {
             #expect(note.pitch.letter == .f)
-            #expect(note.pitch.accidental == .natural)
+            #expect(note.pitch.accidental == .omitted)
         } else {
             Issue.record("Expected .note")
         }
@@ -171,7 +171,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_note_uppercase() throws {
         let symbols = try _matchSymbols("C")
 
-        let expected: [ABCSymbol] = [.note(ABCNote(pitch: _pit(.c, .natural, 4),
+        let expected: [ABCSymbol] = [.note(ABCNote(pitch: _pit(.c, .omitted, 4),
                                                    duration: _dur(1, 8),
                                                    isTied: false))]
 
@@ -231,7 +231,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_decoration_legacyPlusSyntax() throws {
         let symbols = try _matchSymbols("+trill+")
 
-        #expect(symbols == [.decoration("+trill+")])
+        #expect(symbols == [.decoration(ABCDecoration(name: "trill", shorthand: nil))])
     }
 
     @Test

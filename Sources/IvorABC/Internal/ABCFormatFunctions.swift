@@ -22,9 +22,6 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
     case let .composer(s):
         return try ("C", _validateString(s))
 
-    case let .continuation(s):
-        return try ("+", _validateString(s))
-
     case let .discography(s):
         return try ("D", _validateString(s))
 
@@ -101,10 +98,20 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
 internal func formatNote(_ note: ABCNote,
                          _ unitNoteLength: ABCDuration?,
                          _ meter: ABCTimeSignature?) -> String {
-    formatAccidental(note.pitch.accidental)
-        + formatPitchLetterOctave(note.pitch.letter, note.pitch.octave)
-        + _formatDurationSuffix(note.duration, unitNoteLength, meter)
-        + (note.isTied ? "-" : "")
+    var result = formatAccidental(note.pitch.accidental)
+
+    result += formatPitchLetterOctave(note.pitch.letter,
+                                      note.pitch.octave)
+
+    result += _formatDurationSuffix(note.duration,
+                                    unitNoteLength,
+                                    meter)
+
+    if note.isTied {
+        result += "-"
+    }
+
+    return result
 }
 
 internal func formatPitchLetterOctave(_ letter: ABCPitch.Letter,
@@ -131,6 +138,9 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .barRepeat(s):
         return s
 
+    case .beamBreak:
+        preconditionFailure("beamBreak must be handled by the caller")
+
     case let .brokenRhythm(s):
         return s
 
@@ -149,8 +159,8 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .chordSymbol(s):
         return "\"\(s)\""
 
-    case let .decoration(s):
-        return s
+    case let .decoration(d):
+        return d.shorthand.map(String.init) ?? "!\(d.name)!"
 
     case let .graceNotes(slash, notes):
         let noteStr = notes.map { note in
@@ -354,11 +364,17 @@ private func _formatAlignedLyrics(_ al: ABCAlignedLyrics) -> String {
                 result.append(" ")
             }
 
-            result.append(text.replacingOccurrences(of: " ", with: "~"))
+            result.append(text.replacingOccurrences(of: "%",
+                                                    with: "\\%")
+                             .replacingOccurrences(of: " ",
+                                                   with: "~"))
 
         case let .continuation(text):
             result.append("-")
-            result.append(text.replacingOccurrences(of: " ", with: "~"))
+            result.append(text.replacingOccurrences(of: "%",
+                                                    with: "\\%")
+                             .replacingOccurrences(of: " ",
+                                                   with: "~"))
 
         case .hold:
             if !result.isEmpty {
@@ -509,8 +525,8 @@ private func _formatSymbolLine(_ sl: ABCSymbolLine) -> String {
         case let .chordSymbol(s):
             return "\"\(s)\""
 
-        case let .decoration(s):
-            return s
+        case let .decoration(d):
+            return d.shorthand.map(String.init) ?? "!\(d.name)!"
 
         case .skip:
             return "*"
@@ -565,5 +581,8 @@ private func _validateString(_ string: String) throws -> String {
     guard !string.contains(where: { $0.isNewline })
     else { throw ABCFormatError.invalidStringArgument(string) }
 
-    return string
+    return string.contains("%")
+           ? string.replacingOccurrences(of: "%",
+                                         with: "\\%")
+           : string
 }

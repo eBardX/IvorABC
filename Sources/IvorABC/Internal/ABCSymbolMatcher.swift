@@ -30,12 +30,32 @@ extension ABCSymbolMatcher {
             }
         }
 
+        // Strip leading and trailing beam-break markers: whitespace at the
+        // edges of a music line carries no beam-grouping information.
+        while symbols.first == .beamBreak {
+            symbols.removeFirst()
+        }
+
+        while symbols.last == .beamBreak {
+            symbols.removeLast()
+        }
+
         return symbols
     }
 
     // MARK: Private Type Properties
 
-    private static let builtinShorthands: Set<Character> = [".", "~", "H", "L", "M", "O", "P", "S", "T", "u", "v"]
+    private static let builtinShorthandDecorations: [Character: String] = [".": "staccato",
+                                                                           "~": "roll",
+                                                                           "H": "fermata",
+                                                                           "L": "accent",
+                                                                           "M": "lowermordent",
+                                                                           "O": "coda",
+                                                                           "P": "uppermordent",
+                                                                           "S": "segno",
+                                                                           "T": "trill",
+                                                                           "u": "upbow",
+                                                                           "v": "downbow"]
 
     // MARK: Private Type Methods
 
@@ -54,8 +74,12 @@ extension ABCSymbolMatcher {
 
     private func _makePitch(_ result: ParsePitchResult) -> ABCPitch {
         ABCPitch(letter: result.letter,
-                 accidental: result.accidental ?? .natural,
+                 accidental: result.accidental ?? .omitted,
                  octave: result.octave)
+    }
+
+    private mutating func _matchBeamBreak() -> ABCSymbol? {
+        tokenMatcher.readIfMatches(.whitespace) != nil ? .beamBreak : nil
     }
 
     private mutating func _matchAnnotation() throws -> ABCSymbol? {
@@ -135,13 +159,17 @@ extension ABCSymbolMatcher {
         let value = token.value
 
         if value.count == 1,
-           let letter = value.first,
-           !Self.builtinShorthands.contains(letter),
-           !context.definedUserSymbols.contains(letter) {
-            throw ABCParseError.invalidSymbols(value)
+           let letter = value.first {
+            guard let name = context.userSymbolDecorations[letter]
+                  ?? Self.builtinShorthandDecorations[letter]
+            else { throw ABCParseError.invalidSymbols(value) }
+
+            return .decoration(ABCDecoration(name: name,
+                                             shorthand: letter))
         }
 
-        return .decoration(String(value))
+        return .decoration(ABCDecoration(name: String(value.dropFirst().dropLast()),
+                                         shorthand: nil))
     }
 
     private mutating func _matchGraceNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -214,13 +242,13 @@ extension ABCSymbolMatcher {
 
         switch result.kind {
         case "X",
-             "Z":
+            "Z":
             let count = result.duration?.numerator ?? 1
 
             rest = .multiMeasure(result.kind == "X", count)
 
         case "x",
-             "z":
+            "z":
             let duration = _makeDuration(result.duration, &context)
 
             rest = .regular(result.kind == "x", duration)
@@ -247,6 +275,10 @@ extension ABCSymbolMatcher {
     }
 
     private mutating func _matchSymbol(_ context: inout ABCParseContext) throws -> ABCSymbol? { // swiftlint:disable:this cyclomatic_complexity
+        if tokenMatcher.nextMatches(.whitespace) {
+            return _matchBeamBreak()
+        }
+
         if tokenMatcher.nextMatches(.annotation) {
             return try _matchAnnotation()
         }

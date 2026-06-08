@@ -14,9 +14,6 @@ public enum ABCField {
     /// A composer field (`C:`).
     case composer(String)
 
-    /// A field continuation (`+:`).
-    case continuation(String)
-
     /// A discography field (`D:`).
     case discography(String)
 
@@ -120,7 +117,6 @@ extension ABCField {
         case .area,
              .book,
              .composer,
-             .continuation,
              .discography,
              .fileURL,
              .group,
@@ -146,7 +142,6 @@ extension ABCField {
     public var isValidInTuneBody: Bool {
         switch self {
         case .alignedLyrics,
-             .continuation,
              .instruction,
              .key,
              .lyrics,
@@ -175,7 +170,6 @@ extension ABCField {
         case .area,
              .book,
              .composer,
-             .continuation,
              .discography,
              .fileURL,
              .group,

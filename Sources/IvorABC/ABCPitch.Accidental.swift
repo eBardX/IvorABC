@@ -17,6 +17,9 @@ extension ABCPitch {
 
         /// A double sharp (𝄪).
         case doubleSharp
+
+        /// No accidental was written in the source.
+        case omitted
     }
 }
 

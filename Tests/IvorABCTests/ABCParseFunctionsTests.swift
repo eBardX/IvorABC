@@ -11,10 +11,10 @@ struct ABCParseFunctionsTests {
 extension ABCParseFunctionsTests {
     @Test
     func normalize() {
-        #expect(IvorABC.normalize("  xyzzy  \\% keep  ") == "xyzzy \\% keep")
-        #expect(IvorABC.normalize("  xyzzy  \\% keep  % ignore  ") == "xyzzy \\% keep % ignore")
+        #expect(IvorABC.normalize("  xyzzy  \\% keep  ") == "xyzzy % keep")
+        #expect(IvorABC.normalize("  xyzzy  \\% keep  % ignore  ") == "xyzzy % keep % ignore")
         #expect(IvorABC.normalize("  xyzzy  % ignore  ") == "xyzzy % ignore")
-        #expect(IvorABC.normalize("  xyzzy  %ignore \\% keep  ") == "xyzzy %ignore \\% keep")
+        #expect(IvorABC.normalize("  xyzzy  %ignore \\% keep  ") == "xyzzy %ignore % keep")
     }
 
     @Test
@@ -54,7 +54,6 @@ extension ABCParseFunctionsTests {
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
         try expectFieldIsComposer(parseField("C:J.S. Bach"), "J.S. Bach")
-        try expectFieldIsContinuation(parseField("+:more text"), "more text")
         try expectFieldIsDiscography(parseField("D:Collected Works"), "Collected Works")
         try expectFieldIsFileURL(parseField("F:https://example.com"), "https://example.com")
         try expectFieldIsGroup(parseField("G:Reels"), "Reels")
@@ -74,13 +73,23 @@ extension ABCParseFunctionsTests {
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")
         try expectFieldIsSource(parseField("S:collected by ..."), "collected by ...")
         try expectFieldIsSymbolLine(parseField("s:!p! * * *"),
-                                    _sline([.decoration("!p!"), .skip, .skip, .skip]))
+                                    _sline([.decoration(ABCDecoration(name: "p")), .skip, .skip, .skip]))
         try expectFieldIsTempo(parseField("Q:1/4=120"))
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
         try expectFieldIsUserSymbol(parseField("U:~=!roll!"), _usym("~", "!roll!"))
         try expectFieldIsVoice(parseField("V:1"))
+    }
+
+    @Test
+    func parseField_alignedLyrics_decodesTextEscapes() throws {
+        try expectFieldIsAlignedLyrics(parseField("w:f\\'o"),
+                                       _alyrics([.syllable("fó")]))
+        try expectFieldIsAlignedLyrics(parseField("w:foo\\%bar"),
+                                       _alyrics([.syllable("foo%bar")]))
+        try expectFieldIsAlignedLyrics(parseField("w:A-m\\\"a-zing"),
+                                       _alyrics([.syllable("A"), .continuation("mä"), .continuation("zing")]))
     }
 
     @Test
@@ -275,14 +284,14 @@ extension ABCParseFunctionsTests {
         #expect(parseSymbolLine("") == _sline())
         #expect(parseSymbolLine("*") == _sline([.skip]))
         #expect(parseSymbolLine("**") == _sline([.skip, .skip]))
-        #expect(parseSymbolLine("!p!") == _sline([.decoration("!p!")]))
-        #expect(parseSymbolLine("!pp!") == _sline([.decoration("!pp!")]))
+        #expect(parseSymbolLine("!p!") == _sline([.decoration(ABCDecoration(name: "p"))]))
+        #expect(parseSymbolLine("!pp!") == _sline([.decoration(ABCDecoration(name: "pp"))]))
         #expect(parseSymbolLine("\"Am\"") == _sline([.chordSymbol("Am")]))
         #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation("^forte")]))
         #expect(parseSymbolLine("\"_text\"") == _sline([.annotation("_text")]))
-        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration("!p!"), .skip, .skip, .skip]))
-        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration("!pp!"), .skip, .decoration("!f!")]))
-        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration("!trill!")]))
+        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration(ABCDecoration(name: "p")), .skip, .skip, .skip]))
+        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration(ABCDecoration(name: "pp")), .skip, .decoration(ABCDecoration(name: "f"))]))
+        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration(ABCDecoration(name: "trill"))]))
         #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation("^p"), .chordSymbol("Am"), .skip]))
     }
 

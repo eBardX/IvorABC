@@ -163,20 +163,22 @@ extension ABCFormatterTests {
     }
 
     @Test
+    func field_stringField_escapesPercentSign() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                                         .field(.title("Foo % Bar")),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([])])])
+
+        #expect(try format(book).contains("T:Foo \\% Bar\n"))
+    }
+
+    @Test
     func field_key_emitsKField() throws {
         let output = try format(minimalTunebook())
 
         #expect(output.contains("K:C major\n"))
-    }
-
-    @Test
-    func field_continuation_emitsPlusField() throws {
-        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                               headers: [.field(.history("Line one")),
-                                         .field(.continuation("Line two"))],
-                               tunes: [])
-
-        #expect(try format(book).contains("+:Line two\n"))
     }
 
     @Test
@@ -934,6 +936,18 @@ extension ABCFormatterTests {
 
         #expect(try format(book).contains("w:long _\n"))
     }
+
+    @Test
+    func alignedLyrics_syllableWithPercent_escapesPercentSign() throws {
+        let lyrics = _alyrics([.syllable("100%"), .syllable("done")])
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .field(.alignedLyrics(lyrics))])])
+
+        #expect(try format(book).contains("w:100\\% done\n"))
+    }
 }
 
 // MARK: - Symbol line rendering
@@ -942,7 +956,7 @@ extension ABCFormatterTests {
 
     @Test
     func symbolLine_skip_emitsStar() throws {
-        let sl = _sline([.skip, .decoration("!trill!"), .skip])
+        let sl = _sline([.skip, .decoration(ABCDecoration(name: "trill")), .skip])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),

@@ -14,7 +14,7 @@ internal typealias ParseTupletResult = (pcount: UInt, qcount: UInt?, rcount: UIn
 // MARK: Internal Functions
 
 internal func normalize(_ input: Substring) -> String {
-    String(input).normalizedABCWhitespace()
+    unescape(String(input).normalizedABCWhitespace())
 }
 
 internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
@@ -151,9 +151,6 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     let (ntext, vtext, isInline) = try _splitField(tidyInput)
 
     switch ntext {
-    case "+":
-        return .continuation(normalize(vtext))
-
     case "A" where !isInline:
         return .area(normalize(vtext))
 
@@ -257,7 +254,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .lyrics(normalize(vtext))
 
     case "w" where !isInline:
-        return .alignedLyrics(parseAlignedLyrics(vtext))
+        return .alignedLyrics(parseAlignedLyrics(Substring(unescape(String(vtext)))))
 
     case "X" where !isInline:
         guard let rn = parseRefNumber(vtext)
@@ -482,7 +479,7 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
             else { return nil }
 
-            tokens.append(.decoration(String(input[...closeIdx])))
+            tokens.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]))))
 
             input = rest[rest.index(after: closeIdx)...]
 

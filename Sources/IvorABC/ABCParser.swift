@@ -1,4 +1,4 @@
-// © 2025–2026 John Gary Pusey (see LICENSE.md)
+// © 2026 John Gary Pusey (see LICENSE.md)
 
 public import Foundation
 
@@ -145,6 +145,63 @@ extension ABCParser {
         return tunes
     }
 
+    private func _mergeContinuation(_ text: String,
+                                    _ field: ABCField) -> ABCField? {
+        func joined(_ s: String) -> String {
+            s.isEmpty ? text : "\(s) \(text)"
+        }
+
+        switch field {
+        case let .area(s):
+            return .area(joined(s))
+
+        case let .book(s):
+            return .book(joined(s))
+
+        case let .composer(s):
+            return .composer(joined(s))
+
+        case let .discography(s):
+            return .discography(joined(s))
+
+        case let .fileURL(s):
+            return .fileURL(joined(s))
+
+        case let .group(s):
+            return .group(joined(s))
+
+        case let .history(s):
+            return .history(joined(s))
+
+        case let .lyrics(s):
+            return .lyrics(joined(s))
+
+        case let .notes(s):
+            return .notes(joined(s))
+
+        case let .origin(s):
+            return .origin(joined(s))
+
+        case let .remark(s):
+            return .remark(joined(s))
+
+        case let .rhythm(s):
+            return .rhythm(joined(s))
+
+        case let .source(s):
+            return .source(joined(s))
+
+        case let .title(s):
+            return .title(joined(s))
+
+        case let .transcription(s):
+            return .transcription(joined(s))
+
+        default:
+            return nil
+        }
+    }
+
     private func _parse(_ data: Data,
                         _ diagnostics: inout [ABCDiagnostic]) throws -> ABCTunebook {
         guard let input = String(data: data,
@@ -268,6 +325,13 @@ extension ABCParser {
               letter.isABCLetter || letter == "+",
               input.dropFirst().first == ":"
         else { return nil }
+
+        if letter == "+" {
+            let tidyInput = trimSuffix(uncomment(input))
+            let vtext = trim(tidyInput.dropFirst(2))
+
+            return .continuation(normalize(vtext))
+        }
 
         if letter == "I" {
             let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
@@ -401,6 +465,17 @@ extension ABCParser {
         var headers: [ABCHeader] = []
 
         while let line = reader.peek() {
+            if case let .continuation(text) = line {
+                if let lastIndex = headers.indices.last,
+                   case let .field(field) = headers[lastIndex],
+                   let merged = _mergeContinuation(text, field) {
+                    headers[lastIndex] = .field(merged)
+                }
+
+                reader.skip()
+                continue
+            }
+
             let result = _processHeaderLine(line)
 
             if result.empty {
@@ -457,6 +532,17 @@ extension ABCParser {
         var entries: [ABCEntry] = []
 
         while let line = reader.peek() {
+            if case let .continuation(text) = line {
+                if let lastIndex = entries.indices.last,
+                   case let .field(field) = entries[lastIndex],
+                   let merged = _mergeContinuation(text, field) {
+                    entries[lastIndex] = .field(merged)
+                }
+
+                reader.skip()
+                continue
+            }
+
             let result = try _processTuneLine(line, &diagnostics)
 
             if result.empty {

@@ -18,9 +18,7 @@ extension ABCSymbolLine {
         case chordSymbol(String)
 
         /// A decoration to apply to the corresponding note.
-        ///
-        /// The string includes the surrounding `!` delimiters.
-        case decoration(String)
+        case decoration(ABCDecoration)
 
         /// No decoration for the corresponding note.
         case skip

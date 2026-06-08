@@ -176,11 +176,11 @@ extension ABCParserTests {
 
         #expect(notes.count == 3)
         #expect(notes[0].pitch.letter == .c)
-        #expect(notes[0].pitch.accidental == .natural)
+        #expect(notes[0].pitch.accidental == .omitted)
         #expect(notes[1].pitch.letter == .f)
-        #expect(notes[1].pitch.accidental == .natural)
+        #expect(notes[1].pitch.accidental == .omitted)
         #expect(notes[2].pitch.letter == .g)
-        #expect(notes[2].pitch.accidental == .natural)
+        #expect(notes[2].pitch.accidental == .omitted)
     }
 
     @Test
@@ -209,11 +209,11 @@ extension ABCParserTests {
 
         #expect(notes.count == 3)
         #expect(notes[0].pitch.letter == .c)
-        #expect(notes[0].pitch.accidental == .natural)
+        #expect(notes[0].pitch.accidental == .omitted)
         #expect(notes[1].pitch.letter == .f)
-        #expect(notes[1].pitch.accidental == .natural)
+        #expect(notes[1].pitch.accidental == .omitted)
         #expect(notes[2].pitch.letter == .g)
-        #expect(notes[2].pitch.accidental == .natural)
+        #expect(notes[2].pitch.accidental == .omitted)
     }
 
     @Test
@@ -248,6 +248,125 @@ extension ABCParserTests {
         } else {
             Issue.record("Expected .symbols")
         }
+    }
+
+    @Test
+    func parse_fieldContinuation_mergesIntoField() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nH:First line\n+:Second line\nK:C\n|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+
+        let historyEntries = tune.entries.filter {
+            if case .field(.history) = $0 {
+                return true
+            }
+
+            return false
+        }
+
+        #expect(historyEntries.count == 1)
+
+        if case let .field(.history(text)) = historyEntries[0] {
+            #expect(text == "First line Second line")
+        } else {
+            Issue.record("Expected .field(.history)")
+        }
+    }
+
+    @Test
+    func parse_percentEscape_roundTrips() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Foo \\% Bar\nK:C\n|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+
+        let titleEntry = tune.entries.first {
+            if case .field(.title) = $0 {
+                return true
+            }
+
+            return false
+        }
+
+        if case let .field(.title(text)) = titleEntry {
+            #expect(text == "Foo % Bar")
+        } else {
+            Issue.record("Expected .field(.title)")
+        }
+
+        let formatter = ABCFormatter()
+        let outputData = try formatter.format(tunebook)
+        let output = try #require(String(data: outputData, encoding: .utf8))
+
+        #expect(output.contains("T:Foo \\% Bar\n"))
+    }
+
+    @Test
+    func parse_percentEscape_stripsCommentNormalizesWhitespace() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nH:  Foo  \\%    Bar   % This is a comment\nK:C\n|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+
+        let historyEntry = tune.entries.first {
+            if case .field(.history) = $0 {
+                return true
+            }
+
+            return false
+        }
+
+        if case let .field(.history(text)) = historyEntry {
+            #expect(text == "Foo % Bar")
+        } else {
+            Issue.record("Expected .field(.history)")
+        }
+
+        let formatter = ABCFormatter()
+        let outputData = try formatter.format(tunebook)
+        let output = try #require(String(data: outputData, encoding: .utf8))
+
+        #expect(output.contains("H:Foo \\% Bar\n"))
+    }
+
+    @Test
+    func parse_alignedLyrics_textEscapes_roundTrip() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nK:C\nCDEF|\nw:f\\'o \\\"u-zy foo\\%bar\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        let tunebook = try parser.parse(data)
+        let tune = try #require(tunebook.tunes.first)
+
+        let lyricsEntry = tune.entries.first {
+            if case .field(.alignedLyrics) = $0 {
+                return true
+            }
+
+            return false
+        }
+
+        if case let .field(.alignedLyrics(al)) = lyricsEntry {
+            #expect(al == _alyrics([.syllable("fó"),
+                                    .syllable("ü"),
+                                    .continuation("zy"),
+                                    .syllable("foo%bar")]))
+        } else {
+            Issue.record("Expected .field(.alignedLyrics)")
+        }
+
+        let formatter = ABCFormatter()
+        let outputData = try formatter.format(tunebook)
+        let output = try #require(String(data: outputData, encoding: .utf8))
+
+        #expect(output.contains("w:fó ü-zy foo\\%bar\n"))
     }
 
     @Test

@@ -11,19 +11,19 @@ struct ABCPitchTests {
 extension ABCPitchTests {
     @Test
     func equality() {
-        let a = ABCPitch(letter: .c, accidental: .natural, octave: 4)
-        let b = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let a = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
+        let b = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let base = ABCPitch(letter: .c, accidental: .natural, octave: 4)
+        let base = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
 
-        #expect(base != ABCPitch(letter: .d, accidental: .natural, octave: 4))
+        #expect(base != ABCPitch(letter: .d, accidental: .omitted, octave: 4))
         #expect(base != ABCPitch(letter: .c, accidental: .sharp, octave: 4))
-        #expect(base != ABCPitch(letter: .c, accidental: .natural, octave: 5))
+        #expect(base != ABCPitch(letter: .c, accidental: .omitted, octave: 5))
     }
 
     @Test
