@@ -11,7 +11,9 @@ struct ABCSymbolTests {
 extension ABCSymbolTests {
     @Test
     func equality_annotation() {
-        #expect(ABCSymbol.annotation("^Allegro") == .annotation("^Allegro"))
+        let a = ABCAnnotation(position: .above, text: "Allegro")
+
+        #expect(ABCSymbol.annotation(a) == .annotation(a))
     }
 
     @Test
@@ -89,20 +91,23 @@ extension ABCSymbolTests {
 
     @Test
     func equality_tuplet() {
-        #expect(ABCSymbol.tuplet(3, 2, 3) == .tuplet(3, 2, 3))
+        let t = ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3)
+
+        #expect(ABCSymbol.tuplet(t) == .tuplet(t))
     }
 
     @Test
     func equality_variantEnding() {
-        #expect(ABCSymbol.variantEnding("1") == .variantEnding("1"))
+        #expect(ABCSymbol.variantEnding(ABCVariantEnding(endings: [1...1])) == .variantEnding(ABCVariantEnding(endings: [1...1])))
     }
 
     @Test
     func inequality() {
-        #expect(ABCSymbol.annotation("foo") != .annotation("bar"))
-        #expect(ABCSymbol.annotation("foo") != .chordSymbol("foo"))
+        #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .annotation(ABCAnnotation(position: .below, text: "foo")))
+        #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .chordSymbol("foo"))
         #expect(ABCSymbol.overlay != .slur("("))
-        #expect(ABCSymbol.tuplet(3, 2, 3) != .tuplet(3, 2, 4))
+        #expect(ABCSymbol.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3))
+                    != .tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 4)))
     }
 }
 

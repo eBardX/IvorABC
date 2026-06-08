@@ -434,15 +434,10 @@ extension ABCParser {
     }
 
     private func _parseVersion(_ tidyInput: Substring) throws -> ABCVersion {
-        let result = tidyInput.splitBeforeFirst(".")
-
-        guard let major = UInt(result.head),
-              let mtext = result.tail?.dropFirst(),
-              let minor = UInt(mtext)
+        guard let version = ABCVersion(stringValue: tidyInput)
         else { throw ABCParseError.invalidVersion(tidyInput) }
 
-        return ABCVersion(major: major,
-                          minor: minor)
+        return version
     }
 
     private func _processHeaderLine(_ line: Line) -> (header: ABCHeader?, empty: Bool) {

@@ -42,8 +42,9 @@ extension ABCSymbolLineTests {
 
     @Test
     func tokens_mixed() {
-        let sl = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation("^forte")])
+        let a = ABCAnnotation(position: .above, text: "forte")
+        let sl = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
 
-        #expect(sl.tokens == [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation("^forte")])
+        #expect(sl.tokens == [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
     }
 }

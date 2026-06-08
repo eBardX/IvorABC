@@ -491,8 +491,8 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
 
             let content = String(rest[..<closeIdx])
 
-            if let first = content.first, "_@^<>".contains(first) {
-                tokens.append(.annotation(content))
+            if let annotation = ABCAnnotation(stringValue: content) {
+                tokens.append(.annotation(annotation))
             } else {
                 tokens.append(.chordSymbol(content))
             }

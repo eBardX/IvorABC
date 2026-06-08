@@ -34,7 +34,7 @@ extension ABCFormatter.Writer {
     // MARK: Internal Instance Methods
 
     internal mutating func writeTunebook() throws -> Data {
-        buffer.append("%abc-\(tunebook.version.major).\(tunebook.version.minor)\n")
+        buffer.append("%abc-\(tunebook.version.stringValue)\n")
 
         try _writeFileHeaders()
 

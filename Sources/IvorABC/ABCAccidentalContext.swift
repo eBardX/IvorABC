@@ -4,10 +4,10 @@
 /// accounting for the active key signature and accidentals set earlier
 /// in the current bar.
 ///
-/// Usage mirrors ``ABCSymbol/resolveTuplet(meter:)``: create a context
-/// for the current key signature, call ``resolveAccidental(for:)`` to
-/// query a note's effective accidental, ``update(with:)`` after each note
-/// to record any written accidental into the bar state, and ``reset()``
+/// Usage mirrors ``ABCTuplet/resolve(meter:)``: create a context for the
+/// current key signature, call ``resolveAccidental(for:)`` to query a
+/// note's effective accidental, ``update(with:)`` after each note to
+/// record any written accidental into the bar state, and ``reset()``
 /// whenever a bar line is crossed.
 ///
 /// ```swift

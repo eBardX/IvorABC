@@ -7,10 +7,7 @@ extension ABCSymbolLine {
     /// A single positional token in a symbol line.
     public enum Token {
         /// An annotation to attach to the corresponding note.
-        ///
-        /// The string includes the positioning prefix (`^`, `_`, `@`, `<`, `>`)
-        /// but not the surrounding quotes.
-        case annotation(String)
+        case annotation(ABCAnnotation)
 
         /// A chord symbol to attach to the corresponding note.
         ///

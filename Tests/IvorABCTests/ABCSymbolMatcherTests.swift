@@ -210,21 +210,21 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_tuplet_pOnly() throws {
         let symbols = try _matchSymbols("(3")
 
-        #expect(symbols == [.tuplet(3, nil, nil)])
+        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3))])
     }
 
     @Test
     func matchSymbols_tuplet_pAndQ() throws {
         let symbols = try _matchSymbols("(3:2")
 
-        #expect(symbols == [.tuplet(3, 2, nil)])
+        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2))])
     }
 
     @Test
     func matchSymbols_tuplet_pQAndR() throws {
         let symbols = try _matchSymbols("(3:2:4")
 
-        #expect(symbols == [.tuplet(3, 2, 4)])
+        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 4))])
     }
 
     @Test
@@ -252,7 +252,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_variantEnding() throws {
         let symbols = try _matchSymbols("[1")
 
-        #expect(symbols == [.variantEnding("[1")])
+        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...1]))])
     }
 
     @Test

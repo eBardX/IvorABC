@@ -96,8 +96,12 @@ extension ABCSymbolMatcher {
 
     private mutating func _matchAnnotation() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.annotation)
+        let stripped = token.value.dropFirst().dropLast()
 
-        return .annotation(String(token.value.dropFirst().dropLast()))
+        guard let annotation = ABCAnnotation(stringValue: stripped)
+        else { throw ABCParseError.invalidSymbols(token.value) }
+
+        return .annotation(annotation)
     }
 
     private mutating func _matchBarRepeat() throws -> ABCSymbol? {
@@ -415,16 +419,19 @@ extension ABCSymbolMatcher {
     private mutating func _matchTuplet() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.tuplet)
 
-        guard let result = parseTuplet(token.value)
+        guard let tuplet = ABCTuplet(stringValue: token.value)
         else { throw ABCParseError.invalidTuplet(token.value) }
 
-        return .tuplet(result.pcount, result.qcount, result.rcount)
+        return .tuplet(tuplet)
     }
 
     private mutating func _matchVariantEnding() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.variantEnding)
 
-        return .variantEnding(String(token.value))
+        guard let variantEnding = ABCVariantEnding(stringValue: token.value)
+        else { throw ABCParseError.invalidSymbols(token.value) }
+
+        return .variantEnding(variantEnding)
     }
 
     private func _transposedTriggerKey(_ decorValue: String,

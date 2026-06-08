@@ -287,12 +287,12 @@ extension ABCParseFunctionsTests {
         #expect(parseSymbolLine("!p!") == _sline([.decoration(ABCDecoration(name: "p"))]))
         #expect(parseSymbolLine("!pp!") == _sline([.decoration(ABCDecoration(name: "pp"))]))
         #expect(parseSymbolLine("\"Am\"") == _sline([.chordSymbol("Am")]))
-        #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation("^forte")]))
-        #expect(parseSymbolLine("\"_text\"") == _sline([.annotation("_text")]))
+        #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation(ABCAnnotation(position: .above, text: "forte"))]))
+        #expect(parseSymbolLine("\"_text\"") == _sline([.annotation(ABCAnnotation(position: .below, text: "text"))]))
         #expect(parseSymbolLine("!p! * * *") == _sline([.decoration(ABCDecoration(name: "p")), .skip, .skip, .skip]))
         #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration(ABCDecoration(name: "pp")), .skip, .decoration(ABCDecoration(name: "f"))]))
         #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration(ABCDecoration(name: "trill"))]))
-        #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation("^p"), .chordSymbol("Am"), .skip]))
+        #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation(ABCAnnotation(position: .above, text: "p")), .chordSymbol("Am"), .skip]))
     }
 
     @Test

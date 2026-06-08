@@ -670,21 +670,21 @@ extension ABCFormatterTests {
 
     @Test
     func tuplet_pOnly_emitsBareP() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(3, nil, nil)]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(noteCount: 3))]))
 
         #expect(output.contains("(3\n"))
     }
 
     @Test
     func tuplet_pAndQ_emitsPQ() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(3, 2, nil)]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2))]))
 
         #expect(output.contains("(3:2\n"))
     }
 
     @Test
     func tuplet_pQAndR_emitsFullForm() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(3, 2, 3)]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3))]))
 
         #expect(output.contains("(3:2:3\n"))
     }
@@ -736,10 +736,10 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func variantEnding_emitsVerbatim() throws {
-        let output = try format(minimalTunebook(symbols: [.variantEnding("|1")]))
+    func variantEnding_emitsBracketForm() throws {
+        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding(endings: [1...1]))]))
 
-        #expect(output.contains("|1\n"))
+        #expect(output.contains("[1\n"))
     }
 }
 

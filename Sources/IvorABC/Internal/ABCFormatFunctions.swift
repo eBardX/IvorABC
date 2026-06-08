@@ -132,17 +132,17 @@ internal func formatSymbol(_ symbol: ABCSymbol,
                            _ unitNoteLength: ABCDuration?,
                            _ meter: ABCTimeSignature?) throws -> String {
     switch symbol {
-    case let .annotation(s):
-        return "\"\(s)\""
+    case let .annotation(ann):
+        return "\"\(ann.stringValue)\""
 
-    case let .barRepeat(s):
-        return s
+    case let .barRepeat(br):
+        return br
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
 
-    case let .brokenRhythm(s):
-        return s
+    case let .brokenRhythm(br):
+        return br
 
     case let .chord(notes, dur, isTied):
         let noteStr = notes.map { note in
@@ -156,11 +156,11 @@ internal func formatSymbol(_ symbol: ABCSymbol,
             + _formatDurationSuffix(dur, unitNoteLength, meter)
             + (isTied ? "-" : "")
 
-    case let .chordSymbol(s):
-        return "\"\(s)\""
+    case let .chordSymbol(cs):
+        return "\"\(cs)\""
 
-    case let .decoration(d):
-        return d.shorthand.map(String.init) ?? "!\(d.name)!"
+    case let .decoration(dec):
+        return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
 
     case let .graceNotes(slash, notes):
         let noteStr = notes.map { note in
@@ -172,22 +172,22 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
         return "{\(slash ? "/" : "")\(noteStr)}"
 
-    case let .inlineField(f):
-        let (letter, value) = try formatFieldContent(f)
+    case let .inlineField(ifld):
+        let (letter, value) = try formatFieldContent(ifld)
 
         return "[\(letter):\(value)]"
 
-    case let .macroCall(call):
-        return call.trigger
+    case let .macroCall(mc):
+        return mc.trigger
 
-    case let .note(n):
-        return formatNote(n, unitNoteLength, meter)
+    case let .note(nt):
+        return formatNote(nt, unitNoteLength, meter)
 
     case .overlay:
         return "&"
 
-    case let .rest(r):
-        switch r {
+    case let .rest(rst):
+        switch rst {
         case let .multiMeasure(inv, count):
             let letter = inv ? "X" : "Z"
 
@@ -199,27 +199,17 @@ internal func formatSymbol(_ symbol: ABCSymbol,
             return "\(letter)\(_formatDurationSuffix(dur, unitNoteLength, meter))"
         }
 
-    case let .slur(s):
-        return s
+    case let .slur(sl):
+        return sl
 
     case let .spacer(dur):
         return "y\(_formatDurationSuffix(dur, unitNoteLength, meter))"
 
-    case let .tuplet(p, q, r):
-        var result = "(\(p)"
+    case let .tuplet(tup):
+        return tup.stringValue
 
-        if let q {
-            result += ":\(q)"
-
-            if let r {
-                result += ":\(r)"
-            }
-        }
-
-        return result
-
-    case let .variantEnding(s):
-        return s
+    case let .variantEnding(ve):
+        return ve.stringValue
     }
 }
 
@@ -522,14 +512,14 @@ private func _formatPartSequence(_ ps: ABCPartSequence) -> String {
 private func _formatSymbolLine(_ sl: ABCSymbolLine) -> String {
     sl.tokens.map { token -> String in
         switch token {
-        case let .annotation(s):
-            return "\"\(s)\""
+        case let .annotation(ann):
+            return "\"\(ann.stringValue)\""
 
-        case let .chordSymbol(s):
-            return "\"\(s)\""
+        case let .chordSymbol(cs):
+            return "\"\(cs)\""
 
-        case let .decoration(d):
-            return d.shorthand.map(String.init) ?? "!\(d.name)!"
+        case let .decoration(dec):
+            return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
 
         case .skip:
             return "*"
