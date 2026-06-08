@@ -254,4 +254,110 @@ extension ABCSymbolMatcherTests {
 
         #expect(symbols == [.variantEnding("[1")])
     }
+
+    @Test
+    func matchSymbols_macroCall_static() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(ABCMacro(trigger: "~G2", replacement: "{A}G{F}G")))
+
+        let symbols = try _matchSymbols("~G2", context: &ctx)
+
+        let graceA = ABCNote(pitch: _pit(.a, .omitted, 4), duration: _dur(1, 8), isTied: false)
+        let graceF = ABCNote(pitch: _pit(.f, .omitted, 4), duration: _dur(1, 8), isTied: false)
+        let noteG  = ABCNote(pitch: _pit(.g, .omitted, 4), duration: _dur(1, 8), isTied: false)
+
+        let expansion: [ABCSymbol] = [.graceNotes(false, [graceA]),
+                                      .note(noteG),
+                                      .graceNotes(false, [graceF]),
+                                      .note(noteG)]
+
+        #expect(symbols == [.macroCall(ABCMacroCall(trigger: "~G2",
+                                                    expansion: expansion))])
+    }
+
+    @Test
+    func matchSymbols_macroCall_transposing() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(ABCMacro(trigger: "~n", replacement: "!trill!n")))
+
+        let symbols = try _matchSymbols("~G", context: &ctx)
+
+        let expansion: [ABCSymbol] = [.decoration(ABCDecoration(name: "trill", shorthand: nil)),
+                                      .note(ABCNote(pitch: _pit(.g, .omitted, 4),
+                                                    duration: _dur(1, 8),
+                                                    isTied: false))]
+
+        #expect(symbols == [.macroCall(ABCMacroCall(trigger: "~G",
+                                                    expansion: expansion))])
+    }
+
+    @Test
+    func matchSymbols_macroCall_longestTriggerWins() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(ABCMacro(trigger: "~G", replacement: "!trill!G")))
+        ctx.update(with: .macro(ABCMacro(trigger: "~G2", replacement: "{A}G{F}G")))
+
+        let symbols = try _matchSymbols("~G2", context: &ctx)
+
+        guard case let .macroCall(call) = try #require(symbols.first) else {
+            Issue.record("Expected .macroCall")
+            return
+        }
+
+        #expect(call.trigger == "~G2")
+    }
+
+    @Test
+    func matchSymbols_macroCall_inlineFieldUpdate() throws {
+        var ctx = ABCParseContext()
+
+        let symbols = try _matchSymbols("[m:~n=!trill!n]~G", context: &ctx)
+
+        guard case .inlineField = try #require(symbols.first) else {
+            Issue.record("Expected .inlineField first")
+            return
+        }
+
+        guard case let .macroCall(call) = try #require(symbols.dropFirst().first) else {
+            Issue.record("Expected .macroCall after inline field")
+            return
+        }
+
+        #expect(call.trigger == "~G")
+        #expect(!call.expansion.isEmpty)
+    }
+
+    @Test
+    func matchSymbols_macroCall_roundTrip() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(ABCMacro(trigger: "~G2", replacement: "{A}G{F}G")))
+
+        let symbols = try _matchSymbols("~G2", context: &ctx)
+
+        let formatted = try symbols.map { try formatSymbol($0, _dur(1, 8), nil) }.joined()
+
+        #expect(formatted == "~G2")
+    }
+
+    @Test
+    func matchSymbols_macroCall_noMatchFallsThroughToDecoration() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(ABCMacro(trigger: "~A", replacement: "!trill!A")))
+
+        let symbols = try _matchSymbols("~", context: &ctx)
+
+        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
+    }
+
+    @Test
+    func matchSymbols_macroCall_noMacrosFallsThroughToDecoration() throws {
+        let symbols = try _matchSymbols("~")
+
+        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
+    }
 }

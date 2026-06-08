@@ -55,6 +55,12 @@ public enum ABCSymbol {
     /// An inline field.
     case inlineField(ABCField)
 
+    /// A macro call.
+    ///
+    /// The associated ``ABCMacroCall`` stores the verbatim trigger text for
+    /// round-trip fidelity and the pre-parsed expansion for semantic consumers.
+    case macroCall(ABCMacroCall)
+
     /// A note.
     case note(ABCNote)
 

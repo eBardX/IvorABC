@@ -177,6 +177,9 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
         return "[\(letter):\(value)]"
 
+    case let .macroCall(call):
+        return call.trigger
+
     case let .note(n):
         return formatNote(n, unitNoteLength, meter)
 

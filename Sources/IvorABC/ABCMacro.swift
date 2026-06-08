@@ -5,25 +5,26 @@
 /// Maps a trigger pattern to a replacement string, for example:
 /// ```
 /// m: ~G2 = {A}G{F}G
-/// m: ~n = !n!
+/// m: ~n = !trill!n
 /// ```
 ///
-/// Macros are stored verbatim and are **not** expanded during parsing.
-/// Static and transposing macro variants are not distinguished.
-/// Callers that need macro expansion must implement it themselves using
-/// the `trigger` and `replacement` strings.
+/// When a macro trigger is matched in the tune body the parser emits an
+/// ``ABCSymbol/macroCall(_:)`` symbol whose ``ABCMacroCall`` carries the
+/// concrete trigger text and the pre-parsed expansion. The `ABCMacro`
+/// definition itself is preserved in ``ABCField/macro(_:)``.
 public struct ABCMacro {
 
     // MARK: Public Initializers
 
     /// Creates a new macro definition.
     ///
-    /// - Parameter trigger:     The trigger pattern (left-hand side of `=`).
-    /// - Parameter replacement: The replacement string (right-hand side of `=`).
+    /// - Parameters:
+    ///   - trigger:     The trigger pattern (left-hand side of `=`).
+    ///   - replacement: The replacement string (right-hand side of `=`).
     public init(trigger: String,
                 replacement: String) {
-        self.trigger = trigger
         self.replacement = replacement
+        self.trigger = trigger
     }
 
     // MARK: Public Instance Properties

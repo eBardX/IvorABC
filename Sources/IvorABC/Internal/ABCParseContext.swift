@@ -7,6 +7,7 @@ internal struct ABCParseContext {
     internal init() {
         self.accidentalsInKey = [:]
         self.isCompoundMeter = false
+        self.macros = [:]
         self.userSymbolDecorations = [:]
     }
 
@@ -14,6 +15,7 @@ internal struct ABCParseContext {
 
     internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
     internal var isCompoundMeter: Bool
+    internal var macros: [String: ABCMacro]
     internal var userSymbolDecorations: [Character: String]
 
     internal var baseDuration: ABCDuration {
@@ -36,6 +38,9 @@ extension ABCParseContext {
         switch field {
         case let .key(keySignature):
             accidentalsInKey = keySignature.keyAccidentals
+
+        case let .macro(m):
+            macros[m.trigger] = m
 
         case let .meter(timeSignature):
             durationFromMeter = Self._determineDuration(from: timeSignature)
