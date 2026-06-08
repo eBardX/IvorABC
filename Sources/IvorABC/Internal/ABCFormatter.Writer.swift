@@ -38,12 +38,14 @@ extension ABCFormatter.Writer {
 
         try _writeFileHeaders()
 
+        let autoRefs = _computeAutoRefNumbers()
+
         for (index, tune) in tunebook.tunes.enumerated() {
             if index > 0 {
                 buffer.append("\n")
             }
 
-            try _writeTune(tune)
+            try _writeTune(tune, autoRefs[index])
         }
 
         guard let data = buffer.data(using: .utf8)
@@ -53,6 +55,42 @@ extension ABCFormatter.Writer {
     }
 
     // MARK: Private Instance Methods
+
+    private func _computeAutoRefNumbers() -> [Int: ABCRefNumber] {
+        var usedNumbers = Set<UInt>()
+
+        for tune in tunebook.tunes {
+            for entry in tune.entries {
+                if case let .field(.refNumber(rn)) = entry {
+                    usedNumbers.insert(rn.uintValue)
+                }
+            }
+        }
+
+        var result: [Int: ABCRefNumber] = [:]
+        var nextCandidate: UInt = 1
+
+        for (index, tune) in tunebook.tunes.enumerated() {
+            let hasRefNumber = tune.entries.contains {
+                if case .field(.refNumber) = $0 {
+                    return true
+                }
+                return false
+            }
+
+            guard !hasRefNumber else { continue }
+
+            while usedNumbers.contains(nextCandidate) {
+                nextCandidate += 1
+            }
+
+            result[index] = ABCRefNumber(uintValue: nextCandidate)
+            usedNumbers.insert(nextCandidate)
+            nextCandidate += 1
+        }
+
+        return result
+    }
 
     private mutating func _writeDirective(_ directive: ABCDirective) {
         if let content = directive.content {
@@ -159,9 +197,16 @@ extension ABCFormatter.Writer {
         buffer.append("\n")
     }
 
-    private mutating func _writeTune(_ tune: ABCTune) throws {
+    private mutating func _writeTune(_ tune: ABCTune,
+                                     _ autoRefNumber: ABCRefNumber?) throws {
         var seenRefNumber = false
         var seenKey = false
+
+        if let rn = autoRefNumber {
+            try _writeField(.refNumber(rn))
+
+            seenRefNumber = true
+        }
 
         for entry in tune.entries {
             switch entry {

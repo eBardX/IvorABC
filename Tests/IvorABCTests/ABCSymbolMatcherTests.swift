@@ -256,6 +256,54 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
+    func matchSymbols_variantEnding_range() throws {
+        let symbols = try _matchSymbols("[1-3")
+
+        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...3]))])
+    }
+
+    @Test
+    func matchSymbols_variantEnding_list() throws {
+        let symbols = try _matchSymbols("[1,3")
+
+        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...1, 3...3]))])
+    }
+
+    @Test
+    func matchSymbols_brokenRhythm_doubleRight() throws {
+        let symbols = try _matchSymbols(">>")
+
+        #expect(symbols == [.brokenRhythm(">>")])
+    }
+
+    @Test
+    func matchSymbols_brokenRhythm_left() throws {
+        let symbols = try _matchSymbols("<")
+
+        #expect(symbols == [.brokenRhythm("<")])
+    }
+
+    @Test
+    func matchSymbols_slur_close() throws {
+        let symbols = try _matchSymbols(")")
+
+        #expect(symbols == [.slur(")")])
+    }
+
+    @Test
+    func matchSymbols_beamBreak_spaceSeparated_producesBeamBreakSymbol() throws {
+        let symbols = try _matchSymbols("C D")
+
+        #expect(symbols == [.note(ABCNote(pitch: _pit(.c, .omitted, 4),
+                                          duration: _dur(1, 8),
+                                          isTied: false)),
+                            .beamBreak,
+                            .note(ABCNote(pitch: _pit(.d, .omitted, 4),
+                                          duration: _dur(1, 8),
+                                          isTied: false))])
+    }
+
+    @Test
     func matchSymbols_macroCall_static() throws {
         var ctx = ABCParseContext()
 
@@ -302,7 +350,8 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try _matchSymbols("~G2", context: &ctx)
 
-        guard case let .macroCall(call) = try #require(symbols.first) else {
+        guard case let .macroCall(call) = try #require(symbols.first)
+        else {
             Issue.record("Expected .macroCall")
             return
         }
@@ -316,12 +365,14 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try _matchSymbols("[m:~n=!trill!n]~G", context: &ctx)
 
-        guard case .inlineField = try #require(symbols.first) else {
+        guard case .inlineField = try #require(symbols.first)
+        else {
             Issue.record("Expected .inlineField first")
             return
         }
 
-        guard case let .macroCall(call) = try #require(symbols.dropFirst().first) else {
+        guard case let .macroCall(call) = try #require(symbols.dropFirst().first)
+        else {
             Issue.record("Expected .macroCall after inline field")
             return
         }

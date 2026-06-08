@@ -1,5 +1,7 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+// swiftlint:disable file_length
+
 internal import Foundation
 
 // MARK: Internal Functions
@@ -49,6 +51,20 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return try ("m", _validateString("\(m.trigger)=\(m.replacement)"))
 
     case let .meter(ts):
+        switch ts {
+        case let .explicit(fraction):
+            guard isPowerOfTwo(fraction.denominator)
+            else { throw ABCFormatError.invalidTimeSignature(ts) }
+
+        case let .complex(nums, den):
+            guard !nums.isEmpty,
+                  isPowerOfTwo(den)
+            else { throw ABCFormatError.invalidTimeSignature(ts) }
+
+        default:
+            break
+        }
+
         return ("M", _formatMeter(ts))
 
     case let .notes(s):
@@ -85,12 +101,18 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return try ("Z", _validateString(s))
 
     case let .unitNoteLength(dur):
+        guard isPowerOfTwo(dur.denominator)
+        else { throw ABCFormatError.invalidUnitNoteLength(dur) }
+
         return ("L", "\(dur.numerator)/\(dur.denominator)")
 
     case let .userSymbol(us):
         return ("U", "\(us.symbol)=\(us.decoration)")
 
     case let .voice(v):
+        guard !v.id.isEmpty
+        else { throw ABCFormatError.emptyVoiceID }
+
         return ("V", _formatVoice(v))
     }
 }
@@ -136,41 +158,42 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return "\"\(ann.stringValue)\""
 
     case let .barRepeat(br):
+        let validChars: Set<Character> = ["|", ":", "[", "]"]
+
+        guard !br.isEmpty,
+              br.allSatisfy({ validChars.contains($0) })
+        else { throw ABCFormatError.invalidBarRepeat(br) }
+
         return br
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
 
     case let .brokenRhythm(br):
+        guard !br.isEmpty,
+              br.count <= 3,
+              let first = br.first,
+              first == ">" || first == "<",
+              br.allSatisfy({ $0 == first })
+        else { throw ABCFormatError.invalidBrokenRhythm(br) }
+
         return br
 
     case let .chord(notes, dur, isTied):
-        let noteStr = notes.map { note in
-            formatAccidental(note.pitch.accidental)
-                + formatPitchLetterOctave(note.pitch.letter, note.pitch.octave)
-                + _formatDurationSuffix(note.duration, unitNoteLength, meter)
-                + (note.isTied ? "-" : "")
-        }.joined()
-
-        return "[\(noteStr)]"
-            + _formatDurationSuffix(dur, unitNoteLength, meter)
-            + (isTied ? "-" : "")
+        return try _formatChord(notes, dur, isTied, unitNoteLength, meter)
 
     case let .chordSymbol(cs):
         return "\"\(cs)\""
 
     case let .decoration(dec):
+        guard !dec.name.isEmpty,
+              !dec.name.contains("!")
+        else { throw ABCFormatError.invalidDecorationName(dec.name) }
+
         return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
 
     case let .graceNotes(slash, notes):
-        let noteStr = notes.map { note in
-            formatAccidental(note.pitch.accidental)
-                + formatPitchLetterOctave(note.pitch.letter, note.pitch.octave)
-                + _formatDurationSuffix(note.duration, unitNoteLength, meter)
-                + (note.isTied ? "-" : "")
-        }.joined()
-
-        return "{\(slash ? "/" : "")\(noteStr)}"
+        return try _formatGraceNotes(slash, notes, unitNoteLength, meter)
 
     case let .inlineField(ifld):
         let (letter, value) = try formatFieldContent(ifld)
@@ -181,6 +204,9 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return mc.trigger
 
     case let .note(nt):
+        guard nt.duration.numerator > 0
+        else { throw ABCFormatError.invalidDuration(nt.duration) }
+
         return formatNote(nt, unitNoteLength, meter)
 
     case .overlay:
@@ -188,30 +214,50 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
     case let .rest(rst):
         switch rst {
-        case let .multiMeasure(inv, count):
+        case let .multiMeasure(inv, measureCount):
+            guard measureCount > 0
+            else { throw ABCFormatError.invalidMultiMeasureRestCount }
+
             let letter = inv ? "X" : "Z"
 
-            return count == 1 ? letter : "\(letter)\(count)"
+            return measureCount == 1 ? letter : "\(letter)\(measureCount)"
 
         case let .regular(inv, dur):
+            guard dur.numerator > 0
+            else { throw ABCFormatError.invalidDuration(dur) }
+
             let letter = inv ? "x" : "z"
 
             return "\(letter)\(_formatDurationSuffix(dur, unitNoteLength, meter))"
         }
 
     case let .slur(sl):
+        guard sl == "(" || sl == ")"
+        else { throw ABCFormatError.invalidSlur(sl) }
+
         return sl
 
     case let .spacer(dur):
+        guard dur.numerator > 0
+        else { throw ABCFormatError.invalidDuration(dur) }
+
         return "y\(_formatDurationSuffix(dur, unitNoteLength, meter))"
 
     case let .tuplet(tup):
+        guard tup.noteCount > 0
+        else { throw ABCFormatError.invalidTupletNoteCount }
+
         return tup.stringValue
 
     case let .variantEnding(ve):
+        guard !ve.endings.isEmpty
+        else { throw ABCFormatError.emptyVariantEnding }
+
         return ve.stringValue
     }
 }
+
+// MARK: Private Functions
 
 // MARK: Private Constants
 
@@ -315,38 +361,6 @@ private func _effectiveBase(_ unitNoteLength: ABCDuration?,
                        reduce: false)
 }
 
-private func _formatDurationSuffix(_ stored: ABCDuration,
-                                   _ unitNoteLength: ABCDuration?,
-                                   _ meter: ABCTimeSignature?) -> String {
-    let base = _effectiveBase(unitNoteLength, meter)
-    let mn = stored.numerator * base.denominator
-    let md = stored.denominator * base.numerator
-    let reduced = ABCFraction(numerator: mn,
-                              denominator: md,
-                              reduce: true)
-    let rn = reduced.numerator
-    let rd = reduced.denominator
-
-    if rn == 1, rd == 1 {
-        return ""
-    }
-
-    if rd == 1 {
-        return "\(rn)"
-    }
-
-    if rn == 1 {
-        if isPowerOfTwo(rd) {
-            return String(repeating: "/",
-                          count: log2Integer(rd))
-        } else {
-            return "/\(rd)"
-        }
-    }
-
-    return "\(rn)/\(rd)"
-}
-
 private func _formatAlignedLyrics(_ al: ABCAlignedLyrics) -> String {
     var result = ""
 
@@ -395,6 +409,38 @@ private func _formatAlignedLyrics(_ al: ABCAlignedLyrics) -> String {
     return result
 }
 
+private func _formatChord(_ notes: [ABCNote],
+                          _ dur: ABCDuration,
+                          _ isTied: Bool,
+                          _ unitNoteLength: ABCDuration?,
+                          _ meter: ABCTimeSignature?) throws -> String {
+    guard !notes.isEmpty
+    else { throw ABCFormatError.emptyChord }
+
+    guard dur.numerator > 0
+    else { throw ABCFormatError.invalidDuration(dur) }
+
+    for note in notes {
+        guard note.duration.numerator > 0
+        else { throw ABCFormatError.invalidDuration(note.duration) }
+    }
+
+    var result = "["
+
+    result += notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+
+    result += "]"
+
+    result += _formatDurationSuffix(dur,
+                                    unitNoteLength,
+                                    meter)
+    if isTied {
+        result += "-"
+    }
+
+    return result
+}
+
 private func _formatClef(_ clef: ABCClef) -> String {
     var parts: [String] = []
 
@@ -419,6 +465,63 @@ private func _formatClef(_ clef: ABCClef) -> String {
     }
 
     return parts.joined(separator: " ")
+}
+
+private func _formatDurationSuffix(_ stored: ABCDuration,
+                                   _ unitNoteLength: ABCDuration?,
+                                   _ meter: ABCTimeSignature?) -> String {
+    let base = _effectiveBase(unitNoteLength, meter)
+    let mn = stored.numerator * base.denominator
+    let md = stored.denominator * base.numerator
+    let reduced = ABCFraction(numerator: mn,
+                              denominator: md,
+                              reduce: true)
+    let rn = reduced.numerator
+    let rd = reduced.denominator
+
+    if rn == 1, rd == 1 {
+        return ""
+    }
+
+    if rd == 1 {
+        return "\(rn)"
+    }
+
+    if rn == 1 {
+        if isPowerOfTwo(rd) {
+            return String(repeating: "/",
+                          count: log2Integer(rd))
+        } else {
+            return "/\(rd)"
+        }
+    }
+
+    return "\(rn)/\(rd)"
+}
+
+private func _formatGraceNotes(_ slash: Bool,
+                               _ notes: [ABCNote],
+                               _ unitNoteLength: ABCDuration?,
+                               _ meter: ABCTimeSignature?) throws -> String {
+    guard !notes.isEmpty
+    else { throw ABCFormatError.emptyGraceNotes }
+
+    for note in notes {
+        guard note.duration.numerator > 0
+        else { throw ABCFormatError.invalidDuration(note.duration) }
+    }
+
+    var result = "{"
+
+    if slash {
+        result += "/"
+    }
+
+    result += notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+
+    result += "}"
+
+    return result
 }
 
 private func _formatKey(_ ks: ABCKeySignature) -> String {

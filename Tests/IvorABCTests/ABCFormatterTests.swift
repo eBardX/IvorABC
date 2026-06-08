@@ -741,6 +741,20 @@ extension ABCFormatterTests {
 
         #expect(output.contains("[1\n"))
     }
+
+    @Test
+    func variantEnding_range_emitsDashForm() throws {
+        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding(endings: [1...3]))]))
+
+        #expect(output.contains("[1-3\n"))
+    }
+
+    @Test
+    func variantEnding_list_emitsCommaForm() throws {
+        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding(endings: [1...1, 3...3]))]))
+
+        #expect(output.contains("[1,3\n"))
+    }
 }
 
 // MARK: - Inline fields
@@ -788,14 +802,59 @@ extension ABCFormatterTests {
 
     @Test
     func tune_missingRefNumber_throws() throws {
+        // X: is present but misplaced (not first field) — still throws.
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.title("Bad")),
+                                                         .field(.refNumber(ABCRefNumber(uintValue: 1))),
                                                          .field(.key(.standard(.c, .major, [], nil)))])])
 
         #expect(throws: ABCFormatError.missingReferenceNumber) {
             try ABCFormatter().format(book)
         }
+    }
+
+    @Test
+    func tune_noRefNumber_autoAssigns1() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.title("Test")),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([])])])
+
+        #expect(try format(book).contains("X:1\n"))
+    }
+
+    @Test
+    func tune_allMissingRefNumbers_assignedSequentially() throws {
+        let tune = ABCTune(entries: [.field(.title("Test")),
+                                     .field(.key(.standard(.c, .major, [], nil))),
+                                     .symbols([])])
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [tune, tune])
+        let output = try format(book)
+
+        #expect(output.contains("X:1\n"))
+        #expect(output.contains("X:2\n"))
+    }
+
+    @Test
+    func tune_partialMissingRefNumbers_skipsExistingNumbers() throws {
+        // Tunes with X:3 and X:5 intermixed with tunes missing X:.
+        // Missing tunes should be assigned X:1 and X:2, skipping 3 and 5.
+        let withKey = ABCTune(entries: [.field(.key(.standard(.c, .major, [], nil))),
+                                        .symbols([])])
+        let withX3 = ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 3)))] + withKey.entries)
+        let withX5 = ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 5)))] + withKey.entries)
+        let noX = ABCTune(entries: [.field(.title("Test"))] + withKey.entries)
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [withX3, noX, withX5, noX])
+        let output = try format(book)
+        let xLines = output.components(separatedBy: "\n").filter { $0.hasPrefix("X:") }
+
+        #expect(xLines == ["X:3", "X:1", "X:5", "X:2"])
     }
 
     @Test
@@ -977,6 +1036,19 @@ extension ABCFormatterTests {
 
         #expect(output.contains("y\n"))
     }
+
+    @Test
+    func spacer_withDuration_emitsYWithSuffix() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                                         .field(.unitNoteLength(_dur(1, 8))),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([.spacer(_dur(1, 4))])])])
+        let output = try format(book)
+
+        #expect(output.contains("y2\n"))
+    }
 }
 
 // MARK: - Overlay
@@ -1002,6 +1074,24 @@ extension ABCFormatterTests {
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">"), .note(d)]))
 
         #expect(output.contains(">"))
+    }
+
+    @Test
+    func brokenRhythm_doubleRight_emitsVerbatim() throws {
+        let c = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let d = ABCNote(pitch: _pit(.d, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">>"), .note(d)]))
+
+        #expect(output.contains(">>"))
+    }
+
+    @Test
+    func brokenRhythm_left_emitsVerbatim() throws {
+        let c = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let d = ABCNote(pitch: _pit(.d, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm("<"), .note(d)]))
+
+        #expect(output.contains("<"))
     }
 }
 
@@ -1031,6 +1121,244 @@ extension ABCFormatterTests {
         let symbolLines = lines.filter { $0 == "C" }
 
         #expect(symbolLines.count == 2)
+    }
+
+    @Test
+    func crossTuneDurationState_M3_8_leaksIntoSecondTune() throws {
+        // Tune 1 sets M:3/8 (ratio < 0.75, so default L: is 1/16) with no explicit L:.
+        // Tune 2 has no M: and no L:. M: state carries forward, so the effective
+        // base in tune 2 is still 1/16.
+        let noteDur = _dur(1, 16)  // stored duration = 1/16 (one unit under M:3/8 default)
+        let note = ABCNote(pitch: _pit(.c, .natural, 4), duration: noteDur, isTied: false)
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                                         .field(.meter(_tsig(3, 8))),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([.note(note)])]),
+                                       ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 2))),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([.note(note)])])])
+        let output = try format(book)
+        let lines = output.components(separatedBy: "\n")
+
+        // Both tunes should emit "C" (no suffix) because both use 1/16 as effective base.
+        let symbolLines = lines.filter { $0 == "C" }
+
+        #expect(symbolLines.count == 2)
+    }
+}
+
+// MARK: - Symbol validation
+
+extension ABCFormatterTests {
+
+    @Test
+    func chord_emptyNotes_throws() throws {
+        #expect(throws: ABCFormatError.emptyChord) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord([], _dur(1, 8), false)]))
+        }
+    }
+
+    @Test
+    func graceNotes_emptyNotes_throws() throws {
+        #expect(throws: ABCFormatError.emptyGraceNotes) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.graceNotes(false, [])]))
+        }
+    }
+
+    @Test
+    func variantEnding_emptyEndings_throws() throws {
+        #expect(throws: ABCFormatError.emptyVariantEnding) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding(endings: []))]))
+        }
+    }
+
+    @Test
+    func barRepeat_emptyString_throws() throws {
+        #expect(throws: ABCFormatError.invalidBarRepeat("")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.barRepeat("")]))
+        }
+    }
+
+    @Test
+    func barRepeat_invalidCharacter_throws() throws {
+        #expect(throws: ABCFormatError.invalidBarRepeat("X")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.barRepeat("X")]))
+        }
+    }
+
+    @Test
+    func brokenRhythm_emptyString_throws() throws {
+        #expect(throws: ABCFormatError.invalidBrokenRhythm("")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("")]))
+        }
+    }
+
+    @Test
+    func brokenRhythm_invalidCharacter_throws() throws {
+        #expect(throws: ABCFormatError.invalidBrokenRhythm("x")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("x")]))
+        }
+    }
+
+    @Test
+    func brokenRhythm_mixedDirections_throws() throws {
+        #expect(throws: ABCFormatError.invalidBrokenRhythm("><")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("><")]))
+        }
+    }
+
+    @Test
+    func brokenRhythm_tooLong_throws() throws {
+        #expect(throws: ABCFormatError.invalidBrokenRhythm(">>>>")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm(">>>>")]))
+        }
+    }
+
+    @Test
+    func slur_invalidString_throws() throws {
+        #expect(throws: ABCFormatError.invalidSlur("x")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.slur("x")]))
+        }
+    }
+
+    @Test
+    func decoration_emptyName_throws() throws {
+        #expect(throws: ABCFormatError.invalidDecorationName("")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.decoration(ABCDecoration(name: ""))]))
+        }
+    }
+
+    @Test
+    func decoration_nameContainsExclamationMark_throws() throws {
+        #expect(throws: ABCFormatError.invalidDecorationName("trill!bad")) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.decoration(ABCDecoration(name: "trill!bad"))]))
+        }
+    }
+
+    @Test
+    func note_zeroDuration_throws() throws {
+        let note = ABCNote(pitch: _pit(.c, .natural, 4),
+                           duration: _dur(0, 8),
+                           isTied: false)
+
+        #expect(throws: ABCFormatError.invalidDuration(_dur(0, 8))) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.note(note)]))
+        }
+    }
+
+    @Test
+    func chord_zeroDuration_throws() throws {
+        let note = ABCNote(pitch: _pit(.c, .natural, 4),
+                           duration: _dur(0, 8),
+                           isTied: false)
+
+        #expect(throws: ABCFormatError.invalidDuration(_dur(0, 8))) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord([note], _dur(1, 8), false)]))
+        }
+    }
+
+    @Test
+    func chord_zeroChordLevelDuration_throws() throws {
+        let note = ABCNote(pitch: _pit(.c, .natural, 4),
+                           duration: _dur(1, 8),
+                           isTied: false)
+
+        #expect(throws: ABCFormatError.invalidDuration(_dur(0, 8))) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord([note], _dur(0, 8), false)]))
+        }
+    }
+
+    @Test
+    func rest_multiMeasureZeroCount_throws() throws {
+        #expect(throws: ABCFormatError.invalidMultiMeasureRestCount) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.rest(.multiMeasure(false, 0))]))
+        }
+    }
+
+    @Test
+    func rest_regularZeroDuration_throws() throws {
+        #expect(throws: ABCFormatError.invalidDuration(_dur(0, 8))) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.rest(.regular(false, _dur(0, 8)))]))
+        }
+    }
+
+    @Test
+    func spacer_zeroDuration_throws() throws {
+        #expect(throws: ABCFormatError.invalidDuration(_dur(0, 8))) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.spacer(_dur(0, 8))]))
+        }
+    }
+
+    @Test
+    func tuplet_zeroNoteCount_throws() throws {
+        #expect(throws: ABCFormatError.invalidTupletNoteCount) {
+            try ABCFormatter().format(minimalTunebook(symbols: [.tuplet(ABCTuplet(noteCount: 0))]))
+        }
+    }
+}
+
+// MARK: - Field validation
+
+extension ABCFormatterTests {
+
+    @Test
+    func meter_explicit_nonPowerOfTwoDenominator_throws() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [.field(.meter(_tsig(4, 6)))],
+                               tunes: [])
+
+        #expect(throws: ABCFormatError.invalidTimeSignature(_tsig(4, 6))) {
+            try ABCFormatter().format(book)
+        }
+    }
+
+    @Test
+    func meter_complex_nonPowerOfTwoDenominator_throws() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [.field(.meter(_tsig([2, 3], 6)))],
+                               tunes: [])
+
+        #expect(throws: ABCFormatError.invalidTimeSignature(_tsig([2, 3], 6))) {
+            try ABCFormatter().format(book)
+        }
+    }
+
+    @Test
+    func meter_complex_emptyNumerators_throws() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [.field(.meter(_tsig([], 8)))],
+                               tunes: [])
+
+        #expect(throws: ABCFormatError.invalidTimeSignature(_tsig([], 8))) {
+            try ABCFormatter().format(book)
+        }
+    }
+
+    @Test
+    func unitNoteLength_nonPowerOfTwoDenominator_throws() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [.field(.unitNoteLength(_dur(1, 6)))],
+                               tunes: [])
+
+        #expect(throws: ABCFormatError.invalidUnitNoteLength(_dur(1, 6))) {
+            try ABCFormatter().format(book)
+        }
+    }
+
+    @Test
+    func voice_emptyID_throws() throws {
+        let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                                         .field(.voice(_voice(""))),
+                                                         .field(.key(.standard(.c, .major, [], nil))),
+                                                         .symbols([])])])
+
+        #expect(throws: ABCFormatError.emptyVoiceID) {
+            try ABCFormatter().format(book)
+        }
     }
 }
 
@@ -1097,5 +1425,75 @@ extension ABCFormatterTests {
         let formatted2 = try ABCFormatter().format(book2)
 
         #expect(formatted1 == formatted2)
+    }
+
+    @Test
+    func roundTrip_brokenRhythm_producesEqualModel() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nC>>D<E|\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
+    }
+
+    @Test
+    func roundTrip_slur_producesEqualModel() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n(C(DE)F)|\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
+    }
+
+    @Test
+    func roundTrip_variantEnding_producesEqualModel() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n|:CDEF|[1 GABc:|[2 cdef|]\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
+    }
+
+    @Test
+    func roundTrip_overlay_producesEqualModel() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/4\nK:C\nCG&EG|\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
+    }
+
+    @Test
+    func roundTrip_spacer_producesEqualModel() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\ny2C|\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
+    }
+
+    @Test
+    func roundTrip_beamBreak_beamedDistinctFromUnbeamed() throws {
+        let beamed = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nABcd|\n"
+        let unbeamed = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
+        let bookBeamed = try ABCParser().parse(Data(beamed.utf8))
+        let bookUnbeamed = try ABCParser().parse(Data(unbeamed.utf8))
+
+        #expect(bookBeamed != bookUnbeamed)
+    }
+
+    @Test
+    func roundTrip_beamBreak_preservedAfterFormat() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
+        let book1 = try ABCParser().parse(Data(input.utf8))
+        let formatted = try ABCFormatter().format(book1)
+        let book2 = try ABCParser().parse(formatted)
+
+        #expect(book1 == book2)
     }
 }

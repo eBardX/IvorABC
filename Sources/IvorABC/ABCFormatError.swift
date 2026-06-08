@@ -4,8 +4,51 @@ public import XestiTools
 
 /// An error that occurs when formatting an ABC tunebook.
 public enum ABCFormatError {
+    /// A chord contains no notes.
+    case emptyChord
+
+    /// A grace note group contains no notes.
+    case emptyGraceNotes
+
+    /// A variant ending has no ending numbers.
+    case emptyVariantEnding
+
+    /// A voice identifier is empty.
+    case emptyVoiceID
+
+    /// A bar repeat marker string is invalid.
+    case invalidBarRepeat(String)
+
+    /// A broken rhythm marker string is invalid.
+    case invalidBrokenRhythm(String)
+
+    /// A decoration name is empty or contains invalid characters.
+    case invalidDecorationName(String)
+
+    /// A note, rest, or spacer duration has a zero numerator.
+    case invalidDuration(ABCDuration)
+
+    /// A multi-measure rest has a count of zero.
+    case invalidMultiMeasureRestCount
+
+    /// A slur marker string is invalid.
+    case invalidSlur(String)
+
     /// A text value contains a newline character.
     case invalidStringArgument(String)
+
+    /// A time signature has a structurally invalid value.
+    ///
+    /// This is thrown when an `M:explicit` time signature has a non-power-of-two
+    /// denominator, or when an `M:complex` time signature has an empty numerator
+    /// list or a non-power-of-two denominator.
+    case invalidTimeSignature(ABCTimeSignature)
+
+    /// A tuplet has a zero note count.
+    case invalidTupletNoteCount
+
+    /// A unit note length (`L:`) has a non-power-of-two denominator.
+    case invalidUnitNoteLength(ABCDuration)
 
     /// A field appears in a position where it is not permitted in the file
     /// header.
@@ -36,8 +79,47 @@ extension ABCFormatError: EnhancedError {
     /// A human-readable description of this error.
     public var message: String {
         switch self {
+        case .emptyChord:
+            "Chord contains no notes"
+
+        case .emptyGraceNotes:
+            "Grace note group contains no notes"
+
+        case .emptyVariantEnding:
+            "Variant ending has no ending numbers"
+
+        case .emptyVoiceID:
+            "Voice identifier is empty"
+
+        case let .invalidBarRepeat(s):
+            "Bar repeat marker is invalid: \(s.isEmpty ? "(empty)" : s)"
+
+        case let .invalidBrokenRhythm(s):
+            "Broken rhythm marker is invalid: \(s.isEmpty ? "(empty)" : s)"
+
+        case let .invalidDecorationName(name):
+            "Decoration name is empty or contains invalid characters: \(name.isEmpty ? "(empty)" : name)"
+
+        case let .invalidDuration(dur):
+            "Duration has a zero numerator: \(dur.numerator)/\(dur.denominator)"
+
+        case .invalidMultiMeasureRestCount:
+            "Multi-measure rest has a count of zero"
+
+        case let .invalidSlur(s):
+            "Slur marker is invalid: \(s.isEmpty ? "(empty)" : s)"
+
         case let .invalidStringArgument(value):
             "String argument contains invalid characters: \(value)"
+
+        case let .invalidTimeSignature(ts):
+            "Time signature is structurally invalid: \(ts)"
+
+        case .invalidTupletNoteCount:
+            "Tuplet has a zero note count"
+
+        case let .invalidUnitNoteLength(dur):
+            "Unit note length has a non-power-of-two denominator: \(dur.numerator)/\(dur.denominator)"
 
         case let .misplacedFileHeaderField(field):
             "Field is not valid in the file header: \(field)"

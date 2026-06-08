@@ -1,5 +1,7 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+// swiftlint:disable file_length
+
 import Foundation
 @testable import IvorABC
 import Testing
@@ -516,5 +518,170 @@ extension ABCParserTests {
         #expect(throws: ABCParseError.self) {
             try parser.parse(data)
         }
+    }
+
+    @Test
+    func parse_brokenRhythm_doubleRight_producesSymbol() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nC>>D|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let brokenRhythms = symbols.compactMap { sym -> String? in
+            guard case let .brokenRhythm(s) = sym
+            else { return nil }
+
+            return s
+        }
+
+        #expect(brokenRhythms == [">>"])
+    }
+
+    @Test
+    func parse_slur_openAndClose_producesSymbols() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\n(CD)|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let slurs = symbols.compactMap { sym -> String? in
+            guard case let .slur(s) = sym
+            else { return nil }
+
+            return s
+        }
+
+        #expect(slurs == ["(", ")"])
+    }
+
+    @Test
+    func parse_slur_nested_producesOpenClosePairs() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\n(C(DE)F)|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let slurs = symbols.compactMap { sym -> String? in
+            guard case let .slur(s) = sym
+            else { return nil }
+
+            return s
+        }
+
+        #expect(slurs == ["(", "(", ")", ")"])
+    }
+
+    @Test
+    func parse_variantEnding_range_producesRangeEnding() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\n|[1-3 C|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let endings = symbols.compactMap { sym -> ABCVariantEnding? in
+            guard case let .variantEnding(ve) = sym
+            else { return nil }
+
+            return ve
+        }
+
+        #expect(endings.first?.endings == [1...3])
+    }
+
+    @Test
+    func parse_spacer_producesSpacerSymbol() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nyC|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        #expect(symbols.first == .spacer(_dur(1, 8)))
+    }
+
+    @Test
+    func parse_spacer_withDuration_producesCorrectDuration() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\ny2|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let spacerDurations = symbols.compactMap { sym -> ABCDuration? in
+            guard case let .spacer(d) = sym
+            else { return nil }
+
+            return d
+        }
+
+        #expect(spacerDurations.first == _dur(1, 4))
+    }
+
+    @Test
+    func parse_beamBreak_beamedSequence_hasNoBeamBreaks() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nABcd|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        #expect(!symbols.contains(.beamBreak))
+    }
+
+    @Test
+    func parse_beamBreak_spaceSeparated_hasBeamBreaks() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let beamBreakCount = symbols.filter { $0 == .beamBreak }.count
+
+        #expect(beamBreakCount == 3)
     }
 }
