@@ -1,5 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+import Foundation
 @testable import IvorABC
 import Testing
 import XestiTools
@@ -419,4 +420,41 @@ func _voice(_ id: String,
             _ properties: [String: String] = [:]) -> ABCVoice {
     ABCVoice(id: id,
              properties: properties)
+}
+
+// MARK: - ABCFormatter Helpers
+
+func format(_ tunebook: ABCTunebook) throws -> String {
+    let formatter = ABCFormatter()
+    let data = try formatter.format(tunebook)
+
+    return String(bytes: data, encoding: .utf8) ?? ""
+}
+
+func minimalTunebook(key: ABCKeySignature = .standard(.c, .major, [], nil),
+                     symbols: [ABCSymbol] = []) -> ABCTunebook {
+    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                headers: [],
+                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                          .field(.title("Test")),
+                                          .field(.key(key)),
+                                          .symbols(symbols)])])
+}
+
+func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
+    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                headers: [],
+                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                          .field(.unitNoteLength(_dur(1, 4))),
+                                          .field(.key(.standard(.c, .major, [], nil))),
+                                          .symbols(symbols)])])
+}
+
+func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
+    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+                headers: [],
+                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
+                                          .field(.tempo(tempo)),
+                                          .field(.key(.standard(.c, .major, [], nil))),
+                                          .symbols([])])])
 }

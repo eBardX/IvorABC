@@ -54,12 +54,12 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         switch ts {
         case let .explicit(fraction):
             guard isPowerOfTwo(fraction.denominator)
-            else { throw ABCFormatError.invalidTimeSignature(ts) }
+            else { throw ABCFormatter.Error.invalidTimeSignature(ts) }
 
         case let .complex(nums, den):
             guard !nums.isEmpty,
                   isPowerOfTwo(den)
-            else { throw ABCFormatError.invalidTimeSignature(ts) }
+            else { throw ABCFormatter.Error.invalidTimeSignature(ts) }
 
         default:
             break
@@ -102,7 +102,7 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
 
     case let .unitNoteLength(dur):
         guard isPowerOfTwo(dur.denominator)
-        else { throw ABCFormatError.invalidUnitNoteLength(dur) }
+        else { throw ABCFormatter.Error.invalidUnitNoteLength(dur) }
 
         return ("L", "\(dur.numerator)/\(dur.denominator)")
 
@@ -111,7 +111,7 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
 
     case let .voice(v):
         guard !v.id.isEmpty
-        else { throw ABCFormatError.emptyVoiceID }
+        else { throw ABCFormatter.Error.emptyVoiceID }
 
         return ("V", _formatVoice(v))
     }
@@ -162,7 +162,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
         guard !br.isEmpty,
               br.allSatisfy({ validChars.contains($0) })
-        else { throw ABCFormatError.invalidBarRepeat(br) }
+        else { throw ABCFormatter.Error.invalidBarRepeat(br) }
 
         return br
 
@@ -175,7 +175,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
               let first = br.first,
               first == ">" || first == "<",
               br.allSatisfy({ $0 == first })
-        else { throw ABCFormatError.invalidBrokenRhythm(br) }
+        else { throw ABCFormatter.Error.invalidBrokenRhythm(br) }
 
         return br
 
@@ -188,7 +188,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .decoration(dec):
         guard !dec.name.isEmpty,
               !dec.name.contains("!")
-        else { throw ABCFormatError.invalidDecorationName(dec.name) }
+        else { throw ABCFormatter.Error.invalidDecorationName(dec.name) }
 
         return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
 
@@ -205,7 +205,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
     case let .note(nt):
         guard nt.duration.numerator > 0
-        else { throw ABCFormatError.invalidDuration(nt.duration) }
+        else { throw ABCFormatter.Error.invalidDuration(nt.duration) }
 
         return formatNote(nt, unitNoteLength, meter)
 
@@ -216,7 +216,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         switch rst {
         case let .multiMeasure(inv, measureCount):
             guard measureCount > 0
-            else { throw ABCFormatError.invalidMultiMeasureRestCount }
+            else { throw ABCFormatter.Error.invalidMultiMeasureRestCount }
 
             let letter = inv ? "X" : "Z"
 
@@ -224,7 +224,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
         case let .regular(inv, dur):
             guard dur.numerator > 0
-            else { throw ABCFormatError.invalidDuration(dur) }
+            else { throw ABCFormatter.Error.invalidDuration(dur) }
 
             let letter = inv ? "x" : "z"
 
@@ -233,25 +233,25 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
     case let .slur(sl):
         guard sl == "(" || sl == ")"
-        else { throw ABCFormatError.invalidSlur(sl) }
+        else { throw ABCFormatter.Error.invalidSlur(sl) }
 
         return sl
 
     case let .spacer(dur):
         guard dur.numerator > 0
-        else { throw ABCFormatError.invalidDuration(dur) }
+        else { throw ABCFormatter.Error.invalidDuration(dur) }
 
         return "y\(_formatDurationSuffix(dur, unitNoteLength, meter))"
 
     case let .tuplet(tup):
         guard tup.noteCount > 0
-        else { throw ABCFormatError.invalidTupletNoteCount }
+        else { throw ABCFormatter.Error.invalidTupletNoteCount }
 
         return tup.stringValue
 
     case let .variantEnding(ve):
         guard !ve.endings.isEmpty
-        else { throw ABCFormatError.emptyVariantEnding }
+        else { throw ABCFormatter.Error.emptyVariantEnding }
 
         return ve.stringValue
     }
@@ -415,14 +415,14 @@ private func _formatChord(_ notes: [ABCNote],
                           _ unitNoteLength: ABCDuration?,
                           _ meter: ABCTimeSignature?) throws -> String {
     guard !notes.isEmpty
-    else { throw ABCFormatError.emptyChord }
+    else { throw ABCFormatter.Error.emptyChord }
 
     guard dur.numerator > 0
-    else { throw ABCFormatError.invalidDuration(dur) }
+    else { throw ABCFormatter.Error.invalidDuration(dur) }
 
     for note in notes {
         guard note.duration.numerator > 0
-        else { throw ABCFormatError.invalidDuration(note.duration) }
+        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
     }
 
     var result = "["
@@ -504,11 +504,11 @@ private func _formatGraceNotes(_ slash: Bool,
                                _ unitNoteLength: ABCDuration?,
                                _ meter: ABCTimeSignature?) throws -> String {
     guard !notes.isEmpty
-    else { throw ABCFormatError.emptyGraceNotes }
+    else { throw ABCFormatter.Error.emptyGraceNotes }
 
     for note in notes {
         guard note.duration.numerator > 0
-        else { throw ABCFormatError.invalidDuration(note.duration) }
+        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
     }
 
     var result = "{"
@@ -675,7 +675,7 @@ private func _formatVoice(_ voice: ABCVoice) -> String {
 
 private func _validateString(_ string: String) throws -> String {
     guard !string.contains(where: { $0.isNewline })
-    else { throw ABCFormatError.invalidStringArgument(string) }
+    else { throw ABCFormatter.Error.invalidStringArgument(string) }
 
     return string.contains("%")
            ? string.replacingOccurrences(of: "%",

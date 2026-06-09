@@ -174,31 +174,31 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     case "I":
         guard let dir = _parseInstruction(vtext)
-        else { throw ABCParseError.invalidField(isInline, tidyInput) }
+        else { throw ABCParser.Error.invalidField(isInline, tidyInput) }
 
         return .instruction(dir)
 
     case "K":
         guard let ks = parseKeySignature(vtext)
-        else { throw ABCParseError.invalidKeySignature(vtext) }
+        else { throw ABCParser.Error.invalidKeySignature(vtext) }
 
         return .key(ks)
 
     case "L":
         guard let unl = parseUnitNoteLength(vtext)
-        else { throw ABCParseError.invalidUnitNoteLength(vtext) }
+        else { throw ABCParser.Error.invalidUnitNoteLength(vtext) }
 
         return .unitNoteLength(unl)
 
     case "M":
         guard let ts = parseTimeSignature(vtext)
-        else { throw ABCParseError.invalidTimeSignature(vtext) }
+        else { throw ABCParser.Error.invalidTimeSignature(vtext) }
 
         return .meter(ts)
 
     case "m":
         guard let macro = parseMacro(vtext)
-        else { throw ABCParseError.invalidMacro(vtext) }
+        else { throw ABCParser.Error.invalidMacro(vtext) }
 
         return .macro(macro)
 
@@ -210,13 +210,13 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     case "P":
         guard let ps = parsePartSequence(vtext)
-        else { throw ABCParseError.invalidPartSequence(vtext) }
+        else { throw ABCParser.Error.invalidPartSequence(vtext) }
 
         return .parts(ps)
 
     case "Q":
         guard let tempo = parseTempo(vtext)
-        else { throw ABCParseError.invalidTempo(vtext) }
+        else { throw ABCParser.Error.invalidTempo(vtext) }
 
         return .tempo(tempo)
 
@@ -231,7 +231,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     case "s" where !isInline:
         guard let sl = parseSymbolLine(vtext)
-        else { throw ABCParseError.invalidSymbolLine(vtext) }
+        else { throw ABCParser.Error.invalidSymbolLine(vtext) }
 
         return .symbolLine(sl)
 
@@ -240,13 +240,13 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     case "U":
         guard let uds = parseUserSymbol(vtext)
-        else { throw ABCParseError.invalidUserSymbol(vtext) }
+        else { throw ABCParser.Error.invalidUserSymbol(vtext) }
 
         return .userSymbol(uds)
 
     case "V":
         guard let voice = parseVoice(vtext)
-        else { throw ABCParseError.invalidVoice(vtext) }
+        else { throw ABCParser.Error.invalidVoice(vtext) }
 
         return .voice(voice)
 
@@ -258,7 +258,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     case "X" where !isInline:
         guard let rn = parseRefNumber(vtext)
-        else { throw ABCParseError.invalidRefNumber(vtext) }
+        else { throw ABCParser.Error.invalidRefNumber(vtext) }
 
         return .refNumber(rn)
 
@@ -269,7 +269,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         break
     }
 
-    throw ABCParseError.invalidField(isInline, tidyInput)
+    throw ABCParser.Error.invalidField(isInline, tidyInput)
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
@@ -1128,7 +1128,7 @@ private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring
         isInline = true
 
         guard input.last == "]"
-        else { throw ABCParseError.invalidField(isInline, tidyInput) }
+        else { throw ABCParser.Error.invalidField(isInline, tidyInput) }
 
         input = input.dropFirst().dropLast()
     } else {
@@ -1140,7 +1140,7 @@ private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring
     let result = input.splitBeforeFirst([":"])
 
     guard let tail = result.tail
-    else { throw ABCParseError.invalidField(isInline, tidyInput) }
+    else { throw ABCParser.Error.invalidField(isInline, tidyInput) }
 
     let name = result.head
     let value = trim(tail.dropFirst())

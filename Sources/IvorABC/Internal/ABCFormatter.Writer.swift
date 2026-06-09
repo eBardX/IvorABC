@@ -49,7 +49,7 @@ extension ABCFormatter.Writer {
         }
 
         guard let data = buffer.data(using: .utf8)
-        else { throw ABCFormatError.stringConversionFailed }
+        else { throw ABCFormatter.Error.stringConversionFailed }
 
         return data
     }
@@ -166,7 +166,7 @@ extension ABCFormatter.Writer {
 
             case let .field(f):
                 guard f.isValidInFileHeader
-                else { throw ABCFormatError.misplacedFileHeaderField(f) }
+                else { throw ABCFormatter.Error.misplacedFileHeaderField(f) }
 
                 try _writeField(f)
             }
@@ -216,24 +216,24 @@ extension ABCFormatter.Writer {
             case let .field(f):
                 if !seenRefNumber {
                     guard case .refNumber = f
-                    else { throw ABCFormatError.missingReferenceNumber }
+                    else { throw ABCFormatter.Error.missingReferenceNumber }
 
                     seenRefNumber = true
                 } else if !seenKey {
                     guard f.isValidInTuneHeader
-                    else { throw ABCFormatError.misplacedTuneField(f) }
+                    else { throw ABCFormatter.Error.misplacedTuneField(f) }
 
                     if case .key = f {
                         seenKey = true
                     }
                 } else {
                     guard f.isValidInTuneBody
-                    else { throw ABCFormatError.misplacedTuneField(f) }
+                    else { throw ABCFormatter.Error.misplacedTuneField(f) }
                 }
 
             case .symbols:
                 guard seenKey
-                else { throw ABCFormatError.missingKeySignature }
+                else { throw ABCFormatter.Error.missingKeySignature }
             }
 
             try _writeEntry(entry)

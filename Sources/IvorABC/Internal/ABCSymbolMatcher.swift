@@ -99,7 +99,7 @@ extension ABCSymbolMatcher {
         let stripped = token.value.dropFirst().dropLast()
 
         guard let annotation = ABCAnnotation(stringValue: stripped)
-        else { throw ABCParseError.invalidSymbols(token.value) }
+        else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .annotation(annotation)
     }
@@ -152,7 +152,7 @@ extension ABCSymbolMatcher {
         else { return nil }
 
         guard let result = parseNote(token.value)
-        else { throw ABCParseError.invalidNote(token.value) }
+        else { throw ABCParser.Error.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
         let pitch = _makePitch(result.pitch)
@@ -178,7 +178,7 @@ extension ABCSymbolMatcher {
            let letter = value.first {
             guard let name = context.userSymbolDecorations[letter]
                   ?? Self.builtinShorthandDecorations[letter]
-            else { throw ABCParseError.invalidSymbols(value) }
+            else { throw ABCParser.Error.invalidSymbols(value) }
 
             return .decoration(ABCDecoration(name: name,
                                              shorthand: letter))
@@ -193,7 +193,7 @@ extension ABCSymbolMatcher {
         else { return nil }
 
         guard let result = parseNote(token.value)
-        else { throw ABCParseError.invalidNote(token.value) }
+        else { throw ABCParser.Error.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
         let pitch = _makePitch(result.pitch)
@@ -292,7 +292,7 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.note)
 
         guard let result = parseNote(token.value)
-        else { throw ABCParseError.invalidNote(token.value) }
+        else { throw ABCParser.Error.invalidNote(token.value) }
 
         let duration = _makeDuration(result.duration, &context)
         let pitch = _makePitch(result.pitch)
@@ -308,7 +308,7 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.rest)
 
         guard let result = parseRest(token.value)
-        else { throw ABCParseError.invalidRest(token.value) }
+        else { throw ABCParser.Error.invalidRest(token.value) }
 
         let rest: ABCRest
 
@@ -326,7 +326,7 @@ extension ABCSymbolMatcher {
             rest = .regular(result.kind == "x", duration)
 
         default:
-            throw ABCParseError.invalidRest(token.value)
+            throw ABCParser.Error.invalidRest(token.value)
         }
 
         return .rest(rest)
@@ -420,7 +420,7 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.tuplet)
 
         guard let tuplet = ABCTuplet(stringValue: token.value)
-        else { throw ABCParseError.invalidTuplet(token.value) }
+        else { throw ABCParser.Error.invalidTuplet(token.value) }
 
         return .tuplet(tuplet)
     }
@@ -429,7 +429,7 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.variantEnding)
 
         guard let variantEnding = ABCVariantEnding(stringValue: token.value)
-        else { throw ABCParseError.invalidSymbols(token.value) }
+        else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .variantEnding(variantEnding)
     }
