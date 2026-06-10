@@ -54,14 +54,9 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord() throws {
         let symbols = try _matchSymbols("[CE]")
 
-        let expected: [ABCSymbol] = [.chord([ABCNote(pitch: _pit(.c, .omitted, 4),
-                                                     duration: _dur(1, 8),
-                                                     isTied: false),
-                                             ABCNote(pitch: _pit(.e, .omitted, 4),
-                                                     duration: _dur(1, 8),
-                                                     isTied: false)],
-                                            _dur(1, 8),
-                                            false)]
+        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .omitted, 4), duration: _dur(1, 8), isTied: false),
+                                ABCNote(pitch: _pit(.e, .omitted, 4), duration: _dur(1, 8), isTied: false)]
+        let expected: [ABCSymbol] = [.chord(ABCChord(notes: notes, duration: _dur(1, 8), isTied: false))]
 
         #expect(symbols == expected)
     }
@@ -77,10 +72,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord_duration() throws {
         let symbols = try _matchSymbols("[CEG]2")
 
-        if case let .chord(notes, duration, isTied) = try #require(symbols.first) {
-            #expect(notes.count == 3)
-            #expect(duration == _dur(1, 4))
-            #expect(!isTied)
+        if case let .chord(chord) = try #require(symbols.first) {
+            #expect(chord.notes.count == 3)
+            #expect(chord.duration == _dur(1, 4))
+            #expect(!chord.isTied)
         } else {
             Issue.record("Expected .chord")
         }
@@ -90,10 +85,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord_fractionDuration() throws {
         let symbols = try _matchSymbols("[CEG]/2")
 
-        if case let .chord(notes, duration, isTied) = try #require(symbols.first) {
-            #expect(notes.count == 3)
-            #expect(duration == _dur(1, 16))
-            #expect(!isTied)
+        if case let .chord(chord) = try #require(symbols.first) {
+            #expect(chord.notes.count == 3)
+            #expect(chord.duration == _dur(1, 16))
+            #expect(!chord.isTied)
         } else {
             Issue.record("Expected .chord")
         }
@@ -103,9 +98,9 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord_tied() throws {
         let symbols = try _matchSymbols("[CEG]-")
 
-        if case let .chord(notes, _, isTied) = try #require(symbols.first) {
-            #expect(notes.count == 3)
-            #expect(isTied)
+        if case let .chord(chord) = try #require(symbols.first) {
+            #expect(chord.notes.count == 3)
+            #expect(chord.isTied)
         } else {
             Issue.record("Expected .chord")
         }
@@ -154,9 +149,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_graceNotes() throws {
         let symbols = try _matchSymbols("{C}")
 
-        let expected: [ABCSymbol] = [.graceNotes(false, [ABCNote(pitch: _pit(.c, .omitted, 4),
-                                                                 duration: _dur(1, 8),
-                                                                 isTied: false)])]
+        let expected: [ABCSymbol] = [.graceNotes(ABCGraceNotes(isSlashed: false,
+                                                               notes: [ABCNote(pitch: _pit(.c, .omitted, 4),
+                                                                               duration: _dur(1, 8),
+                                                                               isTied: false)]))]
 
         #expect(symbols == expected)
     }
@@ -165,9 +161,9 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_graceNotes_slash() throws {
         let symbols = try _matchSymbols("{/C}")
 
-        if case let .graceNotes(hasSlash, notes) = try #require(symbols.first) {
-            #expect(hasSlash)
-            #expect(notes.count == 1)
+        if case let .graceNotes(gn) = try #require(symbols.first) {
+            #expect(gn.isSlashed)
+            #expect(gn.notes.count == 1)
         } else {
             Issue.record("Expected .graceNotes")
         }
@@ -284,9 +280,9 @@ extension ABCSymbolMatcherTests {
         let graceF = ABCNote(pitch: _pit(.f, .omitted, 4), duration: _dur(1, 8), isTied: false)
         let noteG  = ABCNote(pitch: _pit(.g, .omitted, 4), duration: _dur(1, 8), isTied: false)
 
-        let expansion: [ABCSymbol] = [.graceNotes(false, [graceA]),
+        let expansion: [ABCSymbol] = [.graceNotes(ABCGraceNotes(isSlashed: false, notes: [graceA])),
                                       .note(noteG),
-                                      .graceNotes(false, [graceF]),
+                                      .graceNotes(ABCGraceNotes(isSlashed: false, notes: [graceF])),
                                       .note(noteG)]
 
         #expect(symbols == [.macroCall(ABCMacroCall(trigger: "~G2",

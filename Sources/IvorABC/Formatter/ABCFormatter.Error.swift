@@ -39,7 +39,7 @@ extension ABCFormatter {
         case invalidSlur(String)
 
         /// A text value contains a newline character.
-        case invalidStringArgument(String)
+        case invalidTextValue(String)
 
         /// A time signature has a structurally invalid value.
         ///
@@ -117,8 +117,8 @@ extension ABCFormatter.Error: EnhancedError {
         case let .invalidSlur(s):
             "Slur marker is invalid: \(s.isEmpty ? "(empty)" : s)"
 
-        case let .invalidStringArgument(value):
-            "String argument contains invalid characters: \(value)"
+        case let .invalidTextValue(value):
+            "Text value contains invalid characters: \(value)"
 
         case let .invalidTimeSignature(ts):
             "Time signature is structurally invalid: \(ts)"

@@ -27,12 +27,7 @@ public enum ABCSymbol {
     case brokenRhythm(String)
 
     /// A chord.
-    ///
-    /// The associated `[ABCNote]` value holds the notes in the chord. The
-    /// `ABCDuration` value is the chord-level duration (i.e. the duration
-    /// written after the closing `]`). The `Bool` value indicates whether the
-    /// chord is tied to the next chord or note.
-    case chord([ABCNote], ABCDuration, Bool)
+    case chord(ABCChord)
 
     /// A chord symbol.
     ///
@@ -44,10 +39,7 @@ public enum ABCSymbol {
     case decoration(ABCDecoration)
 
     /// A group of grace notes.
-    ///
-    /// The associated `Bool` value indicates whether the grace note group has
-    /// a slash (acciaccatura).
-    case graceNotes(Bool, [ABCNote])
+    case graceNotes(ABCGraceNotes)
 
     /// An inline field.
     case inlineField(ABCField)

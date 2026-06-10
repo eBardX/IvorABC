@@ -144,7 +144,9 @@ extension ABCSymbolMatcher {
             isTied = false
         }
 
-        return .chord(chord, duration, isTied)
+        return .chord(ABCChord(notes: chord,
+                               duration: duration,
+                               isTied: isTied))
     }
 
     private mutating func _matchChordNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -215,7 +217,8 @@ extension ABCSymbolMatcher {
 
         try tokenMatcher.readMustMatch(.graceNotesEnd)
 
-        return .graceNotes(hasSlash, graceNotes)
+        return .graceNotes(ABCGraceNotes(isSlashed: hasSlash,
+                                         notes: graceNotes))
     }
 
     private mutating func _matchInlineField(_ context: inout ABCParseContext) throws -> ABCSymbol? {

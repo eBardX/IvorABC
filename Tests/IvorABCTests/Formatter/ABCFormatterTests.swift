@@ -193,7 +193,7 @@ extension ABCFormatterTests {
         let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
                                 ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false),
                                 ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(notes, _dur(1, 8), false)]))
+        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes: notes, duration: _dur(1, 8), isTied: false))]))
 
         #expect(output.contains("[CEG]\n"))
     }
@@ -201,7 +201,7 @@ extension ABCFormatterTests {
     @Test
     func chord_emptyNotes_throws() throws {
         #expect(throws: ABCFormatter.Error.emptyChord) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.chord([], _dur(1, 8), false)]))
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord(ABCChord(notes: [], duration: _dur(1, 8), isTied: false))]))
         }
     }
 
@@ -209,7 +209,7 @@ extension ABCFormatterTests {
     func chord_withDurationSuffix_emitsChordSuffix() throws {
         let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
                                 ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(notes, _dur(1, 4), false)]))
+        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes: notes, duration: _dur(1, 4), isTied: false))]))
 
         #expect(output.contains("[CE]2\n"))
     }
@@ -218,7 +218,7 @@ extension ABCFormatterTests {
     func chord_withTie_emitsDash() throws {
         let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
                                 ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(notes, _dur(1, 8), true)]))
+        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes: notes, duration: _dur(1, 8), isTied: true))]))
 
         #expect(output.contains("[CE]-\n"))
     }
@@ -230,7 +230,7 @@ extension ABCFormatterTests {
                            isTied: false)
 
         #expect(throws: ABCFormatter.Error.invalidDuration(_dur(0, 8))) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.chord([note], _dur(0, 8), false)]))
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord(ABCChord(notes: [note], duration: _dur(0, 8), isTied: false))]))
         }
     }
 
@@ -241,7 +241,7 @@ extension ABCFormatterTests {
                            isTied: false)
 
         #expect(throws: ABCFormatter.Error.invalidDuration(_dur(0, 8))) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.chord([note], _dur(1, 8), false)]))
+            try ABCFormatter().format(minimalTunebook(symbols: [.chord(ABCChord(notes: [note], duration: _dur(1, 8), isTied: false))]))
         }
     }
 
@@ -422,7 +422,7 @@ extension ABCFormatterTests {
                                headers: [.field(.composer("Bad\nValue"))],
                                tunes: [])
 
-        #expect(throws: ABCFormatter.Error.invalidStringArgument("Bad\nValue")) {
+        #expect(throws: ABCFormatter.Error.invalidTextValue("Bad\nValue")) {
             try ABCFormatter().format(book)
         }
     }
@@ -567,7 +567,7 @@ extension ABCFormatterTests {
     @Test
     func graceNotes_emptyNotes_throws() throws {
         #expect(throws: ABCFormatter.Error.emptyGraceNotes) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.graceNotes(false, [])]))
+            try ABCFormatter().format(minimalTunebook(symbols: [.graceNotes(ABCGraceNotes(isSlashed: false, notes: []))]))
         }
     }
 
@@ -575,7 +575,7 @@ extension ABCFormatterTests {
     func graceNotes_noSlash_emitsCurlyBraces() throws {
         let notes: [ABCNote] = [ABCNote(pitch: _pit(.a, .natural, 4), duration: _dur(1, 8), isTied: false)]
         let following = ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let output = try format(minimalTunebook(symbols: [.graceNotes(false, notes), .note(following)]))
+        let output = try format(minimalTunebook(symbols: [.graceNotes(ABCGraceNotes(isSlashed: false, notes: notes)), .note(following)]))
 
         #expect(output.contains("{A}G\n"))
     }
@@ -584,7 +584,7 @@ extension ABCFormatterTests {
     func graceNotes_withSlash_emitsSlashInBraces() throws {
         let notes: [ABCNote] = [ABCNote(pitch: _pit(.a, .natural, 4), duration: _dur(1, 8), isTied: false)]
         let following = ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let output = try format(minimalTunebook(symbols: [.graceNotes(true, notes), .note(following)]))
+        let output = try format(minimalTunebook(symbols: [.graceNotes(ABCGraceNotes(isSlashed: true, notes: notes)), .note(following)]))
 
         #expect(output.contains("{/A}G\n"))
     }

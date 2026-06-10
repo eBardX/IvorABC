@@ -88,7 +88,7 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_invalidStringArgument() {
-        let error = ABCFormatter.Error.invalidStringArgument("invalid characters")
+        let error = ABCFormatter.Error.invalidTextValue("invalid characters")
 
         #expect(error.message.contains("invalid characters"))
     }

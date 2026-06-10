@@ -6,117 +6,119 @@ internal import Foundation
 
 // MARK: Internal Functions
 
-internal func formatAccidental(_ acc: ABCPitch.Accidental) -> String {
-    pitchAccidentals[acc]?.note ?? ""
+internal func formatAccidental(_ accidental: ABCPitch.Accidental) -> String {
+    pitchAccidentals[accidental]?.note ?? ""
 }
 
 internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
     switch field {
-    case let .alignedLyrics(al):
-        return ("w", _formatAlignedLyrics(al))
+    case let .alignedLyrics(alignedLyrics):
+        return ("w", _formatAlignedLyrics(alignedLyrics))
 
-    case let .area(s):
-        return try ("A", _validateString(s))
+    case let .area(text):
+        return try ("A", _validateText(text))
 
-    case let .book(s):
-        return try ("B", _validateString(s))
+    case let .book(text):
+        return try ("B", _validateText(text))
 
-    case let .composer(s):
-        return try ("C", _validateString(s))
+    case let .composer(text):
+        return try ("C", _validateText(text))
 
-    case let .discography(s):
-        return try ("D", _validateString(s))
+    case let .discography(text):
+        return try ("D", _validateText(text))
 
-    case let .fileURL(s):
-        return try ("F", _validateString(s))
+    case let .fileURL(text):
+        return try ("F", _validateText(text))
 
-    case let .group(s):
-        return try ("G", _validateString(s))
+    case let .group(text):
+        return try ("G", _validateText(text))
 
-    case let .history(s):
-        return try ("H", _validateString(s))
+    case let .history(text):
+        return try ("H", _validateText(text))
 
-    case let .instruction(dir):
-        let value = dir.value.isEmpty ? dir.name : "\(dir.name) \(dir.value)"
+    case let .instruction(directive):
+        let value = directive.value.isEmpty
+                    ? directive.name
+                    : "\(directive.name) \(directive.value)"
 
-        return try ("I", _validateString(value))
+        return try ("I", _validateText(value))
 
-    case let .key(ks):
-        return ("K", _formatKey(ks))
+    case let .key(ABCKeySignature):
+        return ("K", _formatKey(ABCKeySignature))
 
     case let .legacy(letter, text):
-        return try (String(letter), _validateString(text))
+        return try (String(letter), _validateText(text))
 
-    case let .lyrics(s):
-        return try ("W", _validateString(s))
+    case let .lyrics(text):
+        return try ("W", _validateText(text))
 
-    case let .macro(m):
-        return try ("m", _validateString("\(m.trigger)=\(m.replacement)"))
+    case let .macro(macro):
+        return try ("m", _validateText("\(macro.trigger)=\(macro.replacement)"))
 
-    case let .meter(ts):
-        switch ts {
+    case let .meter(timeSignature):
+        switch timeSignature {
         case let .explicit(fraction):
             guard isPowerOfTwo(fraction.denominator)
-            else { throw ABCFormatter.Error.invalidTimeSignature(ts) }
+            else { throw ABCFormatter.Error.invalidTimeSignature(timeSignature) }
 
         case let .complex(nums, den):
             guard !nums.isEmpty,
                   isPowerOfTwo(den)
-            else { throw ABCFormatter.Error.invalidTimeSignature(ts) }
+            else { throw ABCFormatter.Error.invalidTimeSignature(timeSignature) }
 
         default:
             break
         }
 
-        return ("M", _formatMeter(ts))
+        return ("M", _formatMeter(timeSignature))
 
-    case let .notes(s):
-        return try ("N", _validateString(s))
+    case let .notes(text):
+        return try ("N", _validateText(text))
 
-    case let .origin(s):
-        return try ("O", _validateString(s))
+    case let .origin(text):
+        return try ("O", _validateText(text))
 
-    case let .parts(ps):
-        return ("P", _formatPartSequence(ps))
+    case let .parts(partSequence):
+        return ("P", _formatPartSequence(partSequence))
 
-    case let .refNumber(rn):
-        return ("X", "\(rn.uintValue)")
+    case let .refNumber(refNumber):
+        return ("X", "\(refNumber.uintValue)")
 
-    case let .remark(s):
-        return try ("r", _validateString(s))
+    case let .remark(text):
+        return try ("r", _validateText(text))
 
-    case let .rhythm(s):
-        return try ("R", _validateString(s))
+    case let .rhythm(text):
+        return try ("R", _validateText(text))
 
-    case let .source(s):
-        return try ("S", _validateString(s))
+    case let .source(text):
+        return try ("S", _validateText(text))
 
-    case let .symbolLine(sl):
-        return ("s", _formatSymbolLine(sl))
+    case let .symbolLine(symbolLine):
+        return ("s", _formatSymbolLine(symbolLine))
 
-    case let .tempo(t):
-        return ("Q", _formatTempo(t))
+    case let .tempo(tempo):
+        return ("Q", _formatTempo(tempo))
 
-    case let .title(s):
-        return try ("T", _validateString(s))
+    case let .title(text):
+        return try ("T", _validateText(text))
 
-    case let .transcription(s):
-        return try ("Z", _validateString(s))
+    case let .transcription(text):
+        return try ("Z", _validateText(text))
 
-    case let .unitNoteLength(dur):
-        guard isPowerOfTwo(dur.denominator)
-        else { throw ABCFormatter.Error.invalidUnitNoteLength(dur) }
+    case let .unitNoteLength(duration):
+        guard isPowerOfTwo(duration.denominator)
+        else { throw ABCFormatter.Error.invalidUnitNoteLength(duration) }
 
-        return ("L", "\(dur.numerator)/\(dur.denominator)")
+        return ("L", "\(duration.numerator)/\(duration.denominator)")
 
-    case let .userSymbol(us):
-        return ("U", "\(us.symbol)=\(us.decoration)")
+    case let .userSymbol(userSymbol):
+        return ("U", "\(userSymbol.symbol)=\(userSymbol.decoration)")
 
-    case let .voice(v):
-        guard !v.id.isEmpty
+    case let .voice(voice):
+        guard !voice.id.isEmpty
         else { throw ABCFormatter.Error.emptyVoiceID }
 
-        return ("V", _formatVoice(v))
+        return ("V", _formatVoice(voice))
     }
 }
 
@@ -128,9 +130,9 @@ internal func formatNote(_ note: ABCNote,
     result += formatPitchLetterOctave(note.pitch.letter,
                                       note.pitch.octave)
 
-    result += _formatDurationSuffix(note.duration,
-                                    unitNoteLength,
-                                    meter)
+    result += _formatDuration(note.duration,
+                              unitNoteLength,
+                              meter)
 
     if note.isTied {
         result += "-"
@@ -157,116 +159,122 @@ internal func formatSymbol(_ symbol: ABCSymbol,
                            _ unitNoteLength: ABCDuration?,
                            _ meter: ABCTimeSignature?) throws -> String {
     switch symbol {
-    case let .annotation(ann):
-        return "\"\(ann.stringValue)\""
+    case let .annotation(annotation):
+        return "\"\(annotation.stringValue)\""
 
-    case let .barRepeat(br):
+    case let .barRepeat(text):
         let validChars: Set<Character> = ["|", ":", "[", "]"]
 
-        guard !br.isEmpty,
-              br.allSatisfy({ validChars.contains($0) })
-        else { throw ABCFormatter.Error.invalidBarRepeat(br) }
+        guard !text.isEmpty,
+              text.allSatisfy({ validChars.contains($0) })
+        else { throw ABCFormatter.Error.invalidBarRepeat(text) }
 
-        return br
+        return text
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
 
-    case let .brokenRhythm(br):
-        guard !br.isEmpty,
-              br.count <= 3,
-              let first = br.first,
+    case let .brokenRhythm(text):
+        guard !text.isEmpty,
+              text.count <= 3,
+              let first = text.first,
               first == ">" || first == "<",
-              br.allSatisfy({ $0 == first })
-        else { throw ABCFormatter.Error.invalidBrokenRhythm(br) }
+              text.allSatisfy({ $0 == first })
+        else { throw ABCFormatter.Error.invalidBrokenRhythm(text) }
 
-        return br
+        return text
 
-    case let .chord(notes, dur, isTied):
-        return try _formatChord(notes, dur, isTied, unitNoteLength, meter)
+    case let .chord(chord):
+        return try _formatChord(chord,
+                                unitNoteLength,
+                                meter)
 
-    case let .chordSymbol(cs):
-        return "\"\(cs)\""
+    case let .chordSymbol(text):
+        return "\"\(text)\""
 
-    case let .decoration(dec):
-        guard !dec.name.isEmpty,
-              !dec.name.contains("!")
-        else { throw ABCFormatter.Error.invalidDecorationName(dec.name) }
+    case let .decoration(decoration):
+        guard !decoration.name.isEmpty,
+              !decoration.name.contains("!")
+        else { throw ABCFormatter.Error.invalidDecorationName(decoration.name) }
 
-        return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
+        return decoration.shorthand.map { String($0) } ?? "!\(decoration.name)!"
 
-    case let .graceNotes(slash, notes):
-        return try _formatGraceNotes(slash, notes, unitNoteLength, meter)
+    case let .graceNotes(graceNotes):
+        return try _formatGraceNotes(graceNotes,
+                                     unitNoteLength,
+                                     meter)
 
-    case let .inlineField(ifld):
-        let (letter, value) = try formatFieldContent(ifld)
+    case let .inlineField(field):
+        let (letter, value) = try formatFieldContent(field)
 
         return "[\(letter):\(value)]"
 
-    case let .macroCall(mc):
-        return mc.trigger
+    case let .macroCall(macroCall):
+        return macroCall.trigger
 
-    case let .note(nt):
-        guard nt.duration.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(nt.duration) }
+    case let .note(note):
+        guard note.duration.numerator > 0
+        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
 
-        return formatNote(nt, unitNoteLength, meter)
+        return formatNote(note,
+                          unitNoteLength,
+                          meter)
 
     case .overlay:
         return "&"
 
-    case let .rest(rst):
-        switch rst {
-        case let .multiMeasure(inv, measureCount):
+    case let .rest(rest):
+        switch rest {
+        case let .multiMeasure(invisible, measureCount):
             guard measureCount > 0
             else { throw ABCFormatter.Error.invalidMultiMeasureRestCount }
 
-            let letter = inv ? "X" : "Z"
+            let letter = invisible ? "X" : "Z"
 
             return measureCount == 1 ? letter : "\(letter)\(measureCount)"
 
-        case let .regular(inv, dur):
-            guard dur.numerator > 0
-            else { throw ABCFormatter.Error.invalidDuration(dur) }
+        case let .regular(invisible, duration):
+            guard duration.numerator > 0
+            else { throw ABCFormatter.Error.invalidDuration(duration) }
 
-            let letter = inv ? "x" : "z"
+            let letter = invisible ? "x" : "z"
 
-            return "\(letter)\(_formatDurationSuffix(dur, unitNoteLength, meter))"
+            return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
         }
 
-    case let .slur(sl):
-        guard sl == "(" || sl == ")"
-        else { throw ABCFormatter.Error.invalidSlur(sl) }
+    case let .slur(text):
+        guard text == "(" || text == ")"
+        else { throw ABCFormatter.Error.invalidSlur(text) }
 
-        return sl
+        return text
 
-    case let .spacer(dur):
-        guard dur.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(dur) }
+    case let .spacer(duration):
+        guard duration.numerator > 0
+        else { throw ABCFormatter.Error.invalidDuration(duration) }
 
-        return "y\(_formatDurationSuffix(dur, unitNoteLength, meter))"
+        return "y\(_formatDuration(duration, unitNoteLength, meter))"
 
-    case let .tuplet(tup):
-        guard tup.noteCount > 0
+    case let .tuplet(tuplet):
+        guard tuplet.noteCount > 0
         else { throw ABCFormatter.Error.invalidTupletNoteCount }
 
-        return tup.stringValue
+        return tuplet.stringValue
 
-    case let .variantEnding(ve):
-        guard !ve.endings.isEmpty
+    case let .variantEnding(variantEnding):
+        guard !variantEnding.endings.isEmpty
         else { throw ABCFormatter.Error.emptyVariantEnding }
 
-        return ve.stringValue
+        return variantEnding.stringValue
     }
 }
 
-internal func isPowerOfTwo(_ n: UInt) -> Bool {
-    n > 0 && (n & (n - 1)) == 0
+internal func isPowerOfTwo(_ value: UInt) -> Bool {
+    value > 0 && (value & (value - 1)) == 0
 }
 
-internal func log2Integer(_ n: UInt) -> Int {
+internal func log2Integer(_ inValue: UInt) -> Int {
+    var value = inValue
     var result = 0
-    var value = n
 
     while value > 1 {
         value >>= 1
@@ -333,12 +341,12 @@ private func _durationFromMeter(_ meter: ABCTimeSignature) -> ABCDuration {
         let ratio = Double(fraction.numerator) / Double(fraction.denominator)
 
         return ratio < 0.75
-               ? ABCDuration(numerator: 1,
-                             denominator: 16,
-                             reduce: false)
-               : ABCDuration(numerator: 1,
-                             denominator: 8,
-                             reduce: false)
+        ? ABCDuration(numerator: 1,
+                      denominator: 16,
+                      reduce: false)
+        : ABCDuration(numerator: 1,
+                      denominator: 8,
+                      reduce: false)
 
     default:
         return ABCDuration(numerator: 1,
@@ -349,12 +357,12 @@ private func _durationFromMeter(_ meter: ABCTimeSignature) -> ABCDuration {
 
 private func _effectiveBase(_ unitNoteLength: ABCDuration?,
                             _ meter: ABCTimeSignature?) -> ABCDuration {
-    if let dur = unitNoteLength {
-        return dur
+    if let unitNoteLength {
+        return unitNoteLength
     }
 
-    if let ts = meter {
-        return _durationFromMeter(ts)
+    if let meter {
+        return _durationFromMeter(meter)
     }
 
     return ABCDuration(numerator: 1,
@@ -362,27 +370,24 @@ private func _effectiveBase(_ unitNoteLength: ABCDuration?,
                        reduce: false)
 }
 
-private func _formatAlignedLyrics(_ al: ABCAlignedLyrics) -> String {
+private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
     var result = ""
 
-    for segment in al.segments {
+    for segment in alignedLyrics.segments {
         switch segment {
-        case let .syllable(text):
+        case .barAlign:
             if !result.isEmpty {
                 result.append(" ")
             }
 
-            result.append(text.replacingOccurrences(of: "%",
-                                                    with: "\\%")
-                             .replacingOccurrences(of: " ",
-                                                   with: "~"))
+            result.append("|")
 
         case let .continuation(text):
             result.append("-")
             result.append(text.replacingOccurrences(of: "%",
                                                     with: "\\%")
-                             .replacingOccurrences(of: " ",
-                                                   with: "~"))
+                .replacingOccurrences(of: " ",
+                                      with: "~"))
 
         case .hold:
             if !result.isEmpty {
@@ -398,44 +403,45 @@ private func _formatAlignedLyrics(_ al: ABCAlignedLyrics) -> String {
 
             result.append("*")
 
-        case .barAlign:
+        case let .syllable(text):
             if !result.isEmpty {
                 result.append(" ")
             }
 
-            result.append("|")
+            result.append(text.replacingOccurrences(of: "%",
+                                                    with: "\\%")
+                .replacingOccurrences(of: " ",
+                                      with: "~"))
         }
     }
 
     return result
 }
 
-private func _formatChord(_ notes: [ABCNote],
-                          _ dur: ABCDuration,
-                          _ isTied: Bool,
+private func _formatChord(_ chord: ABCChord,
                           _ unitNoteLength: ABCDuration?,
                           _ meter: ABCTimeSignature?) throws -> String {
-    guard !notes.isEmpty
+    guard !chord.notes.isEmpty
     else { throw ABCFormatter.Error.emptyChord }
 
-    guard dur.numerator > 0
-    else { throw ABCFormatter.Error.invalidDuration(dur) }
+    guard chord.duration.numerator > 0
+    else { throw ABCFormatter.Error.invalidDuration(chord.duration) }
 
-    for note in notes {
+    for note in chord.notes {
         guard note.duration.numerator > 0
         else { throw ABCFormatter.Error.invalidDuration(note.duration) }
     }
 
     var result = "["
 
-    result += notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+    result += chord.notes.map { formatNote($0, unitNoteLength, meter) }.joined()
 
     result += "]"
 
-    result += _formatDurationSuffix(dur,
-                                    unitNoteLength,
-                                    meter)
-    if isTied {
+    result += _formatDuration(chord.duration,
+                              unitNoteLength,
+                              meter)
+    if chord.isTied {
         result += "-"
     }
 
@@ -468,12 +474,12 @@ private func _formatClef(_ clef: ABCClef) -> String {
     return parts.joined(separator: " ")
 }
 
-private func _formatDurationSuffix(_ stored: ABCDuration,
-                                   _ unitNoteLength: ABCDuration?,
-                                   _ meter: ABCTimeSignature?) -> String {
+private func _formatDuration(_ duration: ABCDuration,
+                             _ unitNoteLength: ABCDuration?,
+                             _ meter: ABCTimeSignature?) -> String {
     let base = _effectiveBase(unitNoteLength, meter)
-    let mn = stored.numerator * base.denominator
-    let md = stored.denominator * base.numerator
+    let mn = duration.numerator * base.denominator
+    let md = duration.denominator * base.numerator
     let reduced = ABCFraction(numerator: mn,
                               denominator: md,
                               reduce: true)
@@ -500,33 +506,35 @@ private func _formatDurationSuffix(_ stored: ABCDuration,
     return "\(rn)/\(rd)"
 }
 
-private func _formatGraceNotes(_ slash: Bool,
-                               _ notes: [ABCNote],
+private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
                                _ unitNoteLength: ABCDuration?,
                                _ meter: ABCTimeSignature?) throws -> String {
-    guard !notes.isEmpty
+    guard !graceNotes.notes.isEmpty
     else { throw ABCFormatter.Error.emptyGraceNotes }
 
-    for note in notes {
+    for note in graceNotes.notes {
         guard note.duration.numerator > 0
         else { throw ABCFormatter.Error.invalidDuration(note.duration) }
     }
 
     var result = "{"
 
-    if slash {
+    if graceNotes.isSlashed {
         result += "/"
     }
 
-    result += notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+    result += graceNotes.notes.map { formatNote($0, unitNoteLength, meter) }.joined()
 
     result += "}"
 
     return result
 }
 
-private func _formatKey(_ ks: ABCKeySignature) -> String {
-    switch ks {
+private func _formatKey(_ keySignature: ABCKeySignature) -> String {
+    switch keySignature {
+    case let .clefOnly(clef):
+        return _formatClef(clef)
+
     case .empty:
         return "none"
 
@@ -536,10 +544,7 @@ private func _formatKey(_ ks: ABCKeySignature) -> String {
     case .highlandPipesPreset:
         return "Hp"
 
-    case let .clefOnly(clef):
-        return _formatClef(clef)
-
-    case let .standard(tonic, mode, accs, clef):
+    case let .standard(tonic, mode, accidentals, clef):
         var result = _formatTonic(tonic)
 
         let modeSuffix = _formatMode(mode)
@@ -549,10 +554,10 @@ private func _formatKey(_ ks: ABCKeySignature) -> String {
             result.append(modeSuffix)
         }
 
-        for acc in accs {
+        for pitch in accidentals {
             result.append(" ")
-            result.append(_formatKeyAccidental(acc.accidental))
-            result.append(formatPitchLetterOctave(acc.letter, acc.octave))
+            result.append(_formatKeyAccidental(pitch.accidental))
+            result.append(formatPitchLetterOctave(pitch.letter, pitch.octave))
         }
 
         if let clef {
@@ -568,12 +573,12 @@ private func _formatKey(_ ks: ABCKeySignature) -> String {
     }
 }
 
-private func _formatKeyAccidental(_ acc: ABCPitch.Accidental) -> String {
-    pitchAccidentals[acc]?.key ?? ""
+private func _formatKeyAccidental(_ accidental: ABCPitch.Accidental) -> String {
+    pitchAccidentals[accidental]?.key ?? ""
 }
 
-private func _formatMeter(_ ts: ABCTimeSignature) -> String {
-    switch ts {
+private func _formatMeter(_ timeSignature: ABCTimeSignature) -> String {
+    switch timeSignature {
     case .common:
         "C"
 
@@ -586,8 +591,8 @@ private func _formatMeter(_ ts: ABCTimeSignature) -> String {
     case let .explicit(fraction):
         "\(fraction.numerator)/\(fraction.denominator)"
 
-    case let .complex(nums, den):
-        "(\(nums.map { "\($0)" }.joined(separator: "+")))/\(den)"
+    case let .complex(numerators, denominator):
+        "(\(numerators.map { "\($0)" }.joined(separator: "+")))/\(denominator)"
     }
 }
 
@@ -596,37 +601,37 @@ private func _formatMode(_ mode: ABCKeySignature.Mode) -> String {
 }
 
 private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
-    items.map { item -> String in
+    items.map { item in
         switch item {
-        case let .part(ch, count):
-            return count == 1 ? String(ch) : "\(ch)\(count)"
-
         case let .group(children, count):
             let inner = _formatPartItems(children)
 
             return count == 1 ? "(\(inner))" : "(\(inner))\(count)"
+
+        case let .part(char, count):
+            return count == 1 ? String(char) : "\(char)\(count)"
         }
     }.joined()
 }
 
-private func _formatPartSequence(_ ps: ABCPartSequence) -> String {
-    _formatPartItems(ps.items)
+private func _formatPartSequence(_ partSequence: ABCPartSequence) -> String {
+    _formatPartItems(partSequence.items)
 }
 
-private func _formatSymbolLine(_ sl: ABCSymbolLine) -> String {
-    sl.tokens.map { token -> String in
+private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
+    symbolLine.tokens.map { token in
         switch token {
-        case let .annotation(ann):
-            return "\"\(ann.stringValue)\""
+        case let .annotation(annotation):
+            "\"\(annotation.stringValue)\""
 
-        case let .chordSymbol(cs):
-            return "\"\(cs)\""
+        case let .chordSymbol(text):
+            "\"\(text)\""
 
-        case let .decoration(dec):
-            return dec.shorthand.map { String($0) } ?? "!\(dec.name)!"
+        case let .decoration(decoration):
+            decoration.shorthand.map { String($0) } ?? "!\(decoration.name)!"
 
         case .skip:
-            return "*"
+            "*"
         }
     }.joined(separator: " ")
 }
@@ -674,12 +679,12 @@ private func _formatVoice(_ voice: ABCVoice) -> String {
     return parts.joined(separator: " ")
 }
 
-private func _validateString(_ string: String) throws -> String {
-    guard !string.contains(where: { $0.isNewline })
-    else { throw ABCFormatter.Error.invalidStringArgument(string) }
+private func _validateText(_ text: String) throws -> String {
+    guard !text.contains(where: { $0.isNewline })
+    else { throw ABCFormatter.Error.invalidTextValue(text) }
 
-    return string.contains("%")
-           ? string.replacingOccurrences(of: "%",
-                                         with: "\\%")
-           : string
+    return text.contains("%")
+           ? text.replacingOccurrences(of: "%",
+                                       with: "\\%")
+           : text
 }

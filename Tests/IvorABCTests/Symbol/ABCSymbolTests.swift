@@ -32,7 +32,8 @@ extension ABCSymbolTests {
         let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        #expect(ABCSymbol.chord([note], duration, false) == .chord([note], duration, false))
+        #expect(ABCSymbol.chord(ABCChord(notes: [note], duration: duration, isTied: false))
+                    == .chord(ABCChord(notes: [note], duration: duration, isTied: false)))
     }
 
     @Test
@@ -51,8 +52,10 @@ extension ABCSymbolTests {
         let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        #expect(ABCSymbol.graceNotes(false, [note]) == .graceNotes(false, [note]))
-        #expect(ABCSymbol.graceNotes(true, [note]) == .graceNotes(true, [note]))
+        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: false, notes: [note]))
+                    == .graceNotes(ABCGraceNotes(isSlashed: false, notes: [note])))
+        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: true, notes: [note]))
+                    == .graceNotes(ABCGraceNotes(isSlashed: true, notes: [note])))
     }
 
     @Test
