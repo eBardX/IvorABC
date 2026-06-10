@@ -356,8 +356,8 @@ func _rnum(_ uintValue: UInt) -> ABCRefNumber {
 }
 
 // swiftlint:disable:next identifier_name
-func _sline(_ tokens: [ABCSymbolLine.Element] = []) -> ABCSymbolLine {
-    ABCSymbolLine(tokens: tokens)
+func _sline(_ elements: [ABCSymbolLine.Element] = []) -> ABCSymbolLine {
+    ABCSymbolLine(elements: elements)
 }
 
 // swiftlint:disable:next identifier_name

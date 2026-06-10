@@ -636,7 +636,7 @@ private func _formatPartSequence(_ partSequence: ABCPartSequence) -> String {
 }
 
 private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
-    symbolLine.tokens.map { token in
+    symbolLine.elements.map { token in
         switch token {
         case let .annotation(annotation):
             "\"\(annotation.stringValue)\""

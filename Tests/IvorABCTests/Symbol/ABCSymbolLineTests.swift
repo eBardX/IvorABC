@@ -11,40 +11,40 @@ struct ABCSymbolLineTests {
 extension ABCSymbolLineTests {
     @Test
     func equality() {
-        let sl1 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "trill")), .skip])
-        let sl2 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "trill")), .skip])
+        let sl1 = ABCSymbolLine(elements: [.decoration(ABCDecoration(name: "trill")), .skip])
+        let sl2 = ABCSymbolLine(elements: [.decoration(ABCDecoration(name: "trill")), .skip])
 
         #expect(sl1 == sl2)
     }
 
     @Test
     func inequality_differentCount() {
-        let sl1 = ABCSymbolLine(tokens: [.skip])
-        let sl2 = ABCSymbolLine(tokens: [.skip, .skip])
+        let sl1 = ABCSymbolLine(elements: [.skip])
+        let sl2 = ABCSymbolLine(elements: [.skip, .skip])
 
         #expect(sl1 != sl2)
     }
 
     @Test
     func inequality_differentToken() {
-        let sl1 = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p"))])
-        let sl2 = ABCSymbolLine(tokens: [.skip])
+        let sl1 = ABCSymbolLine(elements: [.decoration(ABCDecoration(name: "p"))])
+        let sl2 = ABCSymbolLine(elements: [.skip])
 
         #expect(sl1 != sl2)
     }
 
     @Test
-    func tokens_empty() {
-        let sl = ABCSymbolLine(tokens: [])
+    func elements_empty() {
+        let sl = ABCSymbolLine(elements: [])
 
-        #expect(sl.tokens.isEmpty)
+        #expect(sl.elements.isEmpty)
     }
 
     @Test
-    func tokens_mixed() {
+    func elements_mixed() {
         let a = ABCAnnotation(position: .above, text: "forte")
-        let sl = ABCSymbolLine(tokens: [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
+        let sl = ABCSymbolLine(elements: [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
 
-        #expect(sl.tokens == [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
+        #expect(sl.elements == [.decoration(ABCDecoration(name: "p")), .skip, .chordSymbol("Am"), .annotation(a)])
     }
 }

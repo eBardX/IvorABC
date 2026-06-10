@@ -439,7 +439,7 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
 }
 
 internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
-    var tokens: [ABCSymbolLine.Element] = []
+    var elements: [ABCSymbolLine.Element] = []
     var input = tidyInput
 
     while !input.isEmpty {
@@ -450,7 +450,7 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
 
         switch input.first {
         case "*":
-            tokens.append(.skip)
+            elements.append(.skip)
 
             input = input.dropFirst()
 
@@ -462,7 +462,7 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
             else { return nil }
 
-            tokens.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]))))
+            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]))))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -475,9 +475,9 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             let content = String(rest[..<closeIdx])
 
             if let annotation = ABCAnnotation(stringValue: content) {
-                tokens.append(.annotation(annotation))
+                elements.append(.annotation(annotation))
             } else {
-                tokens.append(.chordSymbol(content))
+                elements.append(.chordSymbol(content))
             }
 
             input = rest[rest.index(after: closeIdx)...]
@@ -487,7 +487,7 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
         }
     }
 
-    return ABCSymbolLine(tokens: tokens)
+    return ABCSymbolLine(elements: elements)
 }
 
 internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
