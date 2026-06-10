@@ -11,14 +11,14 @@ public struct ABCSymbolLine {
     /// Creates a new symbol line with the given tokens.
     ///
     /// - Parameter tokens: The positional tokens.
-    public init(tokens: [Token]) {
+    public init(tokens: [Element]) {
         self.tokens = tokens
     }
 
     // MARK: Public Instance Properties
 
     /// The positional tokens, each corresponding to a note in the music line.
-    public let tokens: [Token]
+    public let tokens: [Element]
 }
 
 // MARK: - Equatable

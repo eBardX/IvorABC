@@ -439,7 +439,7 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
 }
 
 internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
-    var tokens: [ABCSymbolLine.Token] = []
+    var tokens: [ABCSymbolLine.Element] = []
     var input = tidyInput
 
     while !input.isEmpty {

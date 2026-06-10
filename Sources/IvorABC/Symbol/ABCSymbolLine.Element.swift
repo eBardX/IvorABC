@@ -4,8 +4,8 @@ extension ABCSymbolLine {
 
     // MARK: Public Nested Types
 
-    /// A single positional token in a symbol line.
-    public enum Token {
+    /// A single positional element in a symbol line.
+    public enum Element {
         /// An annotation to attach to the corresponding note.
         case annotation(ABCAnnotation)
 
@@ -24,10 +24,10 @@ extension ABCSymbolLine {
 
 // MARK: - Equatable
 
-extension ABCSymbolLine.Token: Equatable {
+extension ABCSymbolLine.Element: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCSymbolLine.Token: Sendable {
+extension ABCSymbolLine.Element: Sendable {
 }
