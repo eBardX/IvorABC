@@ -65,7 +65,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_continuation_emitsHyphen() throws {
-        let lyrics = _alyrics([.syllable("hel"), .continuation("lo")])
+        let lyrics = _alyrics([.text("hel"), .hyphen, .text("lo")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -77,7 +77,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_hold_emitsUnderscore() throws {
-        let lyrics = _alyrics([.syllable("long"), .hold])
+        let lyrics = _alyrics([.text("long"), .hold])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -89,7 +89,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_syllableWithPercent_escapesPercentSign() throws {
-        let lyrics = _alyrics([.syllable("100%"), .syllable("done")])
+        let lyrics = _alyrics([.text("100%"), .text("done")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -101,7 +101,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_syllables_emitsSpaceSeparated() throws {
-        let lyrics = _alyrics([.syllable("hel"), .syllable("lo")])
+        let lyrics = _alyrics([.text("hel"), .text("lo")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),

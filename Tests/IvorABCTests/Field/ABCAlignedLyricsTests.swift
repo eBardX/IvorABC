@@ -11,23 +11,23 @@ struct ABCAlignedLyricsTests {
 extension ABCAlignedLyricsTests {
     @Test
     func equality() {
-        let al1 = ABCAlignedLyrics(segments: [.syllable("grace"), .hold])
-        let al2 = ABCAlignedLyrics(segments: [.syllable("grace"), .hold])
+        let al1 = ABCAlignedLyrics(segments: [.text("grace"), .hold])
+        let al2 = ABCAlignedLyrics(segments: [.text("grace"), .hold])
 
         #expect(al1 == al2)
     }
 
     @Test
     func inequality_differentCount() {
-        let al1 = ABCAlignedLyrics(segments: [.syllable("grace")])
-        let al2 = ABCAlignedLyrics(segments: [.syllable("grace"), .hold])
+        let al1 = ABCAlignedLyrics(segments: [.text("grace")])
+        let al2 = ABCAlignedLyrics(segments: [.text("grace"), .hold])
 
         #expect(al1 != al2)
     }
 
     @Test
     func inequality_differentSegment() {
-        let al1 = ABCAlignedLyrics(segments: [.syllable("grace")])
+        let al1 = ABCAlignedLyrics(segments: [.text("grace")])
         let al2 = ABCAlignedLyrics(segments: [.skip])
 
         #expect(al1 != al2)
@@ -35,21 +35,23 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func parseAlignedLyrics_allSpecials() {
-        let expected = _alyrics([.syllable("syl"),
-                                 .continuation("la"),
-                                 .continuation("ble"),
-                                 .syllable("grace"),
+        let expected = _alyrics([.text("syl"),
+                                 .hyphen,
+                                 .text("la"),
+                                 .hyphen,
+                                 .text("ble"),
+                                 .text("grace"),
                                  .hold,
                                  .skip,
                                  .barAlign,
-                                 .syllable("next")])
+                                 .text("next")])
 
         #expect(IvorABC.parseAlignedLyrics("syl-la-ble grace _ * | next") == expected)
     }
 
     @Test
     func parseAlignedLyrics_barAlign() {
-        #expect(IvorABC.parseAlignedLyrics("A | B") == _alyrics([.syllable("A"), .barAlign, .syllable("B")]))
+        #expect(IvorABC.parseAlignedLyrics("A | B") == _alyrics([.text("A"), .barAlign, .text("B")]))
     }
 
     @Test
@@ -59,47 +61,49 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func parseAlignedLyrics_escapedHyphen() {
-        #expect(IvorABC.parseAlignedLyrics("don\\-t") == _alyrics([.syllable("don-t")]))
+        #expect(IvorABC.parseAlignedLyrics("don\\-t") == _alyrics([.text("don"), .escapedHyphen, .text("t")]))
     }
 
     @Test
     func parseAlignedLyrics_hold() {
-        #expect(IvorABC.parseAlignedLyrics("grace _") == _alyrics([.syllable("grace"), .hold]))
+        #expect(IvorABC.parseAlignedLyrics("grace _") == _alyrics([.text("grace"), .hold]))
     }
 
     @Test
     func parseAlignedLyrics_hyphenAndSpace() {
-        let expected = _alyrics([.syllable("A"),
-                                 .continuation("ma"),
-                                 .continuation("zing"),
-                                 .syllable("grace")])
+        let expected = _alyrics([.text("A"),
+                                 .hyphen,
+                                 .text("ma"),
+                                 .hyphen,
+                                 .text("zing"),
+                                 .text("grace")])
 
         #expect(IvorABC.parseAlignedLyrics("A-ma-zing grace") == expected)
     }
 
     @Test
     func parseAlignedLyrics_hyphenatedWord() {
-        #expect(IvorABC.parseAlignedLyrics("A-ma-zing") == _alyrics([.syllable("A"), .continuation("ma"), .continuation("zing")]))
+        #expect(IvorABC.parseAlignedLyrics("A-ma-zing") == _alyrics([.text("A"), .hyphen, .text("ma"), .hyphen, .text("zing")]))
     }
 
     @Test
     func parseAlignedLyrics_singleSyllable() {
-        #expect(IvorABC.parseAlignedLyrics("grace") == _alyrics([.syllable("grace")]))
+        #expect(IvorABC.parseAlignedLyrics("grace") == _alyrics([.text("grace")]))
     }
 
     @Test
     func parseAlignedLyrics_skip() {
-        #expect(IvorABC.parseAlignedLyrics("* grace") == _alyrics([.skip, .syllable("grace")]))
+        #expect(IvorABC.parseAlignedLyrics("* grace") == _alyrics([.skip, .text("grace")]))
     }
 
     @Test
-    func parseAlignedLyrics_tildeMeansSpace() {
-        #expect(IvorABC.parseAlignedLyrics("how~sweet") == _alyrics([.syllable("how sweet")]))
+    func parseAlignedLyrics_tilde() {
+        #expect(IvorABC.parseAlignedLyrics("how~sweet") == _alyrics([.text("how"), .tilde, .text("sweet")]))
     }
 
     @Test
     func parseAlignedLyrics_wordBoundaries() {
-        #expect(IvorABC.parseAlignedLyrics("la la la") == _alyrics([.syllable("la"), .syllable("la"), .syllable("la")]))
+        #expect(IvorABC.parseAlignedLyrics("la la la") == _alyrics([.text("la"), .text("la"), .text("la")]))
     }
 
     @Test
@@ -111,8 +115,8 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func segments_mixed() {
-        let al = ABCAlignedLyrics(segments: [.syllable("A"), .continuation("ma"), .hold, .skip, .barAlign])
+        let al = ABCAlignedLyrics(segments: [.text("A"), .hyphen, .text("ma"), .hold, .skip, .barAlign])
 
-        #expect(al.segments == [.syllable("A"), .continuation("ma"), .hold, .skip, .barAlign])
+        #expect(al.segments == [.text("A"), .hyphen, .text("ma"), .hold, .skip, .barAlign])
     }
 }

@@ -4,26 +4,28 @@ extension ABCAlignedLyrics {
 
     // MARK: Public Nested Types
 
-    /// A single positional segment in an aligned lyrics line.
+    /// A single token in an aligned lyrics line.
     public enum Segment {
-        /// A lyric syllable at a word boundary (preceded by a space or at start).
-        ///
-        /// A `~` in the source is stored as a space within the syllable text.
-        case syllable(String)
+        /// Advance to the next bar (`|`).
+        case barAlign
 
-        /// A lyric syllable at a hyphen boundary (preceded by `-`).
-        ///
-        /// A hyphen will appear between this syllable and the preceding one.
-        case continuation(String)
+        /// A literal hyphen (`\-`); renders as a hyphen character within a syllable.
+        case escapedHyphen
 
         /// Extend the previous syllable over this note (`_`).
         case hold
 
+        /// A syllable connector (`-`); links preceding and following text within the same word.
+        case hyphen
+
         /// No syllable for this note (`*`).
         case skip
 
-        /// Advance to the next bar (`|`).
-        case barAlign
+        /// A run of plain lyric text (no special characters).
+        case text(String)
+
+        /// A word-internal space (`~`); renders as a space within a syllable.
+        case tilde
     }
 }
 

@@ -40,11 +40,11 @@ extension ABCParseFunctionsTests {
     @Test
     func parseField_alignedLyrics_decodesTextEscapes() throws {
         try expectFieldIsAlignedLyrics(parseField("w:f\\'o"),
-                                       _alyrics([.syllable("fó")]))
+                                       _alyrics([.text("fó")]))
         try expectFieldIsAlignedLyrics(parseField("w:foo\\%bar"),
-                                       _alyrics([.syllable("foo%bar")]))
+                                       _alyrics([.text("foo%bar")]))
         try expectFieldIsAlignedLyrics(parseField("w:A-m\\\"a-zing"),
-                                       _alyrics([.syllable("A"), .continuation("mä"), .continuation("zing")]))
+                                       _alyrics([.text("A"), .hyphen, .text("mä"), .hyphen, .text("zing")]))
     }
 
     @Test
@@ -60,7 +60,7 @@ extension ABCParseFunctionsTests {
     @Test
     func parseField_success() throws {
         try expectFieldIsAlignedLyrics(parseField("w:la la la"),
-                                       _alyrics([.syllable("la"), .syllable("la"), .syllable("la")]))
+                                       _alyrics([.text("la"), .text("la"), .text("la")]))
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
         try expectFieldIsComposer(parseField("C:J.S. Bach"), "J.S. Bach")

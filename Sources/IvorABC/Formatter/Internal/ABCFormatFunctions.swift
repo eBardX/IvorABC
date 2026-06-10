@@ -371,47 +371,64 @@ private func _effectiveBase(_ unitNoteLength: ABCDuration?,
 }
 
 private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
+    var prevIsConnector = false
     var result = ""
 
     for segment in alignedLyrics.segments {
+        let needsSpace = !result.isEmpty && !prevIsConnector
+
         switch segment {
         case .barAlign:
-            if !result.isEmpty {
+            if needsSpace {
                 result.append(" ")
             }
 
             result.append("|")
 
-        case let .continuation(text):
-            result.append("-")
-            result.append(text.replacingOccurrences(of: "%",
-                                                    with: "\\%")
-                .replacingOccurrences(of: " ",
-                                      with: "~"))
+            prevIsConnector = false
+
+        case .escapedHyphen:
+            result.append("\\-")
+
+            prevIsConnector = true
 
         case .hold:
-            if !result.isEmpty {
+            if needsSpace {
                 result.append(" ")
             }
 
             result.append("_")
 
+            prevIsConnector = false
+
+        case .hyphen:
+            result.append("-")
+
+            prevIsConnector = true
+
         case .skip:
-            if !result.isEmpty {
+            if needsSpace {
                 result.append(" ")
             }
 
             result.append("*")
 
-        case let .syllable(text):
-            if !result.isEmpty {
+            prevIsConnector = false
+
+        case let .text(string):
+            if needsSpace {
                 result.append(" ")
             }
 
-            result.append(text.replacingOccurrences(of: "%",
-                                                    with: "\\%")
-                .replacingOccurrences(of: " ",
-                                      with: "~"))
+            result.append(string.replacingOccurrences(of: "%",
+                                                      with: "\\%"))
+
+            prevIsConnector = false
+
+        case .tilde:
+            result.append("~")
+
+            prevIsConnector = true
         }
     }
 

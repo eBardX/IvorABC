@@ -60,79 +60,62 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
     var segments: [ABCAlignedLyrics.Segment] = []
     var input = tidyInput
     var currentText = ""
-    var hasText = false
-    var precedingHyphen = false
 
-    func flush() {
-        guard hasText
-        else { return }
+    func appendSegment(_ segment: ABCAlignedLyrics.Segment) {
+        flushText()
 
-        segments.append(precedingHyphen
-                        ? .continuation(currentText)
-                        : .syllable(currentText))
-
-        currentText = ""
-        hasText = false
-        precedingHyphen = false
+        segments.append(segment)
     }
 
-    while let ch = input.first {
+    func flushText() {
+        guard !currentText.isEmpty
+        else { return }
+
+        segments.append(.text(currentText))
+
+        currentText = ""
+    }
+
+    while let char = input.first {
         input = input.dropFirst()
 
-        switch ch {
+        switch char {
         case "\\":
             if let next = input.first {
-                currentText.append(next)
-
                 input = input.dropFirst()
-                hasText = true
+
+                if next == "-" {
+                    appendSegment(.escapedHyphen)
+                } else {
+                    currentText.append(next)
+                }
             }
 
         case " ",
              "\t":
-            flush()
-
-            precedingHyphen = false
+            flushText()
 
         case "-":
-            flush()
-
-            precedingHyphen = true
-
-        case "_":
-            flush()
-
-            segments.append(.hold)
-
-            precedingHyphen = false
-
-        case "*":
-            flush()
-
-            segments.append(.skip)
-
-            precedingHyphen = false
-
-        case "|":
-            flush()
-
-            segments.append(.barAlign)
-
-            precedingHyphen = false
+            appendSegment(.hyphen)
 
         case "~":
-            currentText.append(" ")
+            appendSegment(.tilde)
 
-            hasText = true
+        case "_":
+            appendSegment(.hold)
+
+        case "*":
+            appendSegment(.skip)
+
+        case "|":
+            appendSegment(.barAlign)
 
         default:
-            currentText.append(ch)
-
-            hasText = true
+            currentText.append(char)
         }
     }
 
-    flush()
+    flushText()
 
     return ABCAlignedLyrics(segments: segments)
 }

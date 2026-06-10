@@ -30,10 +30,11 @@ extension ABCParserTests {
         }
 
         if case let .field(.alignedLyrics(al)) = lyricsEntry {
-            #expect(al == _alyrics([.syllable("fó"),
-                                    .syllable("ü"),
-                                    .continuation("zy"),
-                                    .syllable("foo%bar")]))
+            #expect(al == _alyrics([.text("fó"),
+                                    .text("ü"),
+                                    .hyphen,
+                                    .text("zy"),
+                                    .text("foo%bar")]))
         } else {
             Issue.record("Expected .field(.alignedLyrics)")
         }
