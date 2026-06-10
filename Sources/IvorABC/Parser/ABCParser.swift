@@ -104,7 +104,29 @@ extension ABCParser {
         for line in rawLines {
             let stripped = String(trimSuffix(uncomment(line)))
 
-            if stripped.hasSuffix("\\") {
+            //
+            // Field lines (letter: or +:) are never folded into a pending music
+            // accumulation. When a field line appears in the middle of a music
+            // continuation (e.g. a w: lyric or M: meter change between two
+            // backslash-continued music lines), flush the pending music first,
+            // then emit the field line on its own — stripping any trailing \
+            // that was acting as the continuation signal rather than field content.
+            //
+            let isFieldLine = (stripped.first?.isABCLetter == true || stripped.first == "+")
+                              && stripped.dropFirst().first == ":"
+
+            if isFieldLine {
+                if let buf = pending {
+                    result.append(Substring(buf))
+                    pending = nil
+                }
+
+                let fieldText = stripped.hasSuffix("\\")
+                                ? String(stripped.dropLast())
+                                : String(stripped)
+
+                result.append(Substring(fieldText))
+            } else if stripped.hasSuffix("\\") {
                 pending = (pending ?? "") + stripped.dropLast()
             } else if let buf = pending {
                 result.append(Substring(buf + String(line)))

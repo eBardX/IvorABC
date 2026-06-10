@@ -335,6 +335,34 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_lineContinuation_fieldLineBreaksAccumulation() throws {
+        // A w: lyrics field appearing between two \-continued music lines must
+        // be emitted as its own field, not merged into the joined music line.
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDE\\\nw: do re mi\\\nFGA|\nw: fa sol la\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbolEntries = tune.entries.filter { if case .symbols = $0 { true } else { false } }
+        let lyricsEntries = tune.entries.filter { if case .field(.alignedLyrics) = $0 { true } else { false } }
+
+        #expect(symbolEntries.count == 2)
+        #expect(lyricsEntries.count == 2)
+    }
+
+    @Test
+    func parse_lineContinuation_inlineFieldBreaksAccumulation() throws {
+        // An M: meter change between two \-continued music lines must be emitted
+        // as its own field, not merged into the joined music line.
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nCDEF\\\nM:3/4\nGAB|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let meterEntries = tune.entries.filter { if case .field(.meter) = $0 { true } else { false } }
+
+        #expect(meterEntries.count == 1)
+    }
+
+    @Test
     func parse_lineContinuation_joinsContinuedLines() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:C\nCDE\\\nFGA|\n"
         let data = Data(input.utf8)
