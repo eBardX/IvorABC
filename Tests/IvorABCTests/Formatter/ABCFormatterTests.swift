@@ -544,13 +544,14 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func fileIDLine_customVersion_emitsCorrectHeader() throws {
+    func fileIDLine_customVersion_throws() {
         let book = ABCTunebook(version: ABCVersion(major: 3, minor: 0),
                                headers: [],
                                tunes: [])
-        let output = try format(book)
 
-        #expect(output.hasPrefix("%abc-3.0\n"))
+        #expect(throws: ABCFormatter.Error.unsupportedVersion(ABCVersion(major: 3, minor: 0))) {
+            try format(book)
+        }
     }
 
     @Test
@@ -1309,6 +1310,17 @@ extension ABCFormatterTests {
                                                          .symbols([])])])
 
         #expect(try format(book).contains("V:V1\n"))
+    }
+
+    @Test
+    func unsupportedVersion_throws() {
+        let book = ABCTunebook(version: ABCVersion(major: 1, minor: 6),
+                               headers: [],
+                               tunes: [])
+
+        #expect(throws: ABCFormatter.Error.unsupportedVersion(ABCVersion(major: 1, minor: 6))) {
+            try format(book)
+        }
     }
 
     @Test

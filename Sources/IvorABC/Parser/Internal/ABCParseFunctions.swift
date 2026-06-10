@@ -584,6 +584,65 @@ internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     return .explicit(fraction)
 }
 
+/// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
+/// surrounded by a quoted text label), resolving `C` against `baseDuration`.
+///
+/// Returns `nil` if the input does not match the 1.6 C-form.
+internal func parseLegacyBeatTempo(_ tidyInput: Substring,
+                                   baseDuration: ABCDuration) -> ABCTempo? {
+    var input = tidyInput
+    var text: String?
+
+    // Leading optional "text"
+    if let (t, rest) = _consumeTempoText(input) {
+        text = t
+        input = rest
+    }
+
+    // Must start with 'C'
+    guard input.first == "C"
+    else { return nil }
+
+    input = input.dropFirst()
+
+    // Optional integer multiplier (e.g. the 3 in Q:C3=40)
+    guard let (multiplier, afterMultiplier) = _consumePositiveUInt(input, defaultValue: 1)
+    else { return nil }
+
+    input = afterMultiplier
+
+    // Must have '=' followed by rate
+    guard input.first == "="
+    else { return nil }
+
+    input = trimPrefix(input.dropFirst())
+
+    // Rate integer
+    guard let (rate, afterRate) = _consumePositiveUInt(input, defaultValue: nil)
+    else { return nil }
+
+    input = trimPrefix(afterRate)
+
+    // Trailing optional "text"
+    if let (t, rest) = _consumeTempoText(input) {
+        text = t
+        input = rest
+    }
+
+    guard input.isEmpty
+    else { return nil }
+
+    // Resolve C×n against the active base duration
+    let beat = ABCDuration(numerator: baseDuration.numerator * multiplier,
+                           denominator: baseDuration.denominator,
+                           reduce: true)
+
+    return ABCTempo(durations: [beat],
+                    rate: rate,
+                    text: text,
+                    legacyBeatMultiple: multiplier)
+}
+
 internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     guard tidyInput.hasPrefix("(")
     else { return nil }
@@ -1146,6 +1205,49 @@ private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring
     let value = trim(tail.dropFirst())
 
     return (name, value, isInline)
+}
+
+/// Consumes a leading `"text"` token and returns `(text, remainingInput)`, or
+/// `nil` if the input does not start with a closing-quotable segment.
+private func _consumeTempoText(_ input: Substring) -> (String, Substring)? {
+    guard input.first == "\""
+    else { return nil }
+
+    guard let closeIdx = input.dropFirst().firstIndex(of: "\""),
+          let t = _parseTempoText(input[...closeIdx])
+    else { return nil }
+
+    let rest = trimPrefix(input[input.index(after: closeIdx)...])
+
+    return (t, rest)
+}
+
+/// Consumes a run of decimal digits and returns `(value, remainingInput)`.
+///
+/// - If the input starts with no digits, returns `(defaultValue, input)` when
+///   `defaultValue` is non-nil, otherwise returns `nil`.
+/// - Returns `nil` when the parsed integer is zero.
+private func _consumePositiveUInt(_ input: Substring,
+                                  defaultValue: UInt?) -> (UInt, Substring)? {
+    var digits = ""
+    var rest = input
+
+    while let ch = rest.first, ch.isNumber {
+        digits.append(ch)
+        rest = rest.dropFirst()
+    }
+
+    if digits.isEmpty {
+        guard let d = defaultValue
+        else { return nil }
+
+        return (d, input)
+    }
+
+    guard let value = UInt(digits), value > 0
+    else { return nil }
+
+    return (value, rest)
 }
 
 // swiftlint:enable file_length

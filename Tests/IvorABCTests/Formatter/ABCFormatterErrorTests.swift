@@ -144,4 +144,11 @@ extension ABCFormatterErrorTests {
     func message_stringConversionFailed() {
         #expect(ABCFormatter.Error.stringConversionFailed.message.contains("UTF-8"))
     }
+
+    @Test
+    func message_unsupportedVersion() {
+        let error = ABCFormatter.Error.unsupportedVersion(ABCVersion(major: 1, minor: 6))
+
+        #expect(error.message.contains("1.6"))
+    }
 }

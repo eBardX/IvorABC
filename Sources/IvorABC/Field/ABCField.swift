@@ -37,6 +37,19 @@ public enum ABCField {
     /// A key signature field (`K:`).
     case key(ABCKeySignature)
 
+    /// A legacy free-text field preserved for round-tripping ABC 1.6 files.
+    ///
+    /// This case captures field letters that are valid in ABC 1.6 but have no
+    /// direct equivalent in later versions:
+    /// - `E:` (elemskip) — a 1.6-only pagination hint.
+    /// - `I:` — plain informational text in 1.6 (2.x repurposed `I:` as an
+    ///   inline instruction/directive).
+    ///
+    /// The first associated value is the raw field letter and the second is
+    /// the text content. ``ABCTunebook/migrated()`` collapses these fields to
+    /// ``remark(_:)`` when upgrading to ABC 2.1.
+    case legacy(Character, String)
+
     /// A lyrics field (`W:`).
     case lyrics(String)
 
@@ -121,6 +134,7 @@ extension ABCField {
              .fileURL,
              .group,
              .history,
+             .legacy,
              .macro,
              .meter,
              .notes,
@@ -144,6 +158,7 @@ extension ABCField {
         case .alignedLyrics,
              .instruction,
              .key,
+             .legacy,
              .lyrics,
              .macro,
              .meter,
@@ -175,6 +190,7 @@ extension ABCField {
              .group,
              .history,
              .key,
+             .legacy,
              .lyrics,
              .macro,
              .meter,

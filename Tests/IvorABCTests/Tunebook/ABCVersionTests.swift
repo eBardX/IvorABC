@@ -10,13 +10,15 @@ struct ABCVersionTests {
 
 extension ABCVersionTests {
     @Test
-    func currentMajor() {
-        #expect(ABCVersion.currentMajor == 2)
+    func current() {
+        #expect(ABCVersion.current == ABCVersion(major: 2, minor: 1))
     }
 
     @Test
-    func currentMinor() {
-        #expect(ABCVersion.currentMinor == 1)
+    func supported() {
+        #expect(ABCVersion.supported == [ABCVersion(major: 1, minor: 6),
+                                         ABCVersion(major: 2, minor: 0),
+                                         ABCVersion(major: 2, minor: 1)])
     }
 
     @Test

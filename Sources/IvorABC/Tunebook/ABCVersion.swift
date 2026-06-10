@@ -5,11 +5,17 @@ public struct ABCVersion {
 
     // MARK: Public Type Properties
 
-    /// The current major version number supported by this library.
-    public static let currentMajor: UInt = 2
+    /// The current ABC version supported by this library.
+    public static let current = Self(major: 2,
+                                     minor: 1)
 
-    /// The current minor version number supported by this library.
-    public static let currentMinor: UInt = 1
+    /// All ABC versions supported by this library.
+    public static let supported = [Self(major: 1,
+                                        minor: 6),
+                                   Self(major: 2,
+                                        minor: 0),
+                                   Self(major: 2,
+                                        minor: 1)]
 
     // MARK: Public Initializers
 

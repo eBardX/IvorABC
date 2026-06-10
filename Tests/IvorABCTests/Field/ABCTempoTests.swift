@@ -88,4 +88,29 @@ extension ABCTempoTests {
         #expect(tempo.rate == 120)
         #expect(tempo.text == "Allegro")
     }
+
+    @Test
+    func init_legacyBeatMultiple_defaultsToNil() {
+        let dur = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let tempo = ABCTempo(durations: [dur], rate: 120, text: nil)
+
+        #expect(tempo.legacyBeatMultiple == nil)
+    }
+
+    @Test
+    func init_legacyBeatMultiple_storesValue() {
+        let dur = ABCDuration(numerator: 3, denominator: 8, reduce: false)
+        let tempo = ABCTempo(durations: [dur], rate: 40, text: nil, legacyBeatMultiple: 3)
+
+        #expect(tempo.legacyBeatMultiple == 3)
+    }
+
+    @Test
+    func inequality_legacyBeatMultiple() {
+        let dur = ABCDuration(numerator: 1, denominator: 8, reduce: false)
+        let withFlag = ABCTempo(durations: [dur], rate: 120, text: nil, legacyBeatMultiple: 1)
+        let withoutFlag = ABCTempo(durations: [dur], rate: 120, text: nil)
+
+        #expect(withFlag != withoutFlag)
+    }
 }

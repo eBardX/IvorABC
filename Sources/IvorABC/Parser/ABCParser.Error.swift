@@ -51,8 +51,10 @@ extension ABCParser {
 
         /// The parser encountered an invalid tempo specification.
         ///
-        /// In ``ABCParser/Strictness/lenient`` mode, a bare-integer tempo
-        /// (e.g. `Q:120`) is recovered instead and reported as
+        /// In ``ABCParser/Strictness/lenient`` mode, or in
+        /// ``ABCParser/Strictness/strict`` mode when parsing a known older
+        /// version (e.g. 2.0), a bare-integer tempo (e.g. `Q:120`) is
+        /// recovered instead. In lenient mode it is also reported as
         /// ``ABCParser/Diagnostic/bareTempoRate(_:)``.
         case invalidTempo(Substring)
 
@@ -89,7 +91,7 @@ extension ABCParser {
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
 
-        /// The file identifier specifies a version of ABC that is not supported.
+        /// The file identifier specifies an unsupported ABC version.
         ///
         /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
         /// instead and reported as ``ABCParser/Diagnostic/unsupportedVersion(_:)``.

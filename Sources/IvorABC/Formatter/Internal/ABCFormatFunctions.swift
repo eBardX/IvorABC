@@ -44,6 +44,9 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
     case let .key(ks):
         return ("K", _formatKey(ks))
 
+    case let .legacy(letter, text):
+        return try (String(letter), _validateString(text))
+
     case let .lyrics(s):
         return try ("W", _validateString(s))
 
@@ -257,7 +260,21 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     }
 }
 
-// MARK: Private Functions
+internal func isPowerOfTwo(_ n: UInt) -> Bool {
+    n > 0 && (n & (n - 1)) == 0
+}
+
+internal func log2Integer(_ n: UInt) -> Int {
+    var result = 0
+    var value = n
+
+    while value > 1 {
+        value >>= 1
+        result += 1
+    }
+
+    return result
+}
 
 // MARK: Private Constants
 
@@ -307,22 +324,6 @@ private let tonics: [ABCKeySignature.Tonic: String] = [.a: "A",
                                                        .g: "G",
                                                        .gFlat: "Gb",
                                                        .gSharp: "G#"]
-
-internal func isPowerOfTwo(_ n: UInt) -> Bool {
-    n > 0 && (n & (n - 1)) == 0
-}
-
-internal func log2Integer(_ n: UInt) -> Int {
-    var result = 0
-    var value = n
-
-    while value > 1 {
-        value >>= 1
-        result += 1
-    }
-
-    return result
-}
 
 // MARK: Private Functions
 
