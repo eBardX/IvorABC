@@ -112,7 +112,7 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("L", "\(duration.numerator)/\(duration.denominator)")
 
     case let .userSymbol(userSymbol):
-        return ("U", "\(userSymbol.symbol)=\(userSymbol.decoration)")
+        return ("U", "\(userSymbol.symbol)=\(userSymbol.decoration.stringValue)")
 
     case let .voice(voice):
         guard !voice.id.isEmpty
@@ -193,11 +193,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return "\"\(text)\""
 
     case let .decoration(decoration):
-        guard !decoration.name.isEmpty,
-              !decoration.name.contains("!")
-        else { throw ABCFormatter.Error.invalidDecorationName(decoration.name) }
-
-        return decoration.shorthand.map { String($0) } ?? "!\(decoration.name)!"
+        return decoration.stringValue
 
     case let .graceNotes(graceNotes):
         return try _formatGraceNotes(graceNotes,
@@ -645,7 +641,7 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
             "\"\(text)\""
 
         case let .decoration(decoration):
-            decoration.shorthand.map { String($0) } ?? "!\(decoration.name)!"
+            decoration.stringValue
 
         case .skip:
             "*"

@@ -16,15 +16,15 @@ public struct ABCUserSymbol {
     /// - Parameter symbol:     The character being mapped.
     /// - Parameter decoration: The decoration the symbol maps to.
     public init(symbol: Character,
-                decoration: String) {
-        self.symbol = symbol
+                decoration: ABCDecoration) {
         self.decoration = decoration
+        self.symbol = symbol
     }
 
     // MARK: Public Instance Properties
 
     /// The decoration this symbol maps to.
-    public let decoration: String
+    public let decoration: ABCDecoration
 
     /// The character being mapped.
     public let symbol: Character

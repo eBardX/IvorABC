@@ -32,8 +32,6 @@ extension ABCAnnotation {
 
     // MARK: Internal Initializers
 
-    /// Parses an annotation from the verbatim content between the quotes, which
-    /// must begin with a valid positioning prefix character.
     internal init?(stringValue: some StringProtocol) {
         guard let first = stringValue.first,
               let pos = Position(prefix: first)

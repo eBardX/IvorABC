@@ -295,20 +295,6 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func decoration_emptyName_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidDecorationName("")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.decoration(ABCDecoration(name: ""))]))
-        }
-    }
-
-    @Test
-    func decoration_nameContainsExclamationMark_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidDecorationName("trill!bad")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.decoration(ABCDecoration(name: "trill!bad"))]))
-        }
-    }
-
-    @Test
     func duration_default_emitsEmpty() throws {
         // With L:1/8 (the default), a stored duration of 1/8 emits no suffix.
         let note = ABCNote(pitch: _pit(.c, .natural, 4),
@@ -481,7 +467,7 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_emitsUField() throws {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                               headers: [.field(.userSymbol(_usym("~", "!roll!")))],
+                               headers: [.field(.userSymbol(_usym("~", _deco("roll"))))],
                                tunes: [])
 
         #expect(try format(book).contains("U:~=!roll!\n"))

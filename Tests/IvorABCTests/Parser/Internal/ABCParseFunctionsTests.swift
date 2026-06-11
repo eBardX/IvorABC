@@ -88,7 +88,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
-        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), _usym("~", "!roll!"))
+        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), _usym("~", _deco("roll")))
         try expectFieldIsVoice(parseField("V:1"))
     }
 
@@ -417,11 +417,11 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseUserSymbol_success() {
-        #expect(parseUserSymbol("T=!trill!") == _usym("T", "!trill!"))
-        #expect(parseUserSymbol("T = !trill!") == _usym("T", "!trill!"))
-        #expect(parseUserSymbol("~=!roll!") == _usym("~", "!roll!"))
-        #expect(parseUserSymbol("~ = !roll!") == _usym("~", "!roll!"))
-        #expect(parseUserSymbol("H=!fermata!") == _usym("H", "!fermata!"))
+        #expect(parseUserSymbol("T=!trill!") == _usym("T", _deco("trill")))
+        #expect(parseUserSymbol("T = !trill!") == _usym("T", _deco("trill")))
+        #expect(parseUserSymbol("~=!roll!") == _usym("~", _deco("roll")))
+        #expect(parseUserSymbol("~ = !roll!") == _usym("~", _deco("roll")))
+        #expect(parseUserSymbol("H=!fermata!") == _usym("H", _deco("fermata")))
     }
 
     @Test

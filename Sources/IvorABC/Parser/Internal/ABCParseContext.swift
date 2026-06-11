@@ -6,6 +6,7 @@ internal struct ABCParseContext {
 
     internal init() {
         self.accidentalsInKey = [:]
+        self.decorationDialect = .bang
         self.isCompoundMeter = false
         self.macros = [:]
         self.userSymbolDecorations = [:]
@@ -14,6 +15,7 @@ internal struct ABCParseContext {
     // MARK: Internal Instance Properties
 
     internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
+    internal var decorationDialect: ABCDecoration.Dialect
     internal var isCompoundMeter: Bool
     internal var macros: [String: ABCMacro]
     internal var userSymbolDecorations: [Character: String]
@@ -34,13 +36,32 @@ extension ABCParseContext {
 
     // MARK: Internal Instance Methods
 
+    internal mutating func update(with directive: ABCDirective) {
+        guard directive.name == "decoration"
+        else { return }
+
+        switch directive.value {
+        case "!":
+            decorationDialect = .bang
+
+        case "+":
+            decorationDialect = .plus
+
+        default:
+            break
+        }
+    }
+
     internal mutating func update(with field: ABCField) {
         switch field {
+        case let .instruction(directive):
+            update(with: directive)
+
         case let .key(keySignature):
             accidentalsInKey = keySignature.keyAccidentals
 
-        case let .macro(m):
-            macros[m.trigger] = m
+        case let .macro(macro):
+            macros[macro.trigger] = macro
 
         case let .meter(timeSignature):
             durationFromMeter = Self._determineDuration(from: timeSignature)
@@ -50,15 +71,7 @@ extension ABCParseContext {
             durationFromUnitNoteLength = duration
 
         case let .userSymbol(userSymbol):
-            let raw = userSymbol.decoration
-            let name: String = if raw.count >= 2,
-                                  (raw.first == "!" && raw.last == "!") || (raw.first == "+" && raw.last == "+") {
-                String(raw.dropFirst().dropLast())
-            } else {
-                raw
-            }
-
-            userSymbolDecorations[userSymbol.symbol] = name
+            userSymbolDecorations[userSymbol.symbol] = userSymbol.decoration.name
 
         default:
             break

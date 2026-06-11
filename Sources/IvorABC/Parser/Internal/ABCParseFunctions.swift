@@ -462,7 +462,21 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
             else { return nil }
 
-            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]))))
+            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
+                                                      dialect: .bang)))
+
+            input = rest[rest.index(after: closeIdx)...]
+
+        case "+":
+            let rest = input.dropFirst()
+
+            guard let closeIdx = rest.firstIndex(of: "+"),
+                  !rest[..<closeIdx].isEmpty,
+                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) })
+            else { return nil }
+
+            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
+                                                      dialect: .plus)))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -681,9 +695,23 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard rest.hasPrefix("=")
     else { return nil }
 
-    let decoration = String(trim(rest.dropFirst()))
+    let raw = String(trim(rest.dropFirst()))
 
-    guard !decoration.isEmpty
+    guard !raw.isEmpty
+    else { return nil }
+
+    let decoration = if raw.count >= 2, raw.first == "!", raw.last == "!" {
+        ABCDecoration(name: String(raw.dropFirst().dropLast()),
+                      dialect: .bang)
+    } else if raw.count >= 2, raw.first == "+", raw.last == "+" {
+        ABCDecoration(name: String(raw.dropFirst().dropLast()),
+                      dialect: .plus)
+    } else {
+        ABCDecoration(name: raw,
+                      dialect: .bang)
+    }
+
+    guard !decoration.name.isEmpty
     else { return nil }
 
     return ABCUserSymbol(symbol: symbol,

@@ -183,11 +183,19 @@ extension ABCSymbolMatcher {
             else { throw ABCParser.Error.invalidSymbols(value) }
 
             return .decoration(ABCDecoration(name: name,
-                                             shorthand: letter))
+                                             shorthand: letter,
+                                             dialect: context.decorationDialect))
         }
 
+        // In + dialect mode, !...! decorations are an error per spec §12.1.2.
+        if context.decorationDialect == .plus, value.first == "!" {
+            throw ABCParser.Error.invalidSymbols(value)
+        }
+
+        let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
+
         return .decoration(ABCDecoration(name: String(value.dropFirst().dropLast()),
-                                         shorthand: nil))
+                                         dialect: dialect))
     }
 
     private mutating func _matchGraceNote(_ context: inout ABCParseContext) throws -> ABCNote? {

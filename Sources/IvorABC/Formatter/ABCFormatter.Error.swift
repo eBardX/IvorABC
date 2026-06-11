@@ -26,9 +26,6 @@ extension ABCFormatter {
         /// A broken rhythm marker string is invalid.
         case invalidBrokenRhythm(String)
 
-        /// A decoration name is empty or contains invalid characters.
-        case invalidDecorationName(String)
-
         /// A note, rest, or spacer duration has a zero numerator.
         case invalidDuration(ABCDuration)
 
@@ -104,9 +101,6 @@ extension ABCFormatter.Error: EnhancedError {
 
         case let .invalidBrokenRhythm(s):
             "Broken rhythm marker is invalid: \(s.isEmpty ? "(empty)" : s)"
-
-        case let .invalidDecorationName(name):
-            "Decoration name is empty or contains invalid characters: \(name.isEmpty ? "(empty)" : name)"
 
         case let .invalidDuration(dur):
             "Duration has a zero numerator: \(dur.numerator)/\(dur.denominator)"

@@ -63,6 +63,23 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_beamBreak_inlineFieldInBeam_doesNotBreakBeam() throws {
+        // Per ABC v2.1 spec: inline fields can appear in the middle of a beam without breaking it.
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nAB[K:G]cd|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        #expect(!symbols.contains(.beamBreak))
+    }
+
+    @Test
     func parse_beamBreak_spaceSeparated_hasBeamBreaks() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
         let tunebook = try ABCParser().parse(Data(input.utf8))

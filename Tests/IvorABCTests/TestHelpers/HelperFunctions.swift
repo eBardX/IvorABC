@@ -321,7 +321,8 @@ func _matchSymbols(_ input: String,
 func _matchSymbols(_ input: String) throws -> [ABCSymbol] {
     var ctx = ABCParseContext()
 
-    return try _matchSymbols(input, context: &ctx)
+    return try _matchSymbols(input,
+                             context: &ctx)
 }
 
 // swiftlint:disable:next identifier_name
@@ -409,8 +410,15 @@ func _tsig(_ numerators: [UInt],
 }
 
 // swiftlint:disable:next identifier_name
+func _deco(_ name: String,
+           _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
+    ABCDecoration(name: name,
+                  dialect: dialect)
+}
+
+// swiftlint:disable:next identifier_name
 func _usym(_ symbol: Character,
-           _ decoration: String) -> ABCUserSymbol {
+           _ decoration: ABCDecoration) -> ABCUserSymbol {
     ABCUserSymbol(symbol: symbol,
                   decoration: decoration)
 }

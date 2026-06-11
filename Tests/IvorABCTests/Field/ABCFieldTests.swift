@@ -50,7 +50,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userSymbol(_usym("~", "!roll!"))]
+                                       .userSymbol(_usym("~", _deco("roll")))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -97,7 +97,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userSymbol(_usym("~", "!roll!")),
+                                       .userSymbol(_usym("~", _deco("roll"))),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 
@@ -145,7 +145,7 @@ extension ABCFieldTests {
                                        .unitNoteLength(ABCDuration(numerator: 1,
                                                                    denominator: 8,
                                                                    reduce: false)),
-                                       .userSymbol(_usym("~", "!roll!")),
+                                       .userSymbol(_usym("~", _deco("roll"))),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
 

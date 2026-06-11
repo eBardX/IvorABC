@@ -131,7 +131,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_decoration_userDefinedSymbol() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .userSymbol(_usym("W", "!trill!")))
+        ctx.update(with: .userSymbol(_usym("W", _deco("trill"))))
 
         let symbols = try _matchSymbols("W", context: &ctx)
 

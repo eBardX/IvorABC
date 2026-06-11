@@ -37,6 +37,7 @@ extension ABCDecorationTests {
     func init_storesProperties_withShorthand() {
         let decoration = ABCDecoration(name: "roll", shorthand: "~")
 
+        #expect(decoration.dialect == .bang)
         #expect(decoration.name == "roll")
         #expect(decoration.shorthand == "~")
     }
@@ -45,6 +46,7 @@ extension ABCDecorationTests {
     func init_storesProperties_withoutShorthand() {
         let decoration = ABCDecoration(name: "trill")
 
+        #expect(decoration.dialect == .bang)
         #expect(decoration.name == "trill")
         #expect(decoration.shorthand == nil)
     }

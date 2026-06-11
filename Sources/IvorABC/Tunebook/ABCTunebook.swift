@@ -60,7 +60,12 @@ extension ABCTunebook {
 extension ABCTunebook: Equatable {
 }
 
-// MARK: - Private Migration Helpers
+// MARK: - Sendable
+
+extension ABCTunebook: Sendable {
+}
+
+// MARK: - Private Functions
 
 private func _migrateField(_ field: ABCField) -> ABCField {
     if case let .legacy(_, text) = field {
@@ -107,9 +112,4 @@ private func _migrateHeader(_ header: ABCHeader) -> ABCHeader {
 
 private func _migrateTune(_ tune: ABCTune) -> ABCTune {
     ABCTune(entries: tune.entries.map(_migrateEntry))
-}
-
-// MARK: - Sendable
-
-extension ABCTunebook: Sendable {
 }

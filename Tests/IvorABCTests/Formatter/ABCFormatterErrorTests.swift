@@ -60,13 +60,6 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidDecorationName() {
-        let error = ABCFormatter.Error.invalidDecorationName("bad name!")
-
-        #expect(error.message.contains("bad name!"))
-    }
-
-    @Test
     func message_invalidDuration() {
         let dur = ABCDuration(numerator: 0, denominator: 4, reduce: false)
         let error = ABCFormatter.Error.invalidDuration(dur)

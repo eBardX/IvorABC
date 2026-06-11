@@ -12,31 +12,32 @@ extension ABCUserSymbolTests {
     @Test
     func decoration_isStored() {
         let uds = ABCUserSymbol(symbol: "~",
-                                decoration: "!roll!")
+                                decoration: _deco("roll"))
 
-        #expect(uds.decoration == "!roll!")
+        #expect(uds.decoration.name == "roll")
+        #expect(uds.decoration.dialect == .bang)
     }
 
     @Test
     func equality() {
-        let lhs = ABCUserSymbol(symbol: "T", decoration: "!trill!")
-        let rhs = ABCUserSymbol(symbol: "T", decoration: "!trill!")
+        let lhs = ABCUserSymbol(symbol: "T", decoration: _deco("trill"))
+        let rhs = ABCUserSymbol(symbol: "T", decoration: _deco("trill"))
 
         #expect(lhs == rhs)
     }
 
     @Test
     func inequality_differentDecoration() {
-        let lhs = ABCUserSymbol(symbol: "T", decoration: "!trill!")
-        let rhs = ABCUserSymbol(symbol: "T", decoration: "!roll!")
+        let lhs = ABCUserSymbol(symbol: "T", decoration: _deco("trill"))
+        let rhs = ABCUserSymbol(symbol: "T", decoration: _deco("roll"))
 
         #expect(lhs != rhs)
     }
 
     @Test
     func inequality_differentSymbol() {
-        let lhs = ABCUserSymbol(symbol: "T", decoration: "!trill!")
-        let rhs = ABCUserSymbol(symbol: "H", decoration: "!trill!")
+        let lhs = ABCUserSymbol(symbol: "T", decoration: _deco("trill"))
+        let rhs = ABCUserSymbol(symbol: "H", decoration: _deco("trill"))
 
         #expect(lhs != rhs)
     }
@@ -44,7 +45,7 @@ extension ABCUserSymbolTests {
     @Test
     func symbol_isStored() {
         let uds = ABCUserSymbol(symbol: "~",
-                                decoration: "!roll!")
+                                decoration: _deco("roll"))
 
         #expect(uds.symbol == "~")
     }

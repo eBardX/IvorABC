@@ -278,6 +278,10 @@ extension ABCParser {
                 guard let line = try _parseLine(text, version, &context, &diagnostics)
                 else { continue }
 
+                if case let .directive(directive) = line {
+                    context.update(with: directive)
+                }
+
                 restLines.append(line)
             } catch {
                 if strictness == .lenient {
