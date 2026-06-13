@@ -141,7 +141,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
                            _ meter: ABCTimeSignature?) throws -> String {
     switch symbol {
     case let .annotation(annotation):
-        return "\"\(annotation.stringValue)\""
+        return _formatAnnotation(annotation)
 
     case let .barRepeat(text):
         let validChars: Set<Character> = ["|", ":", "[", "]"]
@@ -223,16 +223,10 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return "y\(_formatDuration(duration, unitNoteLength, meter))"
 
     case let .tuplet(tuplet):
-        guard tuplet.noteCount > 0
-        else { throw ABCFormatter.Error.invalidTupletNoteCount }
-
-        return tuplet.stringValue
+        return _formatTuplet(tuplet)
 
     case let .variantEnding(variantEnding):
-        guard !variantEnding.endings.isEmpty
-        else { throw ABCFormatter.Error.emptyVariantEnding }
-
-        return variantEnding.stringValue
+        return _formatVariantEnding(variantEnding)
     }
 }
 
@@ -250,16 +244,44 @@ internal func log2Integer(_ inValue: UInt) -> Int {
 
 // MARK: Private Constants
 
-private let modes: [ABCKeySignature.Mode: String] = [.aeolian: "aeolian",
-                                                     .dorian: "dorian",
-                                                     .explicit: "explicit",
-                                                     .ionian: "ionian",
-                                                     .locrian: "locrian",
-                                                     .lydian: "lydian",
-                                                     .major: "major",
-                                                     .minor: "minor",
-                                                     .mixolydian: "mixolydian",
-                                                     .phrygian: "phrygian"]
+private let annotationPositions: [ABCAnnotation.Position: String] = [.above: "^",
+                                                                     .auto: "@",
+                                                                     .below: "_",
+                                                                     .left: "<",
+                                                                     .right: ">"]
+
+private let keySignatureModes: [ABCKeySignature.Mode: String] = [.aeolian: "aeolian",
+                                                                 .dorian: "dorian",
+                                                                 .explicit: "explicit",
+                                                                 .ionian: "ionian",
+                                                                 .locrian: "locrian",
+                                                                 .lydian: "lydian",
+                                                                 .major: "major",
+                                                                 .minor: "minor",
+                                                                 .mixolydian: "mixolydian",
+                                                                 .phrygian: "phrygian"]
+
+private let keySignatureTonics: [ABCKeySignature.Tonic: String] = [.a: "A",
+                                                                   .aFlat: "Ab",
+                                                                   .aSharp: "A#",
+                                                                   .b: "B",
+                                                                   .bFlat: "Bb",
+                                                                   .bSharp: "B#",
+                                                                   .c: "C",
+                                                                   .cFlat: "Cb",
+                                                                   .cSharp: "C#",
+                                                                   .d: "D",
+                                                                   .dFlat: "Db",
+                                                                   .dSharp: "D#",
+                                                                   .e: "E",
+                                                                   .eFlat: "Eb",
+                                                                   .eSharp: "E#",
+                                                                   .f: "F",
+                                                                   .fFlat: "Fb",
+                                                                   .fSharp: "F#",
+                                                                   .g: "G",
+                                                                   .gFlat: "Gb",
+                                                                   .gSharp: "G#"]
 
 private let pitchAccidentals: [ABCPitch.Accidental: (key: String, note: String)] = [.doubleFlat: ("__", "__"),
                                                                                     .flat: ("_", "_"),
@@ -275,55 +297,37 @@ private let pitchLetters: [ABCPitch.Letter: (upper: String, lower: String)] = [.
                                                                                .f: ("F", "f"),
                                                                                .g: ("G", "g")]
 
-private let tonics: [ABCKeySignature.Tonic: String] = [.a: "A",
-                                                       .aFlat: "Ab",
-                                                       .aSharp: "A#",
-                                                       .b: "B",
-                                                       .bFlat: "Bb",
-                                                       .bSharp: "B#",
-                                                       .c: "C",
-                                                       .cFlat: "Cb",
-                                                       .cSharp: "C#",
-                                                       .d: "D",
-                                                       .dFlat: "Db",
-                                                       .dSharp: "D#",
-                                                       .e: "E",
-                                                       .eFlat: "Eb",
-                                                       .eSharp: "E#",
-                                                       .f: "F",
-                                                       .fFlat: "Fb",
-                                                       .fSharp: "F#",
-                                                       .g: "G",
-                                                       .gFlat: "Gb",
-                                                       .gSharp: "G#"]
-
 // MARK: Private Functions
 
-private func _durationFromMeter(_ meter: ABCTimeSignature) -> ABCDuration {
-    switch meter {
-    case let .standard(fraction):
-        let ratio = Double(fraction.numerator) / Double(fraction.denominator)
+private func _durationFromTimeSignature(_ timeSignature: ABCTimeSignature) -> ABCDuration? {
+    switch timeSignature {
+    case let .standard(meter):
+        let ratio = Double(meter.numerator) / Double(meter.denominator)
 
         return ratio < 0.75
-        ? ABCDuration(1, 16)
-        : ABCDuration(1, 8)
+               ? ABCDuration(numerator: 1,
+                             denominator: 16)
+               : ABCDuration(numerator: 1,
+                             denominator: 8)
 
     default:
-        return ABCDuration(1, 8)
+        return ABCDuration(numerator: 1,
+                           denominator: 8)
     }
 }
 
-private func _effectiveBase(_ unitNoteLength: ABCDuration?,
-                            _ meter: ABCTimeSignature?) -> ABCDuration {
+private func _effectiveBaseDuration(_ unitNoteLength: ABCDuration?,
+                                    _ timeSignature: ABCTimeSignature?) -> ABCDuration? {
     if let unitNoteLength {
         return unitNoteLength
     }
 
-    if let meter {
-        return _durationFromMeter(meter)
+    if let timeSignature {
+        return _durationFromTimeSignature(timeSignature)
     }
 
-    return ABCDuration(1, 8)
+    return ABCDuration(numerator: 1,
+                       denominator: 8)
 }
 
 private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
@@ -386,6 +390,17 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
             prevIsConnector = true
         }
     }
+
+    return result
+}
+
+private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
+    var result = "\""
+
+    result += annotationPositions[annotation.position] ?? ""
+    result += annotation.text
+
+    result += "\""
 
     return result
 }
@@ -453,14 +468,21 @@ private func _formatDecoration(_ decoration: ABCDecoration,
 private func _formatDuration(_ duration: ABCDuration,
                              _ unitNoteLength: ABCDuration?,
                              _ meter: ABCTimeSignature?) -> String {
-    let base = _effectiveBase(unitNoteLength, meter)
+    guard let base = _effectiveBaseDuration(unitNoteLength, meter)
+    else { return "" }
+
     let mn = duration.numerator * base.denominator
     let md = duration.denominator * base.numerator
-    let reduced = ABCDuration(mn, md)
+
+    guard let reduced = ABCDuration(numerator: mn,
+                                    denominator: md)
+    else { return "" }
+
     let rn = reduced.numerator
     let rd = reduced.denominator
 
-    if rn == 1, rd == 1 {
+    if rn == 1,
+       rd == 1 {
         return ""
     }
 
@@ -558,7 +580,7 @@ private func _formatKeySignatureAccidental(_ accidental: ABCPitch.Accidental) ->
 }
 
 private func _formatKeySignatureTonic(_ tonic: ABCKeySignature.Tonic) -> String {
-    tonics[tonic] ?? ""
+    keySignatureTonics[tonic] ?? ""
 }
 
 private func _formatMacro(_ macro: ABCMacro) -> String {
@@ -566,7 +588,7 @@ private func _formatMacro(_ macro: ABCMacro) -> String {
 }
 
 private func _formatMode(_ mode: ABCKeySignature.Mode) -> String {
-    modes[mode] ?? ""
+    keySignatureModes[mode] ?? ""
 }
 
 private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
@@ -591,7 +613,7 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
     symbolLine.elements.map { token in
         switch token {
         case let .annotation(annotation):
-            "\"\(annotation.stringValue)\""
+            _formatAnnotation(annotation)
 
         case let .chordSymbol(text):
             "\"\(text)\""
@@ -648,6 +670,36 @@ private func _formatTimeSignature(_ timeSignature: ABCTimeSignature) -> String {
     case let .complex(meter):
         "(\(meter.numerators.map { "\($0)" }.joined(separator: "+")))/\(meter.denominator)"
     }
+}
+
+private func _formatTuplet(_ tuplet: ABCTuplet) -> String {
+    var result = "("
+
+    result += "\(tuplet.noteCount)"
+
+    if let qCount = tuplet.beatCount {
+        result += ":"
+        result += "\(qCount)"
+
+        if let rCount = tuplet.affectedCount {
+            result += ":"
+            result += "\(rCount)"
+        }
+    }
+
+    return result
+}
+
+private func _formatVariantEnding(_ variantEnding: ABCVariantEnding) -> String {
+    var result = "["
+
+    result += variantEnding.endings.map { range in
+        range.lowerBound == range.upperBound
+        ? "\(range.lowerBound)"
+        : "\(range.lowerBound)-\(range.upperBound)"
+    }.joined(separator: ",")
+
+    return result
 }
 
 private func _formatVoice(_ voice: ABCVoice) -> String {

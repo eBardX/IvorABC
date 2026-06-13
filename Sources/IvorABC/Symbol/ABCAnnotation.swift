@@ -26,28 +26,6 @@ public struct ABCAnnotation {
     }
 }
 
-// MARK: -
-
-extension ABCAnnotation {
-
-    // MARK: Internal Initializers
-
-    internal init?(stringValue: some StringProtocol) {
-        guard let first = stringValue.first,
-              let pos = Position(prefix: first)
-        else { return nil }
-
-        self.position = pos
-        self.text = String(stringValue.dropFirst())
-    }
-
-    // MARK: Internal Instance Properties
-
-    internal var stringValue: String {
-        String(position.prefix) + text
-    }
-}
-
 // MARK: - Equatable
 
 extension ABCAnnotation: Equatable {

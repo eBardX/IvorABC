@@ -133,7 +133,7 @@ extension ABCFormatter.Error: EnhancedError {
             "Failed to convert string to UTF-8 data"
 
         case let .unsupportedVersion(version):
-            "Unsupported ABC version: \(version.stringValue)"
+            "Unsupported ABC version: \(version.major):\(version.minor)"
         }
     }
 }

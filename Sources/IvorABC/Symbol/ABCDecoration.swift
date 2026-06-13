@@ -29,7 +29,9 @@ public struct ABCDecoration {
         guard !name.isEmpty
         else { return nil }
 
-        self.init(name, shorthand, dialect)
+        self.dialect = dialect
+        self.name = name
+        self.shorthand = shorthand
     }
 
     // MARK: Public Instance Properties
@@ -45,16 +47,6 @@ public struct ABCDecoration {
     /// The shorthand character used to write this decoration, or `nil` if it was
     /// written in longhand (`!name!`) or legacy (`+name+`) form.
     public let shorthand: Character?
-
-    // MARK: Internal Initializers
-
-    internal init(_ name: String,
-                  _ shorthand: Character?,
-                  _ dialect: Dialect) {
-        self.dialect = dialect
-        self.name = name
-        self.shorthand = shorthand
-    }
 }
 
 // MARK: -

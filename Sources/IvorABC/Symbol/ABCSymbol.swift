@@ -113,18 +113,29 @@ extension ABCSymbol {
         let multDen = UInt(1) << n
         let longNum = (UInt(1) << (n + 1)) - 1
 
-        func long(_ d: ABCDuration) -> ABCDuration {
-            ABCDuration(d.numerator * longNum,
-                        d.denominator * multDen)
+        func long(_ d: ABCDuration) -> ABCDuration? {
+            ABCDuration(numerator: d.numerator * longNum,
+                        denominator: d.denominator * multDen)
         }
 
-        func short(_ d: ABCDuration) -> ABCDuration {
-            ABCDuration(d.numerator,
-                        d.denominator * multDen)
+        func short(_ d: ABCDuration) -> ABCDuration? {
+            ABCDuration(numerator: d.numerator,
+                        denominator: d.denominator * multDen)
         }
 
-        return first == ">" ? (left: long(left), right: short(right))
-                            : (left: short(left), right: long(right))
+        if first == ">" {
+            guard let outLeft = long(left),
+                  let outRight = short(right)
+            else { return nil }
+
+            return (outLeft, outRight)
+        } else {
+            guard let outLeft = short(left),
+                  let outRight = long(right)
+            else { return nil }
+
+            return (outLeft, outRight)
+        }
     }
 }
 

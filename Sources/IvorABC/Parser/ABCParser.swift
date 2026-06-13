@@ -513,10 +513,17 @@ extension ABCParser {
     }
 
     private func _parseVersion(_ tidyInput: Substring) throws -> ABCVersion {
-        guard let version = ABCVersion(stringValue: tidyInput)
+        let parts = tidyInput.split(separator: ".",
+                                    maxSplits: 1,
+                                    omittingEmptySubsequences: false)
+
+        guard parts.count == 2,
+              let major = UInt(parts[0]),
+              let minor = UInt(parts[1])
         else { throw Error.invalidVersion(tidyInput) }
 
-        return version
+        return ABCVersion(major: major,
+                          minor: minor)
     }
 
     private func _processHeaderLine(_ line: Line) -> (header: ABCHeader?, empty: Bool) {

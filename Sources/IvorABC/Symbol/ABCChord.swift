@@ -17,7 +17,9 @@ public struct ABCChord {
         guard !notes.isEmpty
         else { return nil }
 
-        self.init(notes, duration, isTied)
+        self.duration = duration
+        self.isTied = isTied
+        self.notes = notes
     }
 
     // MARK: Public Instance Properties
@@ -30,16 +32,6 @@ public struct ABCChord {
 
     /// The notes in this chord.
     public let notes: [ABCNote]
-
-    // MARK: Internal Initializers
-
-    internal init(_ notes: [ABCNote],
-                  _ duration: ABCDuration,
-                  _ isTied: Bool) {
-        self.duration = duration
-        self.isTied = isTied
-        self.notes = notes
-    }
 }
 
 // MARK: - Equatable

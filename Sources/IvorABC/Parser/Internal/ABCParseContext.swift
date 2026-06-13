@@ -80,8 +80,10 @@ extension ABCParseContext {
 
     // MARK: Private Type Properties
 
-    private static let durationEighths = ABCDuration(1, 8)
-    private static let durationSixteenths = ABCDuration(1, 16)
+    private static let durationEighths = ABCDuration(numerator: 1,
+                                                     denominator: 8)!       // swiftlint:disable:this force_unwrapping
+    private static let durationSixteenths = ABCDuration(numerator: 1,
+                                                        denominator: 16)!   // swiftlint:disable:this force_unwrapping
 
     // MARK: Private Type Methods
 

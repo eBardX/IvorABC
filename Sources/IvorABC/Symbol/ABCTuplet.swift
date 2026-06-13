@@ -21,7 +21,9 @@ public struct ABCTuplet {
         guard noteCount > 0 // other validation?
         else { return nil }
 
-        self.init(noteCount, beatCount, affectedCount)
+        self.affectedCount = affectedCount
+        self.beatCount = beatCount
+        self.noteCount = noteCount
     }
 
     // MARK: Public Instance Properties
@@ -36,52 +38,11 @@ public struct ABCTuplet {
     /// The number of beats the group occupies, or `nil` when not explicitly
     /// written in the source.
     public let beatCount: UInt?
-
-    // MARK: Internal Initializers
-
-    /// Creates a new tuplet specification without validating `noteCount`.
-    /// The caller is responsible for ensuring `noteCount > 0`.
-    internal init(_ noteCount: UInt,
-                  _ beatCount: UInt? = nil,
-                  _ affectedCount: UInt? = nil) {
-        self.noteCount = noteCount
-        self.beatCount = beatCount
-        self.affectedCount = affectedCount
-    }
 }
 
 // MARK: -
 
 extension ABCTuplet {
-
-    // MARK: Internal Computed Properties
-
-    internal var stringValue: String {
-        var result = "(\(noteCount)"
-
-        if let q = beatCount {
-            result += ":\(q)"
-
-            if let r = affectedCount {
-                result += ":\(r)"
-            }
-        }
-
-        return result
-    }
-
-    // MARK: Internal Initializers
-
-    /// Parses a tuplet from the ABC token text (e.g. `(3` or `(3:2` or
-    /// `(3:2:4`).
-    internal init?(stringValue: some StringProtocol) {
-        guard let result = parseTuplet(String(stringValue)[...])
-        else { return nil }
-
-        self.init(result.pcount,
-                  result.qcount,
-                  result.rcount)
-    }
 
     // MARK: Public Instance Methods
 

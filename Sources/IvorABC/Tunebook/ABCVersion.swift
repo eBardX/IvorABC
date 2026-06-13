@@ -39,34 +39,6 @@ public struct ABCVersion {
     public let minor: UInt
 }
 
-// MARK: -
-
-extension ABCVersion {
-
-    // MARK: Internal Computed Properties
-
-    internal var stringValue: String {
-        "\(major).\(minor)"
-    }
-
-    // MARK: Internal Initializers
-
-    /// Parses a version from the ABC file identifier text (e.g. `2.1`).
-    internal init?(stringValue: some StringProtocol) {
-        let parts = stringValue.split(separator: ".",
-                                      maxSplits: 1,
-                                      omittingEmptySubsequences: false)
-
-        guard parts.count == 2,
-              let major = UInt(parts[0]),
-              let minor = UInt(parts[1])
-        else { return nil }
-
-        self.major = major
-        self.minor = minor
-    }
-}
-
 // MARK: - Equatable
 
 extension ABCVersion: Equatable {

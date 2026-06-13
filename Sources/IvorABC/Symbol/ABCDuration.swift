@@ -21,24 +21,6 @@ public struct ABCDuration {
               denominator.isPowerOf2
         else { return nil }
 
-        self.init(numerator, denominator)
-    }
-
-    // MARK: Public Instance Properties
-
-    /// The denominator of this duration.
-    public let denominator: UInt
-
-    /// The numerator of this duration.
-    public let numerator: UInt
-
-    // MARK: Internal Initializers
-
-    internal init(_ numerator: UInt,        // eliminate this
-                  _ denominator: UInt) {
-        precondition(numerator > 0)
-        precondition(denominator > 0)
-
         var num = numerator
         var den = denominator
 
@@ -54,6 +36,14 @@ public struct ABCDuration {
         self.denominator = den
         self.numerator = num
     }
+
+    // MARK: Public Instance Properties
+
+    /// The denominator of this duration.
+    public let denominator: UInt
+
+    /// The numerator of this duration.
+    public let numerator: UInt
 }
 
 // MARK: - Equatable

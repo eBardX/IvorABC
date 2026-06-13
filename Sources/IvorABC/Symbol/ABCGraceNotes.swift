@@ -15,7 +15,8 @@ public struct ABCGraceNotes {
         guard !notes.isEmpty
         else { return nil }
 
-        self.init(notes, isSlashed)
+        self.isSlashed = isSlashed
+        self.notes = notes
     }
 
     // MARK: Public Instance Properties
@@ -25,14 +26,6 @@ public struct ABCGraceNotes {
 
     /// The notes in this grace note group.
     public let notes: [ABCNote]
-
-    // MARK: Internal Initializers
-
-    internal init(_ notes: [ABCNote],
-                  _ isSlashed: Bool) {
-        self.isSlashed = isSlashed
-        self.notes = notes
-    }
 }
 
 // MARK: - Equatable
