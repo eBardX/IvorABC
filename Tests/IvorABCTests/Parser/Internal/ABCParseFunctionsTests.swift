@@ -25,26 +25,26 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseDuration_success() {
-        #expect(parseDuration("/") == _dur(1, 2))
-        #expect(parseDuration("//") == _dur(1, 4))
-        #expect(parseDuration("///") == _dur(1, 8))
-        #expect(parseDuration("/2") == _dur(1, 2))
-        #expect(parseDuration("2") == _dur(2, 1))
-        #expect(parseDuration("3") == _dur(3, 1))
-        #expect(parseDuration("3/") == _dur(3, 2))
-        #expect(parseDuration("3/2") == _dur(3, 2))
-        #expect(parseDuration("4") == _dur(4, 1))
-        #expect(parseDuration("8") == _dur(8, 1))
+        #expect(parseDuration("/") == makeDuration(1, 2))
+        #expect(parseDuration("//") == makeDuration(1, 4))
+        #expect(parseDuration("///") == makeDuration(1, 8))
+        #expect(parseDuration("/2") == makeDuration(1, 2))
+        #expect(parseDuration("2") == makeDuration(2, 1))
+        #expect(parseDuration("3") == makeDuration(3, 1))
+        #expect(parseDuration("3/") == makeDuration(3, 2))
+        #expect(parseDuration("3/2") == makeDuration(3, 2))
+        #expect(parseDuration("4") == makeDuration(4, 1))
+        #expect(parseDuration("8") == makeDuration(8, 1))
     }
 
     @Test
     func parseField_alignedLyrics_decodesTextEscapes() throws {
         try expectFieldIsAlignedLyrics(parseField("w:f\\'o"),
-                                       _alyrics([.text("fó")]))
+                                       makeAlignedLyrics([.text("fó")]))
         try expectFieldIsAlignedLyrics(parseField("w:foo\\%bar"),
-                                       _alyrics([.text("foo%bar")]))
+                                       makeAlignedLyrics([.text("foo%bar")]))
         try expectFieldIsAlignedLyrics(parseField("w:A-m\\\"a-zing"),
-                                       _alyrics([.text("A"), .hyphen, .text("mä"), .hyphen, .text("zing")]))
+                                       makeAlignedLyrics([.text("A"), .hyphen, .text("mä"), .hyphen, .text("zing")]))
     }
 
     @Test
@@ -60,7 +60,7 @@ extension ABCParseFunctionsTests {
     @Test
     func parseField_success() throws {
         try expectFieldIsAlignedLyrics(parseField("w:la la la"),
-                                       _alyrics([.text("la"), .text("la"), .text("la")]))
+                                       makeAlignedLyrics([.text("la"), .text("la"), .text("la")]))
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
         try expectFieldIsComposer(parseField("C:J.S. Bach"), "J.S. Bach")
@@ -77,18 +77,18 @@ extension ABCParseFunctionsTests {
         try expectFieldIsNotes(parseField("N:See also"), "See also")
         try expectFieldIsOrigin(parseField("O:Ireland"), "Ireland")
         try expectFieldIsParts(parseField("P:AABB"),
-                               _pseq([_ppart("A"), _ppart("A"), _ppart("B"), _ppart("B")]))
+                               makePartSequence([makePart("A"), makePart("A"), makePart("B"), makePart("B")]))
         try expectFieldIsRefNumber(parseField("X:1"))
         try expectFieldIsRemark(parseField("r:editorial note"), "editorial note")
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")
         try expectFieldIsSource(parseField("S:collected by ..."), "collected by ...")
         try expectFieldIsSymbolLine(parseField("s:!p! * * *"),
-                                    _sline([.decoration(ABCDecoration("p", nil, .bang)), .skip, .skip, .skip]))
+                                    makeSymbolLine([.decoration(makeDecoration("p", nil, .bang)), .skip, .skip, .skip]))
         try expectFieldIsTempo(parseField("Q:1/4=120"))
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
-        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), _usym("~", _deco("roll")))
+        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), makeUserSymbol("~", makeDecoration("roll")))
         try expectFieldIsVoice(parseField("V:1"))
     }
 
@@ -120,15 +120,15 @@ extension ABCParseFunctionsTests {
         #expect(parseKeySignature("") == .empty)
         #expect(parseKeySignature("ADor") == .standard(.a, .dorian, [], nil))
         #expect(parseKeySignature("AMix") == .standard(.a, .mixolydian, [], nil))
-        #expect(parseKeySignature("D =c") == .standard(.d, .major, [_pit(.c, .natural, 5)], nil))
+        #expect(parseKeySignature("D =c") == .standard(.d, .major, [makePitch(.c, .natural, 5)], nil))
         #expect(parseKeySignature("D exp _b _e ^f") == .standard(.d,
                                                                  .explicit,
-                                                                 [_pit(.b, .flat, 5),
-                                                                  _pit(.e, .flat, 5),
-                                                                  _pit(.f, .sharp, 5)],
+                                                                 [makePitch(.b, .flat, 5),
+                                                                  makePitch(.e, .flat, 5),
+                                                                  makePitch(.f, .sharp, 5)],
                                                                  nil))
-        #expect(parseKeySignature("D maj =c") == .standard(.d, .major, [_pit(.c, .natural, 5)], nil))
-        #expect(parseKeySignature("D Phr ^f") == .standard(.d, .phrygian, [_pit(.f, .sharp, 5)], nil))
+        #expect(parseKeySignature("D maj =c") == .standard(.d, .major, [makePitch(.c, .natural, 5)], nil))
+        #expect(parseKeySignature("D Phr ^f") == .standard(.d, .phrygian, [makePitch(.f, .sharp, 5)], nil))
         #expect(parseKeySignature("D") == .standard(.d, .major, [], nil))
         #expect(parseKeySignature("Dm") == .standard(.d, .minor, [], nil))
         #expect(parseKeySignature("Eb") == .standard(.eFlat, .major, [], nil))
@@ -149,41 +149,41 @@ extension ABCParseFunctionsTests {
     @Test
     func parseNote_success() {
         #expect(parseNote("_d") == ((.d, .flat, 5), nil, false))
-        #expect(parseNote("_d''/") == ((.d, .flat, 7), _dur(1, 2), false))
+        #expect(parseNote("_d''/") == ((.d, .flat, 7), makeDuration(1, 2), false))
         #expect(parseNote("=A") == ((.a, .natural, 4), nil, false))
         #expect(parseNote("=E") == ((.e, .natural, 4), nil, false))
-        #expect(parseNote("=E,//-") == ((.e, .natural, 3), _dur(1, 4), true))
-        #expect(parseNote("=E2") == ((.e, .natural, 4), _dur(2, 1), false))
+        #expect(parseNote("=E,//-") == ((.e, .natural, 3), makeDuration(1, 4), true))
+        #expect(parseNote("=E2") == ((.e, .natural, 4), makeDuration(2, 1), false))
         #expect(parseNote("a") == ((.a, nil, 5), nil, false))
-        #expect(parseNote("A,,3") == ((.a, nil, 2), _dur(3, 1), false))
-        #expect(parseNote("A/") == ((.a, nil, 4), _dur(1, 2), false))
-        #expect(parseNote("a2") == ((.a, nil, 5), _dur(2, 1), false))
-        #expect(parseNote("a4") == ((.a, nil, 5), _dur(4, 1), false))
+        #expect(parseNote("A,,3") == ((.a, nil, 2), makeDuration(3, 1), false))
+        #expect(parseNote("A/") == ((.a, nil, 4), makeDuration(1, 2), false))
+        #expect(parseNote("a2") == ((.a, nil, 5), makeDuration(2, 1), false))
+        #expect(parseNote("a4") == ((.a, nil, 5), makeDuration(4, 1), false))
         #expect(parseNote("b") == ((.b, nil, 5), nil, false))
-        #expect(parseNote("B/") == ((.b, nil, 4), _dur(1, 2), false))
-        #expect(parseNote("B2") == ((.b, nil, 4), _dur(2, 1), false))
-        #expect(parseNote("B4") == ((.b, nil, 4), _dur(4, 1), false))
+        #expect(parseNote("B/") == ((.b, nil, 4), makeDuration(1, 2), false))
+        #expect(parseNote("B2") == ((.b, nil, 4), makeDuration(2, 1), false))
+        #expect(parseNote("B4") == ((.b, nil, 4), makeDuration(4, 1), false))
         #expect(parseNote("c") == ((.c, nil, 5), nil, false))
-        #expect(parseNote("c/") == ((.c, nil, 5), _dur(1, 2), false))
-        #expect(parseNote("c2") == ((.c, nil, 5), _dur(2, 1), false))
-        #expect(parseNote("c3") == ((.c, nil, 5), _dur(3, 1), false))
+        #expect(parseNote("c/") == ((.c, nil, 5), makeDuration(1, 2), false))
+        #expect(parseNote("c2") == ((.c, nil, 5), makeDuration(2, 1), false))
+        #expect(parseNote("c3") == ((.c, nil, 5), makeDuration(3, 1), false))
         #expect(parseNote("d") == ((.d, nil, 5), nil, false))
-        #expect(parseNote("d/") == ((.d, nil, 5), _dur(1, 2), false))
-        #expect(parseNote("D//") == ((.d, nil, 4), _dur(1, 4), false))
-        #expect(parseNote("d2") == ((.d, nil, 5), _dur(2, 1), false))
+        #expect(parseNote("d/") == ((.d, nil, 5), makeDuration(1, 2), false))
+        #expect(parseNote("D//") == ((.d, nil, 4), makeDuration(1, 4), false))
+        #expect(parseNote("d2") == ((.d, nil, 5), makeDuration(2, 1), false))
         #expect(parseNote("e-") == ((.e, nil, 5), nil, true))
-        #expect(parseNote("e'/") == ((.e, nil, 6), _dur(1, 2), false))
-        #expect(parseNote("e2") == ((.e, nil, 5), _dur(2, 1), false))
-        #expect(parseNote("e3") == ((.e, nil, 5), _dur(3, 1), false))
+        #expect(parseNote("e'/") == ((.e, nil, 6), makeDuration(1, 2), false))
+        #expect(parseNote("e2") == ((.e, nil, 5), makeDuration(2, 1), false))
+        #expect(parseNote("e3") == ((.e, nil, 5), makeDuration(3, 1), false))
         #expect(parseNote("f''''-") == ((.f, nil, 9), nil, true))
-        #expect(parseNote("f/") == ((.f, nil, 5), _dur(1, 2), false))
-        #expect(parseNote("f2") == ((.f, nil, 5), _dur(2, 1), false))
-        #expect(parseNote("F3/2") == ((.f, nil, 4), _dur(3, 2), false))
-        #expect(parseNote("F8") == ((.f, nil, 4), _dur(8, 1), false))
+        #expect(parseNote("f/") == ((.f, nil, 5), makeDuration(1, 2), false))
+        #expect(parseNote("f2") == ((.f, nil, 5), makeDuration(2, 1), false))
+        #expect(parseNote("F3/2") == ((.f, nil, 4), makeDuration(3, 2), false))
+        #expect(parseNote("F8") == ((.f, nil, 4), makeDuration(8, 1), false))
         #expect(parseNote("g") == ((.g, nil, 5), nil, false))
-        #expect(parseNote("G,/2") == ((.g, nil, 3), _dur(1, 2), false))
-        #expect(parseNote("g'2") == ((.g, nil, 6), _dur(2, 1), false))
-        #expect(parseNote("g/") == ((.g, nil, 5), _dur(1, 2), false))
+        #expect(parseNote("G,/2") == ((.g, nil, 3), makeDuration(1, 2), false))
+        #expect(parseNote("g'2") == ((.g, nil, 6), makeDuration(2, 1), false))
+        #expect(parseNote("g/") == ((.g, nil, 5), makeDuration(1, 2), false))
     }
 
     @Test
@@ -235,9 +235,9 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseRefNumber_success() {
-        #expect(parseRefNumber("1") == _rnum(1))
-        #expect(parseRefNumber("007") == _rnum(7))
-        #expect(parseRefNumber("5836472") == _rnum(5_836_472))
+        #expect(parseRefNumber("1") == makeRefNumber(1))
+        #expect(parseRefNumber("007") == makeRefNumber(7))
+        #expect(parseRefNumber("5836472") == makeRefNumber(5_836_472))
     }
 
     @Test
@@ -251,11 +251,11 @@ extension ABCParseFunctionsTests {
     @Test
     func parseRest_success() {
         #expect(parseRest("x") == ("x", nil))
-        #expect(parseRest("x//") == ("x", _dur(1, 4)))
-        #expect(parseRest("X2") == ("X", _dur(2, 1)))
+        #expect(parseRest("x//") == ("x", makeDuration(1, 4)))
+        #expect(parseRest("X2") == ("X", makeDuration(2, 1)))
         #expect(parseRest("z") == ("z", nil))
-        #expect(parseRest("z3/2") == ("z", _dur(3, 2)))
-        #expect(parseRest("Z4") == ("Z", _dur(4, 1)))
+        #expect(parseRest("z3/2") == ("z", makeDuration(3, 2)))
+        #expect(parseRest("Z4") == ("Z", makeDuration(4, 1)))
     }
 
     @Test
@@ -269,20 +269,20 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseSymbolLine_success() {
-        #expect(parseSymbolLine("") == _sline())
-        #expect(parseSymbolLine("*") == _sline([.skip]))
-        #expect(parseSymbolLine("**") == _sline([.skip, .skip]))
-        #expect(parseSymbolLine("!p!") == _sline([.decoration(ABCDecoration("p", nil, .bang))]))
-        #expect(parseSymbolLine("!pp!") == _sline([.decoration(ABCDecoration("pp", nil, .bang))]))
-        #expect(parseSymbolLine("\"Am\"") == _sline([.chordSymbol("Am")]))
-        #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation(ABCAnnotation(position: .above, text: "forte"))]))
-        #expect(parseSymbolLine("\"_text\"") == _sline([.annotation(ABCAnnotation(position: .below, text: "text"))]))
-        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration(ABCDecoration("p", nil, .bang)), .skip, .skip, .skip]))
-        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration(ABCDecoration("pp", nil, .bang)),
+        #expect(parseSymbolLine("") == makeSymbolLine([]))
+        #expect(parseSymbolLine("*") == makeSymbolLine([.skip]))
+        #expect(parseSymbolLine("**") == makeSymbolLine([.skip, .skip]))
+        #expect(parseSymbolLine("!p!") == makeSymbolLine([.decoration(makeDecoration("p", nil, .bang))]))
+        #expect(parseSymbolLine("!pp!") == makeSymbolLine([.decoration(makeDecoration("pp", nil, .bang))]))
+        #expect(parseSymbolLine("\"Am\"") == makeSymbolLine([.chordSymbol("Am")]))
+        #expect(parseSymbolLine("\"^forte\"") == makeSymbolLine([.annotation(ABCAnnotation(position: .above, text: "forte"))]))
+        #expect(parseSymbolLine("\"_text\"") == makeSymbolLine([.annotation(ABCAnnotation(position: .below, text: "text"))]))
+        #expect(parseSymbolLine("!p! * * *") == makeSymbolLine([.decoration(makeDecoration("p", nil, .bang)), .skip, .skip, .skip]))
+        #expect(parseSymbolLine("!pp! * !f!") == makeSymbolLine([.decoration(makeDecoration("pp", nil, .bang)),
                                                          .skip,
-                                                         .decoration(ABCDecoration("f", nil, .bang))]))
-        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration(ABCDecoration("trill", nil, .bang))]))
-        #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation(ABCAnnotation(position: .above, text: "p")), .chordSymbol("Am"), .skip]))
+                                                         .decoration(makeDecoration("f", nil, .bang))]))
+        #expect(parseSymbolLine("\"Am\" * !trill!") == makeSymbolLine([.chordSymbol("Am"), .skip, .decoration(makeDecoration("trill", nil, .bang))]))
+        #expect(parseSymbolLine("\"^p\" \"Am\" *") == makeSymbolLine([.annotation(ABCAnnotation(position: .above, text: "p")), .chordSymbol("Am"), .skip]))
     }
 
     @Test
@@ -294,15 +294,15 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseTempo_compoundBeat_success() {
-        let d38 = _dur(3, 8)
-        let d14 = _dur(1, 4)
-        let d12 = _dur(1, 2)
+        let d38 = makeDuration(3, 8)
+        let d14 = makeDuration(1, 4)
+        let d12 = makeDuration(1, 2)
 
-        #expect(parseTempo("3/8 1/4=44") == _tempo([d38, d14], 44))
-        #expect(parseTempo("3/8 1/4 = 44") == _tempo([d38, d14], 44))
-        #expect(parseTempo("1/4 1/4 1/4=120") == _tempo([d14, d14, d14], 120))
-        #expect(parseTempo("1/2 1/4=60") == _tempo([d12, d14], 60))
-        #expect(parseTempo("1/4 3/8 1/4 3/8=40") == _tempo([d14, d38, d14, d38], 40))
+        #expect(parseTempo("3/8 1/4=44") == makeTempo([d38, d14], 44))
+        #expect(parseTempo("3/8 1/4 = 44") == makeTempo([d38, d14], 44))
+        #expect(parseTempo("1/4 1/4 1/4=120") == makeTempo([d14, d14, d14], 120))
+        #expect(parseTempo("1/2 1/4=60") == makeTempo([d12, d14], 60))
+        #expect(parseTempo("1/4 3/8 1/4 3/8=40") == makeTempo([d14, d38, d14, d38], 40))
     }
 
     @Test
@@ -314,12 +314,12 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseTempo_success() {
-        #expect(parseTempo("\"Allegro\" 1/4=120") == _tempo(1, 4, 120, "Allegro"))
-        #expect(parseTempo("\"Andante\"") == _tempo("Andante"))
-        #expect(parseTempo("\"Andante mosso\" 1/4 = 110") == _tempo(1, 4, 110, "Andante mosso"))
-        #expect(parseTempo("1/2=120") == _tempo(1, 2, 120))
-        #expect(parseTempo("1/4 = 110 \"Andante mosso\"") == _tempo(1, 4, 110, "Andante mosso"))
-        #expect(parseTempo("3/8=50 \"Slowly\"") == _tempo(3, 8, 50, "Slowly"))
+        #expect(parseTempo("\"Allegro\" 1/4=120") == makeTempo(1, 4, 120, "Allegro"))
+        #expect(parseTempo("\"Andante\"") == makeTempo("Andante"))
+        #expect(parseTempo("\"Andante mosso\" 1/4 = 110") == makeTempo(1, 4, 110, "Andante mosso"))
+        #expect(parseTempo("1/2=120") == makeTempo(1, 2, 120))
+        #expect(parseTempo("1/4 = 110 \"Andante mosso\"") == makeTempo(1, 4, 110, "Andante mosso"))
+        #expect(parseTempo("3/8=50 \"Slowly\"") == makeTempo(3, 8, 50, "Slowly"))
     }
 
     @Test
@@ -333,12 +333,12 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseTimeSignature_complex_success() throws {
-        #expect(try parseTimeSignature("(2+3+2)/8") == _tsig([2, 3, 2], 8))
-        #expect(try parseTimeSignature("2+3+2/8") == _tsig([2, 3, 2], 8))
-        #expect(try parseTimeSignature("(3+3)/8") == _tsig([3, 3], 8))
-        #expect(try parseTimeSignature("3+3/8") == _tsig([3, 3], 8))
-        #expect(try parseTimeSignature("(2+3)/4") == _tsig([2, 3], 4))
-        #expect(try parseTimeSignature("3+3+2/8") == _tsig([3, 3, 2], 8))
+        #expect(try parseTimeSignature("(2+3+2)/8") == makeTimeSignature([2, 3, 2], 8))
+        #expect(try parseTimeSignature("2+3+2/8") == makeTimeSignature([2, 3, 2], 8))
+        #expect(try parseTimeSignature("(3+3)/8") == makeTimeSignature([3, 3], 8))
+        #expect(try parseTimeSignature("3+3/8") == makeTimeSignature([3, 3], 8))
+        #expect(try parseTimeSignature("(2+3)/4") == makeTimeSignature([2, 3], 4))
+        #expect(try parseTimeSignature("3+3+2/8") == makeTimeSignature([3, 3, 2], 8))
     }
 
     @Test
@@ -351,11 +351,11 @@ extension ABCParseFunctionsTests {
     func parseTimeSignature_success() throws {
         #expect(parseTimeSignature("C") == .common)
         #expect(parseTimeSignature("C|") == .cut)
-        #expect(try parseTimeSignature("12/8") == _tsig(12, 8))
-        #expect(try parseTimeSignature("3/4") == _tsig(3, 4))
-        #expect(try parseTimeSignature("4/4") == _tsig(4, 4))
-        #expect(try parseTimeSignature("6/8") == _tsig(6, 8))
-        #expect(try parseTimeSignature("9/8") == _tsig(9, 8))
+        #expect(try parseTimeSignature("12/8") == makeTimeSignature(12, 8))
+        #expect(try parseTimeSignature("3/4") == makeTimeSignature(3, 4))
+        #expect(try parseTimeSignature("4/4") == makeTimeSignature(4, 4))
+        #expect(try parseTimeSignature("6/8") == makeTimeSignature(6, 8))
+        #expect(try parseTimeSignature("9/8") == makeTimeSignature(9, 8))
     }
 
     @Test
@@ -384,17 +384,17 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseUnitNoteLength_success() {
-        #expect(parseUnitNoteLength("1") == _dur(1, 1))
-        #expect(parseUnitNoteLength("1/1") == _dur(1, 1))
-        #expect(parseUnitNoteLength("1/2") == _dur(1, 2))
-        #expect(parseUnitNoteLength("1/4") == _dur(1, 4))
-        #expect(parseUnitNoteLength("1/8") == _dur(1, 8))
-        #expect(parseUnitNoteLength("1/16") == _dur(1, 16))
-        #expect(parseUnitNoteLength("1/32") == _dur(1, 32))
-        #expect(parseUnitNoteLength("1/64") == _dur(1, 64))
-        #expect(parseUnitNoteLength("1/128") == _dur(1, 128))
-        #expect(parseUnitNoteLength("1/256") == _dur(1, 256))
-        #expect(parseUnitNoteLength("1/512") == _dur(1, 512))
+        #expect(parseUnitNoteLength("1") == makeDuration(1, 1))
+        #expect(parseUnitNoteLength("1/1") == makeDuration(1, 1))
+        #expect(parseUnitNoteLength("1/2") == makeDuration(1, 2))
+        #expect(parseUnitNoteLength("1/4") == makeDuration(1, 4))
+        #expect(parseUnitNoteLength("1/8") == makeDuration(1, 8))
+        #expect(parseUnitNoteLength("1/16") == makeDuration(1, 16))
+        #expect(parseUnitNoteLength("1/32") == makeDuration(1, 32))
+        #expect(parseUnitNoteLength("1/64") == makeDuration(1, 64))
+        #expect(parseUnitNoteLength("1/128") == makeDuration(1, 128))
+        #expect(parseUnitNoteLength("1/256") == makeDuration(1, 256))
+        #expect(parseUnitNoteLength("1/512") == makeDuration(1, 512))
     }
 
     @Test
@@ -407,11 +407,11 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseUserSymbol_success() {
-        #expect(parseUserSymbol("T=!trill!") == _usym("T", _deco("trill")))
-        #expect(parseUserSymbol("T = !trill!") == _usym("T", _deco("trill")))
-        #expect(parseUserSymbol("~=!roll!") == _usym("~", _deco("roll")))
-        #expect(parseUserSymbol("~ = !roll!") == _usym("~", _deco("roll")))
-        #expect(parseUserSymbol("H=!fermata!") == _usym("H", _deco("fermata")))
+        #expect(parseUserSymbol("T=!trill!") == makeUserSymbol("T", makeDecoration("trill")))
+        #expect(parseUserSymbol("T = !trill!") == makeUserSymbol("T", makeDecoration("trill")))
+        #expect(parseUserSymbol("~=!roll!") == makeUserSymbol("~", makeDecoration("roll")))
+        #expect(parseUserSymbol("~ = !roll!") == makeUserSymbol("~", makeDecoration("roll")))
+        #expect(parseUserSymbol("H=!fermata!") == makeUserSymbol("H", makeDecoration("fermata")))
     }
 
     @Test
@@ -421,21 +421,21 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseVoice_success() {
-        #expect(parseVoice("1 clef=treble name=\"Soprano\"sname=\"A\"") == _voice("1", ["clef": "treble",
+        #expect(parseVoice("1 clef=treble name=\"Soprano\"sname=\"A\"") == makeVoice("1", ["clef": "treble",
                                                                                         "name": "Soprano",
                                                                                         "sname": "A"]))
-        #expect(parseVoice("2") == _voice("2"))
-        #expect(parseVoice("3 clef = bass middle = d name = \"Tenor\" sname = \"B\"") == _voice("3", ["clef": "bass",
+        #expect(parseVoice("2") == makeVoice("2"))
+        #expect(parseVoice("3 clef = bass middle = d name = \"Tenor\" sname = \"B\"") == makeVoice("3", ["clef": "bass",
                                                                                                       "middle": "d",
                                                                                                       "name": "Tenor",
                                                                                                       "sname": "B"]))
-        #expect(parseVoice("B1   middle=d   clef=bass      name=\"Basso I\"     snm=\"B.I\"    transpose=-24") == _voice("B1", ["middle": "d",
+        #expect(parseVoice("B1   middle=d   clef=bass      name=\"Basso I\"     snm=\"B.I\"    transpose=-24") == makeVoice("B1", ["middle": "d",
                                                                                                                                 "clef": "bass",
                                                                                                                                 "name": "Basso I",
                                                                                                                                 "snm": "B.I",
                                                                                                                                 "transpose": "-24"]))
-        #expect(parseVoice("T1") == _voice("T1"))
-        #expect(parseVoice("T2               clef=treble-8    name=\"Tenore II\"    snm=\"T.II\"") == _voice("T2", ["clef": "treble-8",
+        #expect(parseVoice("T1") == makeVoice("T1"))
+        #expect(parseVoice("T2               clef=treble-8    name=\"Tenore II\"    snm=\"T.II\"") == makeVoice("T2", ["clef": "treble-8",
                                                                                                                     "name": "Tenore II",
                                                                                                                     "snm": "T.II"]))
     }

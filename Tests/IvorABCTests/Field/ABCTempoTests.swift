@@ -11,7 +11,7 @@ struct ABCTempoTests {
 extension ABCTempoTests {
     @Test
     func equality() {
-        let dur = ABCDuration(1, 4)
+        let dur = makeDuration(1, 4)
         let a = ABCTempo(durations: [dur],
                          rate: 120,
                          text: "Allegro")
@@ -24,8 +24,8 @@ extension ABCTempoTests {
 
     @Test
     func equality_compoundDurations() {
-        let d1 = ABCDuration(3, 8)
-        let d2 = ABCDuration(1, 4)
+        let d1 = makeDuration(3, 8)
+        let d2 = makeDuration(1, 4)
         let a = ABCTempo(durations: [d1, d2],
                          rate: 44,
                          text: nil)
@@ -50,7 +50,7 @@ extension ABCTempoTests {
 
     @Test
     func inequality() {
-        let dur = ABCDuration(1, 4)
+        let dur = makeDuration(1, 4)
         let base = ABCTempo(durations: [dur],
                             rate: 120,
                             text: "Allegro")
@@ -61,11 +61,11 @@ extension ABCTempoTests {
         let diffText = ABCTempo(durations: [dur],
                                 rate: 120,
                                 text: "Andante")
-        let diffDur = ABCTempo(durations: [ABCDuration(1, 8)],
+        let diffDur = ABCTempo(durations: [makeDuration(1, 8)],
                                rate: 120,
                                text: "Allegro")
         let extraDur = ABCTempo(durations: [dur,
-                                            ABCDuration(1, 8)],
+                                            makeDuration(1, 8)],
                                 rate: 120,
                                 text: "Allegro")
         let noDurs = ABCTempo(durations: [], rate: 120, text: "Allegro")
@@ -79,8 +79,8 @@ extension ABCTempoTests {
 
     @Test
     func init_compoundDurations() {
-        let d1 = ABCDuration(3, 8)
-        let d2 = ABCDuration(1, 4)
+        let d1 = makeDuration(3, 8)
+        let d2 = makeDuration(1, 4)
         let tempo = ABCTempo(durations: [d1, d2],
                              rate: 44,
                              text: nil)
@@ -103,7 +103,7 @@ extension ABCTempoTests {
 
     @Test
     func init_singleDuration() {
-        let dur = ABCDuration(1, 4)
+        let dur = makeDuration(1, 4)
         let tempo = ABCTempo(durations: [dur], rate: 120, text: "Allegro")
 
         #expect(tempo.durations == [dur])
@@ -113,7 +113,7 @@ extension ABCTempoTests {
 
     @Test
     func init_legacyBeatMultiple_defaultsToNil() {
-        let dur = ABCDuration(1, 4)
+        let dur = makeDuration(1, 4)
         let tempo = ABCTempo(durations: [dur], rate: 120, text: nil)
 
         #expect(tempo.legacyBeatMultiple == nil)
@@ -121,7 +121,7 @@ extension ABCTempoTests {
 
     @Test
     func init_legacyBeatMultiple_storesValue() {
-        let dur = ABCDuration(3, 8)
+        let dur = makeDuration(3, 8)
         let tempo = ABCTempo(durations: [dur], rate: 40, text: nil, legacyBeatMultiple: 3)
 
         #expect(tempo.legacyBeatMultiple == 3)
@@ -129,7 +129,7 @@ extension ABCTempoTests {
 
     @Test
     func inequality_legacyBeatMultiple() {
-        let dur = ABCDuration(1, 8)
+        let dur = makeDuration(1, 8)
         let withFlag = ABCTempo(durations: [dur], rate: 120, text: nil, legacyBeatMultiple: 1)
         let withoutFlag = ABCTempo(durations: [dur], rate: 120, text: nil)
 

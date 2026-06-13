@@ -12,18 +12,15 @@ struct ABCFieldTests {
 extension ABCFieldTests {
     @Test
     func isValidInFileHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(_alyrics()),
+        let invalidFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
                                          .key(.empty),
                                          .lyrics(""),
-                                         .parts(_pseq()),
-                                         .refNumber(ABCRefNumber(uintValue: 1)),
-                                         .symbolLine(_sline()),
-                                         .tempo(ABCTempo(durations: [],
-                                                         rate: nil,
-                                                         text: nil)),
+                                         .parts(makePartSequence([])),
+                                         .refNumber(makeRefNumber(1)),
+                                         .symbolLine(makeSymbolLine([])),
+                                         .tempo(makeTempo([])),
                                          .title(""),
-                                         .voice(ABCVoice(id: "1",
-                                                         properties: [:]))]
+                                         .voice(makeVoice("1"))]
 
         for field in invalidFields {
             #expect(!field.isValidInFileHeader)
@@ -39,8 +36,7 @@ extension ABCFieldTests {
                                        .fileURL(""),
                                        .group(""),
                                        .history(""),
-                                       .macro(ABCMacro(trigger: "~G2",
-                                                       replacement: "{A}G{F}G")),
+                                       .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
                                        .origin(""),
@@ -48,8 +44,8 @@ extension ABCFieldTests {
                                        .rhythm(""),
                                        .source(""),
                                        .transcription(""),
-                                       .unitNoteLength(ABCDuration(1, 8)),
-                                       .userSymbol(_usym("~", _deco("roll")))]
+                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll")))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -66,7 +62,7 @@ extension ABCFieldTests {
                                          .group(""),
                                          .history(""),
                                          .origin(""),
-                                         .refNumber(ABCRefNumber(uintValue: 1)),
+                                         .refNumber(makeRefNumber(1)),
                                          .source(""),
                                          .transcription("")]
 
@@ -77,26 +73,22 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneBody_validFields() {
-        let validFields: [ABCField] = [.alignedLyrics(_alyrics()),
-                                       .instruction(ABCDirective(name: "linebreak", value: "")),
+        let validFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
+                                       .instruction(makeDirective("linebreak", "")),
                                        .key(.empty),
                                        .lyrics(""),
-                                       .macro(ABCMacro(trigger: "~G2",
-                                                       replacement: "{A}G{F}G")),
+                                       .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
-                                       .parts(_pseq()),
+                                       .parts(makePartSequence([])),
                                        .remark(""),
                                        .rhythm(""),
-                                       .symbolLine(_sline()),
-                                       .tempo(ABCTempo(durations: [],
-                                                       rate: nil,
-                                                       text: nil)),
+                                       .symbolLine(makeSymbolLine([])),
+                                       .tempo(makeTempo([])),
                                        .title(""),
-                                       .unitNoteLength(ABCDuration(1, 8)),
-                                       .userSymbol(_usym("~", _deco("roll"))),
-                                       .voice(ABCVoice(id: "1",
-                                                       properties: [:]))]
+                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll"))),
+                                       .voice(makeVoice("1"))]
 
         for field in validFields {
             #expect(field.isValidInTuneBody)
@@ -105,8 +97,8 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(_alyrics()),
-                                         .symbolLine(_sline())]
+        let invalidFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
+                                         .symbolLine(makeSymbolLine([]))]
 
         for field in invalidFields {
             #expect(!field.isValidInTuneHeader)
@@ -124,25 +116,21 @@ extension ABCFieldTests {
                                        .history(""),
                                        .key(.empty),
                                        .lyrics(""),
-                                       .macro(ABCMacro(trigger: "~G2",
-                                                       replacement: "{A}G{F}G")),
+                                       .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
                                        .origin(""),
-                                       .parts(_pseq()),
-                                       .refNumber(ABCRefNumber(uintValue: 1)),
+                                       .parts(makePartSequence([])),
+                                       .refNumber(makeRefNumber(1)),
                                        .remark(""),
                                        .rhythm(""),
                                        .source(""),
-                                       .tempo(ABCTempo(durations: [],
-                                                       rate: nil,
-                                                       text: nil)),
+                                       .tempo(makeTempo([])),
                                        .title(""),
                                        .transcription(""),
-                                       .unitNoteLength(ABCDuration(1, 8)),
-                                       .userSymbol(_usym("~", _deco("roll"))),
-                                       .voice(ABCVoice(id: "1",
-                                                       properties: [:]))]
+                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll"))),
+                                       .voice(makeVoice("1"))]
 
         for field in validFields {
             #expect(field.isValidInTuneHeader)

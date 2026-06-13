@@ -14,7 +14,7 @@ extension ABCParseContextTests {
     func baseDuration_defaultIsEighths() {
         let ctx = ABCParseContext()
 
-        #expect(ctx.baseDuration == ABCDuration(1, 8))
+        #expect(ctx.baseDuration == makeDuration(1, 8))
     }
 
     @Test
@@ -22,9 +22,9 @@ extension ABCParseContextTests {
         var ctx = ABCParseContext()
 
         try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 16)))))
-        ctx.update(with: .unitNoteLength(ABCDuration(1, 4)))
+        ctx.update(with: .unitNoteLength(makeDuration(1, 4)))
 
-        #expect(ctx.baseDuration == ABCDuration(1, 4))
+        #expect(ctx.baseDuration == makeDuration(1, 4))
     }
 
     @Test
@@ -90,7 +90,7 @@ extension ABCParseContextTests {
 
         try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4)))))
 
-        #expect(ctx.baseDuration == ABCDuration(1, 8))
+        #expect(ctx.baseDuration == makeDuration(1, 8))
     }
 
     @Test
@@ -99,7 +99,7 @@ extension ABCParseContextTests {
 
         try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 16)))))
 
-        #expect(ctx.baseDuration == ABCDuration(1, 16))
+        #expect(ctx.baseDuration == makeDuration(1, 16))
     }
 
     @Test
@@ -110,6 +110,6 @@ extension ABCParseContextTests {
 
         #expect(ctx.accidentalsInKey.isEmpty)
         #expect(!ctx.isCompoundMeter)
-        #expect(ctx.baseDuration == ABCDuration(1, 8))
+        #expect(ctx.baseDuration == makeDuration(1, 8))
     }
 }

@@ -294,135 +294,167 @@ func == (lhs: ParseTupletResult?,
 
 // MARK: - Factory Functions
 
-// swiftlint:disable:next identifier_name
-func _alyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAlignedLyrics {
+func makeAlignedLyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAlignedLyrics {
     ABCAlignedLyrics(segments: segments)
 }
 
-// swiftlint:disable:next identifier_name
-func _dur(_ numerator: UInt,
-          _ denominator: UInt) -> ABCDuration {
-    ABCDuration(numerator, denominator)
+func makeAnnotation(_ position: ABCAnnotation.Position,
+                    _ text: String) -> ABCAnnotation {
+    ABCAnnotation(position: position,
+                  text: text)
 }
 
-// swiftlint:disable:next identifier_name
-func _matchSymbols(_ input: String,
-                   context: inout ABCParseContext) throws -> [ABCSymbol] {
-    let tokenizer = ABCSymbolTokenizer(tracing: .silent)
-    let tokens = try tokenizer.tokenize(input)
-    var matcher = ABCSymbolMatcher(tokens: tokens)
-
-    return try matcher.matchSymbols(&context)
+func makeChord(_ notes: [ABCNote],
+               _ duration: ABCDuration,
+               _ isTied: Bool) -> ABCChord {
+    ABCChord(notes: notes,
+             duration: duration,
+             isTied: isTied)!   // swiftlint:disable:this force_unwrapping
 }
 
-// swiftlint:disable:next identifier_name
-func _matchSymbols(_ input: String) throws -> [ABCSymbol] {
-    var ctx = ABCParseContext()
-
-    return try _matchSymbols(input,
-                             context: &ctx)
+func makeDecoration(_ name: String,
+                    _ shorthand: Character? = nil,
+                    _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
+    ABCDecoration(name: name,
+                  shorthand: nil,
+                  dialect: dialect)!    // swiftlint:disable:this force_unwrapping
 }
 
-// swiftlint:disable:next identifier_name
-func _pit(_ letter: ABCPitch.Letter,
-          _ accidental: ABCPitch.Accidental,
-          _ octave: ABCPitch.Octave) -> ABCPitch {
+func makeDirective(_ name: String,
+                   _ value: String) -> ABCDirective {
+    ABCDirective(name: name,
+                 value: value)
+}
+
+func makeDuration(_ numerator: UInt,
+                  _ denominator: UInt) -> ABCDuration {
+    ABCDuration(numerator: numerator,
+                denominator: denominator)!  // swiftlint:disable:this force_unwrapping
+}
+
+func makeGraceNotes(_ notes: [ABCNote],
+                    _ isSlashed: Bool) -> ABCGraceNotes {
+    ABCGraceNotes(notes: notes,
+                  isSlashed: isSlashed)!    // swiftlint:disable:this force_unwrapping
+}
+
+func makeMacro(_ trigger: String,
+               _ replacement: String) -> ABCMacro {
+    ABCMacro(trigger: trigger,
+             replacement: replacement)
+}
+
+func makeNote(_ pitch: ABCPitch,
+              _ duration: ABCDuration,
+              _ isTied: Bool) -> ABCNote {
+    ABCNote(pitch: pitch,
+            duration: duration,
+            isTied: isTied)
+}
+
+func makePart(_ letter: Character,
+              _ count: UInt = 1) -> ABCPartSequence.Item {
+    .part(letter, count)
+}
+
+func makePartGroup(_ items: [ABCPartSequence.Item],
+                   _ count: UInt = 1) -> ABCPartSequence.Item {
+    .group(items, count)
+}
+
+func makePartSequence(_ items: [ABCPartSequence.Item]) -> ABCPartSequence {
+    ABCPartSequence(items: items)
+}
+
+func makePitch(_ letter: ABCPitch.Letter,
+               _ accidental: ABCPitch.Accidental,
+               _ octave: ABCPitch.Octave) -> ABCPitch {
     ABCPitch(letter: letter,
              accidental: accidental,
              octave: octave)
 }
 
-// swiftlint:disable:next identifier_name
-func _pgroup(_ items: [ABCPartSequence.Item],
-             _ count: UInt = 1) -> ABCPartSequence.Item {
-    .group(items, count)
-}
-
-// swiftlint:disable:next identifier_name
-func _ppart(_ letter: Character,
-            _ count: UInt = 1) -> ABCPartSequence.Item {
-    .part(letter, count)
-}
-
-// swiftlint:disable:next identifier_name
-func _pseq(_ items: [ABCPartSequence.Item] = []) -> ABCPartSequence {
-    ABCPartSequence(items: items)
-}
-
-// swiftlint:disable:next identifier_name
-func _rnum(_ uintValue: UInt) -> ABCRefNumber {
+func makeRefNumber(_ uintValue: UInt) -> ABCRefNumber {
     ABCRefNumber(uintValue: uintValue)
 }
 
-// swiftlint:disable:next identifier_name
-func _sline(_ elements: [ABCSymbolLine.Element] = []) -> ABCSymbolLine {
+func makeSymbolLine(_ elements: [ABCSymbolLine.Element]) -> ABCSymbolLine {
     ABCSymbolLine(elements: elements)
 }
 
-// swiftlint:disable:next identifier_name
-func _tempo(_ numerator: UInt,
-            _ denominator: UInt,
-            _ rate: UInt) -> ABCTempo {
-    ABCTempo(durations: [_dur(numerator, denominator)],
-             rate: rate,
-             text: nil)
-}
-
-// swiftlint:disable:next identifier_name
-func _tempo(_ numerator: UInt,
-            _ denominator: UInt,
-            _ rate: UInt,
-            _ text: String) -> ABCTempo {
-    ABCTempo(durations: [_dur(numerator, denominator)],
+func makeTempo(_ numerator: UInt,
+               _ denominator: UInt,
+               _ rate: UInt? = nil,
+               _ text: String? = nil) -> ABCTempo {
+    ABCTempo(durations: [makeDuration(numerator, denominator)],
              rate: rate,
              text: text)
 }
 
-// swiftlint:disable:next identifier_name
-func _tempo(_ durations: [ABCDuration],
-            _ rate: UInt) -> ABCTempo {
+func makeTempo(_ durations: [ABCDuration],
+               _ rate: UInt? = nil,
+               _ text: String? = nil) -> ABCTempo {
     ABCTempo(durations: durations,
              rate: rate,
-             text: nil)
+             text: text)
 }
 
-// swiftlint:disable:next identifier_name
-func _tempo(_ text: String) -> ABCTempo {
+func makeTempo(_ text: String) -> ABCTempo {
     ABCTempo(durations: [],
              rate: nil,
              text: text)
 }
 
-// swiftlint:disable:next identifier_name
-func _tsig(_ numerator: UInt,
-           _ denominator: UInt) throws -> ABCTimeSignature {
-    try .standard(#require(ABCTimeSignature.StandardMeter(numerator: numerator, denominator: denominator)))
+func makeTimeSignature(_ numerator: UInt,
+                       _ denominator: UInt) -> ABCTimeSignature {
+    .standard(ABCTimeSignature.StandardMeter(numerator: numerator,
+                                             denominator: denominator)!) // swiftlint:disable:this force_unwrapping
 }
 
-// swiftlint:disable:next identifier_name
-func _tsig(_ numerators: [UInt],
-           _ denominator: UInt) throws -> ABCTimeSignature {
-    try .complex(#require(ABCTimeSignature.AdditiveMeter(numerators: numerators, denominator: denominator)))
+func makeTimeSignature(_ numerators: [UInt],
+                       _ denominator: UInt) -> ABCTimeSignature {
+    .complex(ABCTimeSignature.AdditiveMeter(numerators: numerators,
+                                            denominator: denominator)!) // swiftlint:disable:this force_unwrapping
 }
 
-// swiftlint:disable:next identifier_name
-func _deco(_ name: String,
-           _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
-    ABCDecoration(name, nil, dialect)
+func makeTuplet(_ noteCount: UInt,
+                _ beatCount: UInt? = nil,
+                _ affectedCount: UInt? = nil) -> ABCTuplet {
+    ABCTuplet(noteCount: noteCount,
+              beatCount: beatCount,
+              affectedCount: affectedCount)!    // swiftlint:disable:this force_unwrapping
 }
 
-// swiftlint:disable:next identifier_name
-func _usym(_ symbol: Character,
-           _ decoration: ABCDecoration) -> ABCUserSymbol {
+func makeUserSymbol(_ symbol: Character,
+                    _ decoration: ABCDecoration) -> ABCUserSymbol {
     ABCUserSymbol(symbol: symbol,
                   decoration: decoration)
 }
 
-// swiftlint:disable:next identifier_name
-func _voice(_ id: String,
-            _ properties: [String: String] = [:]) -> ABCVoice {
+func makeVariantEnding(_ endings: [ClosedRange<UInt>]) -> ABCVariantEnding {
+    ABCVariantEnding(endings: endings)! // swiftlint:disable:this force_unwrapping
+}
+
+func makeVoice(_ id: String,
+               _ properties: [String: String] = [:]) -> ABCVoice {
     ABCVoice(id: id,
              properties: properties)
+}
+
+func matchSymbols(_ input: String) throws -> [ABCSymbol] {
+    var ctx = ABCParseContext()
+
+    return try matchSymbols(input,
+                            context: &ctx)
+}
+
+func matchSymbols(_ input: String,
+                  context: inout ABCParseContext) throws -> [ABCSymbol] {
+    let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+    let tokens = try tokenizer.tokenize(input)
+    var matcher = ABCSymbolMatcher(tokens: tokens)
+
+    return try matcher.matchSymbols(&context)
 }
 
 // MARK: - ABCFormatter Helpers
@@ -448,7 +480,7 @@ func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
     ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                 headers: [],
                 tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                          .field(.unitNoteLength(_dur(1, 4))),
+                                          .field(.unitNoteLength(makeDuration(1, 4))),
                                           .field(.key(.standard(.c, .major, [], nil))),
                                           .symbols(symbols)])])
 }

@@ -15,8 +15,8 @@ struct ABCFormatterTests {
 extension ABCFormatterTests {
     @Test
     func accidental_doubleFlat_emitsDoubleUnderscores() throws {
-        let note = ABCNote(pitch: _pit(.a, .doubleFlat, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.a, .doubleFlat, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -25,8 +25,8 @@ extension ABCFormatterTests {
 
     @Test
     func accidental_doubleSharp_emitsDoubleCarets() throws {
-        let note = ABCNote(pitch: _pit(.c, .doubleSharp, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .doubleSharp, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -35,8 +35,8 @@ extension ABCFormatterTests {
 
     @Test
     func accidental_flat_emitsUnderscore() throws {
-        let note = ABCNote(pitch: _pit(.b, .flat, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.b, .flat, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -45,8 +45,8 @@ extension ABCFormatterTests {
 
     @Test
     func accidental_natural_emitsBareNote() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -56,8 +56,8 @@ extension ABCFormatterTests {
 
     @Test
     func accidental_sharp_emitsCaret() throws {
-        let note = ABCNote(pitch: _pit(.f, .sharp, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.f, .sharp, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -66,7 +66,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_continuation_emitsHyphen() throws {
-        let lyrics = _alyrics([.text("hel"), .hyphen, .text("lo")])
+        let lyrics = makeAlignedLyrics([.text("hel"), .hyphen, .text("lo")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -78,7 +78,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_hold_emitsUnderscore() throws {
-        let lyrics = _alyrics([.text("long"), .hold])
+        let lyrics = makeAlignedLyrics([.text("long"), .hold])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -90,7 +90,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_syllableWithPercent_escapesPercentSign() throws {
-        let lyrics = _alyrics([.text("100%"), .text("done")])
+        let lyrics = makeAlignedLyrics([.text("100%"), .text("done")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -102,7 +102,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_syllables_emitsSpaceSeparated() throws {
-        let lyrics = _alyrics([.text("hel"), .text("lo")])
+        let lyrics = makeAlignedLyrics([.text("hel"), .text("lo")])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -114,7 +114,7 @@ extension ABCFormatterTests {
 
     @Test
     func barRepeat_emitsVerbatim() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false)
         let output = try format(minimalTunebook(symbols: [.barRepeat("|:"), .note(note)]))
 
         #expect(output.contains("|:"))
@@ -136,8 +136,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_doubleRight_emitsVerbatim() throws {
-        let c = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let d = ABCNote(pitch: _pit(.d, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let c = ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false)
+        let d = ABCNote(pitch: makePitch(.d, .natural, 4), duration: makeDuration(1, 8), isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">>"), .note(d)]))
 
         #expect(output.contains(">>"))
@@ -145,8 +145,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_emitsVerbatim() throws {
-        let c = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let d = ABCNote(pitch: _pit(.d, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let c = ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false)
+        let d = ABCNote(pitch: makePitch(.d, .natural, 4), duration: makeDuration(1, 8), isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">"), .note(d)]))
 
         #expect(output.contains(">"))
@@ -168,8 +168,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_left_emitsVerbatim() throws {
-        let c = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let d = ABCNote(pitch: _pit(.d, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let c = ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false)
+        let d = ABCNote(pitch: makePitch(.d, .natural, 4), duration: makeDuration(1, 8), isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm("<"), .note(d)]))
 
         #expect(output.contains("<"))
@@ -191,28 +191,28 @@ extension ABCFormatterTests {
 
     @Test
     func chord_basic_emitsBracketedNotes() throws {
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
-                                ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false),
-                                ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes, _dur(1, 8), false))]))
+        let notes: [ABCNote] = [ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false),
+                                ABCNote(pitch: makePitch(.e, .natural, 4), duration: makeDuration(1, 8), isTied: false),
+                                ABCNote(pitch: makePitch(.g, .natural, 4), duration: makeDuration(1, 8), isTied: false)]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 8), false))]))
 
         #expect(output.contains("[CEG]\n"))
     }
 
     @Test
     func chord_withDurationSuffix_emitsChordSuffix() throws {
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
-                                ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes, _dur(1, 4), false))]))
+        let notes: [ABCNote] = [ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false),
+                                ABCNote(pitch: makePitch(.e, .natural, 4), duration: makeDuration(1, 8), isTied: false)]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 4), false))]))
 
         #expect(output.contains("[CE]2\n"))
     }
 
     @Test
     func chord_withTie_emitsDash() throws {
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false),
-                                ABCNote(pitch: _pit(.e, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let output = try format(minimalTunebook(symbols: [.chord(ABCChord(notes, _dur(1, 8), true))]))
+        let notes: [ABCNote] = [ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false),
+                                ABCNote(pitch: makePitch(.e, .natural, 4), duration: makeDuration(1, 8), isTied: false)]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 8), true))]))
 
         #expect(output.contains("[CE]-\n"))
     }
@@ -221,12 +221,12 @@ extension ABCFormatterTests {
     func crossTuneDurationState_L1_4_leaksIntoSecondTune() throws {
         // Tune 1 sets L:1/4. Tune 2 has no L:. The formatter must carry
         // unitNoteLength forward, so notes in tune 2 are divided by 1/4.
-        let noteDur = _dur(1, 4)  // stored duration = 1/4 (one unit of L:1/4)
-        let note = ABCNote(pitch: _pit(.c, .natural, 4), duration: noteDur, isTied: false)
+        let noteDur = makeDuration(1, 4)  // stored duration = 1/4 (one unit of L:1/4)
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4), duration: noteDur, isTied: false)
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.unitNoteLength(_dur(1, 4))),
+                                                         .field(.unitNoteLength(makeDuration(1, 4))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([.note(note)])]),
                                        ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 2))),
@@ -246,12 +246,12 @@ extension ABCFormatterTests {
         // Tune 1 sets M:3/8 (ratio < 0.75, so default L: is 1/16) with no explicit L:.
         // Tune 2 has no M: and no L:. M: state carries forward, so the effective
         // base in tune 2 is still 1/16.
-        let noteDur = _dur(1, 16)  // stored duration = 1/16 (one unit under M:3/8 default)
-        let note = ABCNote(pitch: _pit(.c, .natural, 4), duration: noteDur, isTied: false)
+        let noteDur = makeDuration(1, 16)  // stored duration = 1/16 (one unit under M:3/8 default)
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4), duration: noteDur, isTied: false)
         let book = try ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                             .field(.meter(_tsig(3, 8))),
+                                                             .field(.meter(makeTimeSignature(3, 8))),
                                                              .field(.key(.standard(.c, .major, [], nil))),
                                                              .symbols([.note(note)])]),
                                            ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 2))),
@@ -269,8 +269,8 @@ extension ABCFormatterTests {
     @Test
     func duration_default_emitsEmpty() throws {
         // With L:1/8 (the default), a stored duration of 1/8 emits no suffix.
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -279,8 +279,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_double_emits2() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 4),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 4),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -289,8 +289,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_half_emitsSlash() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 16),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 16),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -299,8 +299,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_quarter_emitsDoubleSlash() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 32),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 32),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -309,8 +309,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_threeHalves_emits3over2() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(3, 16),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(3, 16),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -319,8 +319,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_underL4_eighth_emitsSlash() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
 
@@ -329,8 +329,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_underL4_quarter_emitsEmpty() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 4),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 4),
                            isTied: false)
         let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
 
@@ -339,8 +339,8 @@ extension ABCFormatterTests {
 
     @Test
     func duration_underL4_whole_emits4() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 1),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 1),
                            isTied: false)
         let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
 
@@ -419,7 +419,7 @@ extension ABCFormatterTests {
     @Test
     func field_unitNoteLength_emitsLField() throws {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                               headers: [.field(.unitNoteLength(_dur(1, 8)))],
+                               headers: [.field(.unitNoteLength(makeDuration(1, 8)))],
                                tunes: [])
 
         #expect(try format(book).contains("L:1/8\n"))
@@ -428,7 +428,7 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_emitsUField() throws {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                               headers: [.field(.userSymbol(_usym("~", _deco("roll"))))],
+                               headers: [.field(.userSymbol(makeUserSymbol("~", makeDecoration("roll"))))],
                                tunes: [])
 
         #expect(try format(book).contains("U:~=!roll!\n"))
@@ -472,7 +472,7 @@ extension ABCFormatterTests {
     @Test
     func fileHeader_meterField_emitsMField() throws {
         let book = try ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                                   headers: [.field(.meter(_tsig(4, 4)))],
+                                   headers: [.field(.meter(makeTimeSignature(4, 4)))],
                                    tunes: [])
         let output = try format(book)
 
@@ -513,18 +513,18 @@ extension ABCFormatterTests {
 
     @Test
     func graceNotes_noSlash_emitsCurlyBraces() throws {
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.a, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let following = ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let output = try format(minimalTunebook(symbols: [.graceNotes(ABCGraceNotes(notes, false)), .note(following)]))
+        let notes: [ABCNote] = [ABCNote(pitch: makePitch(.a, .natural, 4), duration: makeDuration(1, 8), isTied: false)]
+        let following = ABCNote(pitch: makePitch(.g, .natural, 4), duration: makeDuration(1, 8), isTied: false)
+        let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, false)), .note(following)]))
 
         #expect(output.contains("{A}G\n"))
     }
 
     @Test
     func graceNotes_withSlash_emitsSlashInBraces() throws {
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.a, .natural, 4), duration: _dur(1, 8), isTied: false)]
-        let following = ABCNote(pitch: _pit(.g, .natural, 4), duration: _dur(1, 8), isTied: false)
-        let output = try format(minimalTunebook(symbols: [.graceNotes(ABCGraceNotes(notes, true)), .note(following)]))
+        let notes: [ABCNote] = [ABCNote(pitch: makePitch(.a, .natural, 4), duration: makeDuration(1, 8), isTied: false)]
+        let following = ABCNote(pitch: makePitch(.g, .natural, 4), duration: makeDuration(1, 8), isTied: false)
+        let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, true)), .note(following)]))
 
         #expect(output.contains("{/A}G\n"))
     }
@@ -543,8 +543,8 @@ extension ABCFormatterTests {
     @Test
     func inlineField_key_emitsBracketed() throws {
         let output = try format(minimalTunebook(symbols: [.inlineField(.key(.standard(.g, .major, [], nil))),
-                                                          .note(ABCNote(pitch: _pit(.g, .natural, 4),
-                                                                        duration: _dur(1, 8),
+                                                          .note(ABCNote(pitch: makePitch(.g, .natural, 4),
+                                                                        duration: makeDuration(1, 8),
                                                                         isTied: false))]))
 
         #expect(output.contains("[K:G major]"))
@@ -552,9 +552,9 @@ extension ABCFormatterTests {
 
     @Test
     func inlineField_meter_emitsBracketed() throws {
-        let output = try format(minimalTunebook(symbols: [.inlineField(.meter(_tsig(3, 4))),
-                                                          .note(ABCNote(pitch: _pit(.c, .natural, 4),
-                                                                        duration: _dur(1, 8),
+        let output = try format(minimalTunebook(symbols: [.inlineField(.meter(makeTimeSignature(3, 4))),
+                                                          .note(ABCNote(pitch: makePitch(.c, .natural, 4),
+                                                                        duration: makeDuration(1, 8),
                                                                         isTied: false))]))
 
         #expect(output.contains("[M:3/4]"))
@@ -652,7 +652,7 @@ extension ABCFormatterTests {
     @Test
     func meter_complex_emitsParenthesizedForm() throws {
         let book = try ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                                   headers: [.field(.meter(_tsig([2, 3, 2], 8)))],
+                                   headers: [.field(.meter(makeTimeSignature([2, 3, 2], 8)))],
                                    tunes: [])
 
         #expect(try format(book).contains("M:(2+3+2)/8\n"))
@@ -679,7 +679,7 @@ extension ABCFormatterTests {
     @Test
     func meter_standard_emitsFraction() throws {
         let book = try ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                                   headers: [.field(.meter(_tsig(3, 4)))],
+                                   headers: [.field(.meter(makeTimeSignature(3, 4)))],
                                    tunes: [])
 
         #expect(try format(book).contains("M:3/4\n"))
@@ -697,7 +697,7 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.parts(_pseq([_ppart("A"), _ppart("B")]))),
+                                                         .field(.parts(makePartSequence([makePart("A"), makePart("B")]))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])
 
@@ -709,9 +709,9 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.parts(_pseq([_ppart("A"),
-                                                                              _pgroup([_ppart("B"),
-                                                                                       _ppart("C")], 3)]))),
+                                                         .field(.parts(makePartSequence([makePart("A"),
+                                                                              makePartGroup([makePart("B"),
+                                                                                       makePart("C")], 3)]))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])
 
@@ -723,7 +723,7 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.parts(_pseq([_ppart("A", 2), _ppart("B")]))),
+                                                         .field(.parts(makePartSequence([makePart("A", 2), makePart("B")]))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])
 
@@ -732,8 +732,8 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave2_emitsUppercaseWithTwoCommas() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 2),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 2),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -742,8 +742,8 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave3_emitsUppercaseWithComma() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 3),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 3),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -752,8 +752,8 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave4_emitsUppercase() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -762,8 +762,8 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave5_emitsLowercase() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 5),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 5),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -772,8 +772,8 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave6_emitsLowercaseWithApostrophe() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 6),
-                           duration: _dur(1, 8),
+        let note = ABCNote(pitch: makePitch(.c, .natural, 6),
+                           duration: makeDuration(1, 8),
                            isTied: false)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -803,14 +803,14 @@ extension ABCFormatterTests {
 
     @Test
     func rest_regularInvisible_emitsX() throws {
-        let output = try format(minimalTunebook(symbols: [.rest(.regular(true, _dur(1, 8)))]))
+        let output = try format(minimalTunebook(symbols: [.rest(.regular(true, makeDuration(1, 8)))]))
 
         #expect(output.contains("x\n"))
     }
 
     @Test
     func rest_regular_emitsZ() throws {
-        let output = try format(minimalTunebook(symbols: [.rest(.regular(false, _dur(1, 8)))]))
+        let output = try format(minimalTunebook(symbols: [.rest(.regular(false, makeDuration(1, 8)))]))
 
         #expect(output.contains("z\n"))
     }
@@ -944,7 +944,7 @@ extension ABCFormatterTests {
 
     @Test
     func spacer_emitsY() throws {
-        let output = try format(minimalTunebook(symbols: [.spacer(_dur(1, 8))]))
+        let output = try format(minimalTunebook(symbols: [.spacer(makeDuration(1, 8))]))
 
         #expect(output.contains("y\n"))
     }
@@ -954,9 +954,9 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.unitNoteLength(_dur(1, 8))),
+                                                         .field(.unitNoteLength(makeDuration(1, 8))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
-                                                         .symbols([.spacer(_dur(1, 4))])])])
+                                                         .symbols([.spacer(makeDuration(1, 4))])])])
         let output = try format(book)
 
         #expect(output.contains("y2\n"))
@@ -964,7 +964,7 @@ extension ABCFormatterTests {
 
     @Test
     func symbolLine_skip_emitsStar() throws {
-        let sl = _sline([.skip, .decoration(ABCDecoration("trill", nil, .bang)), .skip])
+        let sl = makeSymbolLine([.skip, .decoration(makeDecoration("trill", nil, .bang)), .skip])
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -976,12 +976,12 @@ extension ABCFormatterTests {
 
     @Test
     func tempo_durationAndRate_emitsFullForm() throws {
-        #expect(try format(minimalTunebookWithTempo(_tempo(1, 4, 120))).contains("Q:1/4=120\n"))
+        #expect(try format(minimalTunebookWithTempo(makeTempo(1, 4, 120))).contains("Q:1/4=120\n"))
     }
 
     @Test
     func tempo_durationTextAndRate_emitsFullForm() throws {
-        #expect(try format(minimalTunebookWithTempo(_tempo(1, 4, 80, "Andante"))).contains("Q:\"Andante\" 1/4=80\n"))
+        #expect(try format(minimalTunebookWithTempo(makeTempo(1, 4, 80, "Andante"))).contains("Q:\"Andante\" 1/4=80\n"))
     }
 
     @Test
@@ -993,7 +993,7 @@ extension ABCFormatterTests {
 
     @Test
     func tempo_textOnly_emitsQuotedText() throws {
-        #expect(try format(minimalTunebookWithTempo(_tempo("Andante"))).contains("Q:\"Andante\"\n"))
+        #expect(try format(minimalTunebookWithTempo(makeTempo("Andante"))).contains("Q:\"Andante\"\n"))
     }
 
     @Test
@@ -1028,17 +1028,17 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.alignedLyrics(_alyrics())),
+                                                         .field(.alignedLyrics(makeAlignedLyrics())),
                                                          .field(.key(.standard(.c, .major, [], nil)))])])
 
-        #expect(throws: ABCFormatter.Error.misplacedTuneField(.alignedLyrics(_alyrics()))) {
+        #expect(throws: ABCFormatter.Error.misplacedTuneField(.alignedLyrics(makeAlignedLyrics()))) {
             try ABCFormatter().format(book)
         }
     }
 
     @Test
     func tune_missingKeySignature_throws() throws {
-        let note = ABCNote(pitch: _pit(.c, .natural, 4), duration: _dur(1, 8), isTied: false)
+        let note = ABCNote(pitch: makePitch(.c, .natural, 4), duration: makeDuration(1, 8), isTied: false)
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
@@ -1095,42 +1095,42 @@ extension ABCFormatterTests {
 
     @Test
     func tuplet_pAndQ_emitsPQ() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(3, 2))]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(makeTuplet(3, 2))]))
 
         #expect(output.contains("(3:2\n"))
     }
 
     @Test
     func tuplet_pOnly_emitsBareP() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(3))]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(makeTuplet(3))]))
 
         #expect(output.contains("(3\n"))
     }
 
     @Test
     func tuplet_pQAndR_emitsFullForm() throws {
-        let output = try format(minimalTunebook(symbols: [.tuplet(ABCTuplet(3, 2, 3))]))
+        let output = try format(minimalTunebook(symbols: [.tuplet(makeTuplet(3, 2, 3))]))
 
         #expect(output.contains("(3:2:3\n"))
     }
 
     @Test
     func variantEnding_emitsBracketForm() throws {
-        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding([1...1]))]))
+        let output = try format(minimalTunebook(symbols: [.variantEnding(makeVariantEnding([1...1]))]))
 
         #expect(output.contains("[1\n"))
     }
 
     @Test
     func variantEnding_list_emitsCommaForm() throws {
-        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding([1...1, 3...3]))]))
+        let output = try format(minimalTunebook(symbols: [.variantEnding(makeVariantEnding([1...1, 3...3]))]))
 
         #expect(output.contains("[1,3\n"))
     }
 
     @Test
     func variantEnding_range_emitsDashForm() throws {
-        let output = try format(minimalTunebook(symbols: [.variantEnding(ABCVariantEnding([1...3]))]))
+        let output = try format(minimalTunebook(symbols: [.variantEnding(makeVariantEnding([1...3]))]))
 
         #expect(output.contains("[1-3\n"))
     }
@@ -1140,7 +1140,7 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.voice(_voice(""))),
+                                                         .field(.voice(makeVoice(""))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])
 
@@ -1154,7 +1154,7 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.voice(_voice("V1"))),
+                                                         .field(.voice(makeVoice("V1"))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])
 
@@ -1177,7 +1177,7 @@ extension ABCFormatterTests {
         let book = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                                         .field(.voice(_voice("V1", ["name": "Violin",
+                                                         .field(.voice(makeVoice("V1", ["name": "Violin",
                                                                                      "clef": "treble"]))),
                                                          .field(.key(.standard(.c, .major, [], nil))),
                                                          .symbols([])])])

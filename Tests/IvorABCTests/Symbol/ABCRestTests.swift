@@ -32,7 +32,7 @@ extension ABCRestTests {
 
     @Test
     func regularInvisible() {
-        let duration = ABCDuration(1, 4)
+        let duration = makeDuration(1, 4)
         let rest = ABCRest.regular(true, duration)
 
         #expect(rest.isInvisible)
@@ -40,7 +40,7 @@ extension ABCRestTests {
 
     @Test
     func regularIsNotMultiMeasure() {
-        let duration = ABCDuration(1, 4)
+        let duration = makeDuration(1, 4)
         let rest = ABCRest.regular(false, duration)
 
         #expect(!rest.isMultiMeasure)
@@ -48,7 +48,7 @@ extension ABCRestTests {
 
     @Test
     func regularVisible() {
-        let duration = ABCDuration(1, 8)
+        let duration = makeDuration(1, 8)
         let rest = ABCRest.regular(false, duration)
 
         #expect(!rest.isInvisible)

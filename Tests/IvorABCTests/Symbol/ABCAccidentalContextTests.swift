@@ -12,7 +12,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_afterReset_barAccidentalCleared() {
         var ctx = ABCAccidentalContext()
-        let dur = ABCDuration(1, 8)
+        let dur = makeDuration(1, 8)
 
         let sharp = ABCNote(pitch: ABCPitch(letter: .f, accidental: .sharp, octave: 4),
                             duration: dur,
@@ -32,7 +32,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_afterReset_keyAccidentalRestored() {
         // G major: F♯ from key, cancelled in bar, restored after reset
         var ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
-        let dur = ABCDuration(1, 8)
+        let dur = makeDuration(1, 8)
 
         let cancel = ABCNote(pitch: ABCPitch(letter: .f, accidental: .natural, octave: 4),
                              duration: dur,
@@ -52,7 +52,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_barPropagation_naturalCancelsKeyAccidental() {
         // G major has F♯; explicit ♮ cancels it for the rest of the bar
         var ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
-        let dur = ABCDuration(1, 8)
+        let dur = makeDuration(1, 8)
 
         let cancel = ABCNote(pitch: ABCPitch(letter: .f, accidental: .natural, octave: 4),
                              duration: dur,
@@ -70,7 +70,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_barPropagation_propagatesAcrossOctaves() {
         var ctx = ABCAccidentalContext()
-        let dur = ABCDuration(1, 8)
+        let dur = makeDuration(1, 8)
 
         // First note: F♯ written
         let first = ABCNote(pitch: ABCPitch(letter: .f, accidental: .sharp, octave: 4),
@@ -99,7 +99,7 @@ extension ABCAccidentalContextTests {
         // G major has F♯
         let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
         let note = ABCNote(pitch: ABCPitch(letter: .f, accidental: .omitted, octave: 4),
-                           duration: ABCDuration(1, 8),
+                           duration: makeDuration(1, 8),
                            isTied: false)
 
         #expect(ctx.resolveAccidental(for: note) == .sharp)
@@ -110,7 +110,7 @@ extension ABCAccidentalContextTests {
         // G major has no accidental on C
         let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
         let note = ABCNote(pitch: ABCPitch(letter: .c, accidental: .omitted, octave: 4),
-                           duration: ABCDuration(1, 8),
+                           duration: makeDuration(1, 8),
                            isTied: false)
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
@@ -121,7 +121,7 @@ extension ABCAccidentalContextTests {
         // G major has F♯, but written ♮ overrides it
         let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
         let note = ABCNote(pitch: ABCPitch(letter: .f, accidental: .natural, octave: 4),
-                           duration: ABCDuration(1, 8),
+                           duration: makeDuration(1, 8),
                            isTied: false)
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
@@ -131,7 +131,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_noKey_noWrittenAccidental_returnsNatural() {
         let ctx = ABCAccidentalContext()
         let note = ABCNote(pitch: ABCPitch(letter: .f, accidental: .omitted, octave: 4),
-                           duration: ABCDuration(1, 8),
+                           duration: makeDuration(1, 8),
                            isTied: false)
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
@@ -141,7 +141,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_noKey_writtenSharp_returnsSharp() {
         let ctx = ABCAccidentalContext()
         let note = ABCNote(pitch: ABCPitch(letter: .f, accidental: .sharp, octave: 4),
-                           duration: ABCDuration(1, 8),
+                           duration: makeDuration(1, 8),
                            isTied: false)
 
         #expect(ctx.resolveAccidental(for: note) == .sharp)

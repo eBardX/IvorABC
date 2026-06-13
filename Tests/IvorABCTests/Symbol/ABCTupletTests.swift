@@ -11,23 +11,23 @@ struct ABCTupletTests {
 extension ABCTupletTests {
     @Test
     func equality() {
-        let a = ABCTuplet(3, 2, 4)
-        let b = ABCTuplet(3, 2, 4)
+        let a = makeTuplet(3, 2, 4)
+        let b = makeTuplet(3, 2, 4)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let a = ABCTuplet(3)
-        let b = ABCTuplet(5)
+        let a = makeTuplet(3)
+        let b = makeTuplet(5)
 
         #expect(a != b)
     }
 
     @Test
     func init_storesProperties() {
-        let tuplet = ABCTuplet(5, 4, 6)
+        let tuplet = makeTuplet(5, 4, 6)
 
         #expect(tuplet.noteCount == 5)
         #expect(tuplet.beatCount == 4)
@@ -36,7 +36,7 @@ extension ABCTupletTests {
 
     @Test
     func init_stringValue_allCounts() throws {
-        let tuplet = try #require(ABCTuplet(stringValue: "(3:2:4"))
+        let tuplet = try #require(makeTuplet(stringValue: "(3:2:4"))
 
         #expect(tuplet.noteCount == 3)
         #expect(tuplet.beatCount == 2)
@@ -50,7 +50,7 @@ extension ABCTupletTests {
 
     @Test
     func init_stringValue_noteCountOnly() throws {
-        let tuplet = try #require(ABCTuplet(stringValue: "(3"))
+        let tuplet = try #require(makeTuplet(stringValue: "(3"))
 
         #expect(tuplet.noteCount == 3)
         #expect(tuplet.beatCount == nil)
@@ -59,7 +59,7 @@ extension ABCTupletTests {
 
     @Test
     func init_stringValue_withBeatCount() throws {
-        let tuplet = try #require(ABCTuplet(stringValue: "(3:2"))
+        let tuplet = try #require(makeTuplet(stringValue: "(3:2"))
 
         #expect(tuplet.noteCount == 3)
         #expect(tuplet.beatCount == 2)
@@ -73,7 +73,7 @@ extension ABCTupletTests {
 
     @Test
     func resolve_customValues_notOverridden() {
-        let tuplet = ABCTuplet(5, 7, 8)
+        let tuplet = makeTuplet(5, 7, 8)
         let result = tuplet.resolve()
 
         #expect(result.noteCount == 5)
@@ -83,7 +83,7 @@ extension ABCTupletTests {
 
     @Test
     func resolve_nilValues_defaultAffectedCountToNoteCount() {
-        let tuplet = ABCTuplet(5, 2, nil)
+        let tuplet = makeTuplet(5, 2, nil)
         let result = tuplet.resolve()
 
         #expect(result.noteCount == 5)
@@ -93,58 +93,58 @@ extension ABCTupletTests {
 
     @Test
     func resolve_noteCount2_defaultBeatCount3() {
-        #expect(ABCTuplet(2).resolve().beatCount == 3)
+        #expect(makeTuplet(2).resolve().beatCount == 3)
     }
 
     @Test
     func resolve_noteCount3_defaultBeatCount2() {
-        #expect(ABCTuplet(3).resolve().beatCount == 2)
+        #expect(makeTuplet(3).resolve().beatCount == 2)
     }
 
     @Test
     func resolve_noteCount4_defaultBeatCount3() {
-        #expect(ABCTuplet(4).resolve().beatCount == 3)
+        #expect(makeTuplet(4).resolve().beatCount == 3)
     }
 
     @Test
     func resolve_noteCount5_compoundMeter_beatCount3() throws {
         let meter = try ABCTimeSignature.standard(#require(ABCTimeSignature.StandardMeter(numerator: 6, denominator: 8)))
 
-        #expect(ABCTuplet(5).resolve(meter: meter).beatCount == 3)
+        #expect(makeTuplet(5).resolve(meter: meter).beatCount == 3)
     }
 
     @Test
     func resolve_noteCount5_simpleMeter_beatCount2() {
-        #expect(ABCTuplet(5).resolve().beatCount == 2)
+        #expect(makeTuplet(5).resolve().beatCount == 2)
     }
 
     @Test
     func resolve_noteCount6_defaultBeatCount2() {
-        #expect(ABCTuplet(6).resolve().beatCount == 2)
+        #expect(makeTuplet(6).resolve().beatCount == 2)
     }
 
     @Test
     func resolve_noteCount8_defaultBeatCount3() {
-        #expect(ABCTuplet(8).resolve().beatCount == 3)
+        #expect(makeTuplet(8).resolve().beatCount == 3)
     }
 
     @Test
     func stringValue_allCounts() {
-        let tuplet = ABCTuplet(3, 2, 4)
+        let tuplet = makeTuplet(3, 2, 4)
 
         #expect(tuplet.stringValue == "(3:2:4")
     }
 
     @Test
     func stringValue_noteCountOnly() {
-        let tuplet = ABCTuplet(3)
+        let tuplet = makeTuplet(3)
 
         #expect(tuplet.stringValue == "(3")
     }
 
     @Test
     func stringValue_withBeatCount() {
-        let tuplet = ABCTuplet(3, 2)
+        let tuplet = makeTuplet(3, 2)
 
         #expect(tuplet.stringValue == "(3:2")
     }

@@ -35,7 +35,7 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func parseAlignedLyrics_allSpecials() {
-        let expected = _alyrics([.text("syl"),
+        let expected = makeAlignedLyrics([.text("syl"),
                                  .hyphen,
                                  .text("la"),
                                  .hyphen,
@@ -51,27 +51,27 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func parseAlignedLyrics_barAlign() {
-        #expect(IvorABC.parseAlignedLyrics("A | B") == _alyrics([.text("A"), .barAlign, .text("B")]))
+        #expect(IvorABC.parseAlignedLyrics("A | B") == makeAlignedLyrics([.text("A"), .barAlign, .text("B")]))
     }
 
     @Test
     func parseAlignedLyrics_empty() {
-        #expect(IvorABC.parseAlignedLyrics("") == _alyrics())
+        #expect(IvorABC.parseAlignedLyrics("") == makeAlignedLyrics())
     }
 
     @Test
     func parseAlignedLyrics_escapedHyphen() {
-        #expect(IvorABC.parseAlignedLyrics("don\\-t") == _alyrics([.text("don"), .escapedHyphen, .text("t")]))
+        #expect(IvorABC.parseAlignedLyrics("don\\-t") == makeAlignedLyrics([.text("don"), .escapedHyphen, .text("t")]))
     }
 
     @Test
     func parseAlignedLyrics_hold() {
-        #expect(IvorABC.parseAlignedLyrics("grace _") == _alyrics([.text("grace"), .hold]))
+        #expect(IvorABC.parseAlignedLyrics("grace _") == makeAlignedLyrics([.text("grace"), .hold]))
     }
 
     @Test
     func parseAlignedLyrics_hyphenAndSpace() {
-        let expected = _alyrics([.text("A"),
+        let expected = makeAlignedLyrics([.text("A"),
                                  .hyphen,
                                  .text("ma"),
                                  .hyphen,
@@ -83,27 +83,27 @@ extension ABCAlignedLyricsTests {
 
     @Test
     func parseAlignedLyrics_hyphenatedWord() {
-        #expect(IvorABC.parseAlignedLyrics("A-ma-zing") == _alyrics([.text("A"), .hyphen, .text("ma"), .hyphen, .text("zing")]))
+        #expect(IvorABC.parseAlignedLyrics("A-ma-zing") == makeAlignedLyrics([.text("A"), .hyphen, .text("ma"), .hyphen, .text("zing")]))
     }
 
     @Test
     func parseAlignedLyrics_singleSyllable() {
-        #expect(IvorABC.parseAlignedLyrics("grace") == _alyrics([.text("grace")]))
+        #expect(IvorABC.parseAlignedLyrics("grace") == makeAlignedLyrics([.text("grace")]))
     }
 
     @Test
     func parseAlignedLyrics_skip() {
-        #expect(IvorABC.parseAlignedLyrics("* grace") == _alyrics([.skip, .text("grace")]))
+        #expect(IvorABC.parseAlignedLyrics("* grace") == makeAlignedLyrics([.skip, .text("grace")]))
     }
 
     @Test
     func parseAlignedLyrics_tilde() {
-        #expect(IvorABC.parseAlignedLyrics("how~sweet") == _alyrics([.text("how"), .tilde, .text("sweet")]))
+        #expect(IvorABC.parseAlignedLyrics("how~sweet") == makeAlignedLyrics([.text("how"), .tilde, .text("sweet")]))
     }
 
     @Test
     func parseAlignedLyrics_wordBoundaries() {
-        #expect(IvorABC.parseAlignedLyrics("la la la") == _alyrics([.text("la"), .text("la"), .text("la")]))
+        #expect(IvorABC.parseAlignedLyrics("la la la") == makeAlignedLyrics([.text("la"), .text("la"), .text("la")]))
     }
 
     @Test

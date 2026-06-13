@@ -31,7 +31,7 @@ extension ABCParserTests {
         }
 
         if case let .field(.alignedLyrics(al)) = lyricsEntry {
-            #expect(al == _alyrics([.text("fó"),
+            #expect(al == makeAlignedLyrics([.text("fó"),
                                     .text("ü"),
                                     .hyphen,
                                     .text("zy"),
@@ -649,7 +649,7 @@ extension ABCParserTests {
             return s
         }.first)
 
-        #expect(symbols.first == .spacer(_dur(1, 8)))
+        #expect(symbols.first == .spacer(makeDuration(1, 8)))
     }
 
     @Test
@@ -672,7 +672,7 @@ extension ABCParserTests {
             return d
         }
 
-        #expect(spacerDurations.first == _dur(1, 4))
+        #expect(spacerDurations.first == makeDuration(1, 4))
     }
 
     @Test

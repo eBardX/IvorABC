@@ -93,7 +93,7 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_invalidUnitNoteLength() {
-        let dur = ABCDuration(1, 3)
+        let dur = makeDuration(1, 3)
         let error = ABCFormatter.Error.invalidUnitNoteLength(dur)
 
         #expect(error.message.contains("1/3"))

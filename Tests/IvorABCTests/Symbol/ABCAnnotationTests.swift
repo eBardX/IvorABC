@@ -11,31 +11,31 @@ struct ABCAnnotationTests {
 extension ABCAnnotationTests {
     @Test
     func equality() {
-        let a = ABCAnnotation(position: .above, text: "Hello")
-        let b = ABCAnnotation(position: .above, text: "Hello")
+        let a = makeAnnotation(.above, "Hello")
+        let b = makeAnnotation(.above, "Hello")
 
         #expect(a == b)
     }
 
     @Test
     func inequality_differentPosition() {
-        let a = ABCAnnotation(position: .above, text: "Hello")
-        let b = ABCAnnotation(position: .below, text: "Hello")
+        let a = makeAnnotation(.above, "Hello")
+        let b = makeAnnotation(.below, "Hello")
 
         #expect(a != b)
     }
 
     @Test
     func inequality_differentText() {
-        let a = ABCAnnotation(position: .above, text: "Hello")
-        let b = ABCAnnotation(position: .above, text: "World")
+        let a = makeAnnotation(.above, "Hello")
+        let b = makeAnnotation(.above, "World")
 
         #expect(a != b)
     }
 
     @Test
     func init_storesProperties() {
-        let annotation = ABCAnnotation(position: .right, text: "sfz")
+        let annotation = makeAnnotation(.right, "sfz")
 
         #expect(annotation.position == .right)
         #expect(annotation.text == "sfz")
@@ -43,7 +43,7 @@ extension ABCAnnotationTests {
 
     @Test
     func init_stringValue_above() throws {
-        let annotation = try #require(ABCAnnotation(stringValue: "^Hello"))
+        let annotation = try #require(makeAnnotation(stringValue: "^Hello"))
 
         #expect(annotation.position == .above)
         #expect(annotation.text == "Hello")
@@ -51,7 +51,7 @@ extension ABCAnnotationTests {
 
     @Test
     func init_stringValue_auto() throws {
-        let annotation = try #require(ABCAnnotation(stringValue: "@"))
+        let annotation = try #require(makeAnnotation(stringValue: "@"))
 
         #expect(annotation.position == .auto)
         #expect(annotation.text.isEmpty)
@@ -59,7 +59,7 @@ extension ABCAnnotationTests {
 
     @Test
     func init_stringValue_below() throws {
-        let annotation = try #require(ABCAnnotation(stringValue: "_sfz"))
+        let annotation = try #require(makeAnnotation(stringValue: "_sfz"))
 
         #expect(annotation.position == .below)
         #expect(annotation.text == "sfz")
@@ -67,17 +67,17 @@ extension ABCAnnotationTests {
 
     @Test
     func init_stringValue_emptyString() {
-        #expect(ABCAnnotation(stringValue: "") == nil)
+        #expect(makeAnnotation(stringValue: "") == nil)
     }
 
     @Test
     func init_stringValue_invalidPrefix() {
-        #expect(ABCAnnotation(stringValue: "xHello") == nil)
+        #expect(makeAnnotation(stringValue: "xHello") == nil)
     }
 
     @Test
     func init_stringValue_left() throws {
-        let annotation = try #require(ABCAnnotation(stringValue: "<sfz"))
+        let annotation = try #require(makeAnnotation(stringValue: "<sfz"))
 
         #expect(annotation.position == .left)
         #expect(annotation.text == "sfz")
@@ -85,7 +85,7 @@ extension ABCAnnotationTests {
 
     @Test
     func init_stringValue_right() throws {
-        let annotation = try #require(ABCAnnotation(stringValue: ">sfz"))
+        let annotation = try #require(makeAnnotation(stringValue: ">sfz"))
 
         #expect(annotation.position == .right)
         #expect(annotation.text == "sfz")
@@ -93,7 +93,7 @@ extension ABCAnnotationTests {
 
     @Test
     func stringValue() {
-        let annotation = ABCAnnotation(position: .above, text: "Hello")
+        let annotation = makeAnnotation(.above, "Hello")
 
         #expect(annotation.stringValue == "^Hello")
     }

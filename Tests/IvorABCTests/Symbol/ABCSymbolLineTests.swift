@@ -11,8 +11,8 @@ struct ABCSymbolLineTests {
 extension ABCSymbolLineTests {
     @Test
     func equality() {
-        let sl1 = ABCSymbolLine(elements: [.decoration(ABCDecoration("trill", nil, .bang)), .skip])
-        let sl2 = ABCSymbolLine(elements: [.decoration(ABCDecoration("trill", nil, .bang)), .skip])
+        let sl1 = ABCSymbolLine(elements: [.decoration(makeDecoration("trill", nil, .bang)), .skip])
+        let sl2 = ABCSymbolLine(elements: [.decoration(makeDecoration("trill", nil, .bang)), .skip])
 
         #expect(sl1 == sl2)
     }
@@ -27,7 +27,7 @@ extension ABCSymbolLineTests {
 
     @Test
     func inequality_differentToken() {
-        let sl1 = ABCSymbolLine(elements: [.decoration(ABCDecoration("p", nil, .bang))])
+        let sl1 = ABCSymbolLine(elements: [.decoration(makeDecoration("p", nil, .bang))])
         let sl2 = ABCSymbolLine(elements: [.skip])
 
         #expect(sl1 != sl2)
@@ -43,8 +43,8 @@ extension ABCSymbolLineTests {
     @Test
     func elements_mixed() {
         let a = ABCAnnotation(position: .above, text: "forte")
-        let sl = ABCSymbolLine(elements: [.decoration(ABCDecoration("p", nil, .bang)), .skip, .chordSymbol("Am"), .annotation(a)])
+        let sl = ABCSymbolLine(elements: [.decoration(makeDecoration("p", nil, .bang)), .skip, .chordSymbol("Am"), .annotation(a)])
 
-        #expect(sl.elements == [.decoration(ABCDecoration("p", nil, .bang)), .skip, .chordSymbol("Am"), .annotation(a)])
+        #expect(sl.elements == [.decoration(makeDecoration("p", nil, .bang)), .skip, .chordSymbol("Am"), .annotation(a)])
     }
 }

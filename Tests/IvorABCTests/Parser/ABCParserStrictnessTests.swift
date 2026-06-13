@@ -293,7 +293,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.legacyBeatMultiple == 1)
-        #expect(tempo?.durations == [ABCDuration(1, 8)])
+        #expect(tempo?.durations == [makeDuration(1, 8)])
     }
 
     @Test
@@ -314,7 +314,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 40)
         #expect(tempo?.legacyBeatMultiple == 3)
-        #expect(tempo?.durations == [ABCDuration(3, 8)])
+        #expect(tempo?.durations == [makeDuration(3, 8)])
     }
 
     @Test
