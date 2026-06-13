@@ -5,6 +5,7 @@
 import Foundation
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCParserTests {
 }

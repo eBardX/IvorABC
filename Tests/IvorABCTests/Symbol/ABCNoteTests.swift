@@ -12,7 +12,7 @@ extension ABCNoteTests {
     @Test
     func equality() {
         let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let a = ABCNote(pitch: pitch, duration: duration, isTied: false)
         let b = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
@@ -22,14 +22,14 @@ extension ABCNoteTests {
     @Test
     func inequality() {
         let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let base = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
         let diffPitch = ABCNote(pitch: ABCPitch(letter: .d, accidental: .omitted, octave: 4),
                                 duration: duration,
                                 isTied: false)
         let diffDuration = ABCNote(pitch: pitch,
-                                   duration: ABCDuration(numerator: 1, denominator: 8, reduce: false),
+                                   duration: ABCDuration(1, 8),
                                    isTied: false)
         let diffTied = ABCNote(pitch: pitch, duration: duration, isTied: true)
 
@@ -41,7 +41,7 @@ extension ABCNoteTests {
     @Test
     func init_storesValues() {
         let pitch = ABCPitch(letter: .f, accidental: .sharp, octave: 5)
-        let duration = ABCDuration(numerator: 3, denominator: 8, reduce: false)
+        let duration = ABCDuration(3, 8)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: true)
 
         #expect(note.pitch == pitch)

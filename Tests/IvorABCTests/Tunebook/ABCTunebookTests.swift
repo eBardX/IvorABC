@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCTunebookTests {
 }
@@ -95,7 +96,7 @@ extension ABCTunebookTests {
     @Test
     func migrated_fromV16_tempoLegacyFlagCleared() {
         let v16 = ABCVersion(major: 1, minor: 6)
-        let dottedQuarter = ABCDuration(numerator: 3, denominator: 8, reduce: false)
+        let dottedQuarter = ABCDuration(3, 8)
         let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, legacyBeatMultiple: 3)
         let tune = ABCTune(entries: [.field(.tempo(legacyTempo))])
         let tunebook = ABCTunebook(version: v16, headers: [], tunes: [tune])
@@ -154,7 +155,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_shorthandDecoration_returnsNoIssues() {
-        let shorthand = ABCDecoration(name: "roll", shorthand: "~", dialect: .plus)
+        let shorthand = ABCDecoration("roll", "~", .plus)
         let tunebook = minimalTunebook(symbols: [.decoration(shorthand)])
 
         #expect(tunebook.validate().isEmpty)
@@ -220,7 +221,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_undefinedUserSymbol_returnsError() {
-        let custom = ABCDecoration(name: "trill", shorthand: "W")
+        let custom = ABCDecoration("trill", "W", .bang)
         let tunebook = minimalTunebook(symbols: [.decoration(custom)])
         let issues = tunebook.validate()
 
@@ -231,7 +232,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_definedUserSymbol_returnsNoIssues() {
-        let custom = ABCDecoration(name: "trill", shorthand: "W")
+        let custom = ABCDecoration("trill", "W", .bang)
         let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.userSymbol(_usym("W", _deco("trill")))),
@@ -242,7 +243,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_builtinShorthand_returnsNoIssues() {
-        let tilde = ABCDecoration(name: "roll", shorthand: "~")
+        let tilde = ABCDecoration("roll", "~", .bang)
         let tunebook = minimalTunebook(symbols: [.decoration(tilde)])
 
         #expect(tunebook.validate().isEmpty)

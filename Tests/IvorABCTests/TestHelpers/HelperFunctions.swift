@@ -21,7 +21,7 @@ func expectFieldIsArea(_ field: ABCField,
                        _ expected: String,
                        sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .area(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .area", sourceLocation: sourceLocation)
     }
@@ -31,7 +31,7 @@ func expectFieldIsBook(_ field: ABCField,
                        _ expected: String,
                        sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .book(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .book", sourceLocation: sourceLocation)
     }
@@ -41,7 +41,7 @@ func expectFieldIsComposer(_ field: ABCField,
                            _ expected: String,
                            sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .composer(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .composer", sourceLocation: sourceLocation)
     }
@@ -51,7 +51,7 @@ func expectFieldIsDiscography(_ field: ABCField,
                               _ expected: String,
                               sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .discography(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .discography", sourceLocation: sourceLocation)
     }
@@ -61,7 +61,7 @@ func expectFieldIsFileURL(_ field: ABCField,
                           _ expected: String,
                           sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .fileURL(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .fileURL", sourceLocation: sourceLocation)
     }
@@ -71,7 +71,7 @@ func expectFieldIsGroup(_ field: ABCField,
                         _ expected: String,
                         sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .group(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .group", sourceLocation: sourceLocation)
     }
@@ -81,7 +81,7 @@ func expectFieldIsHistory(_ field: ABCField,
                           _ expected: String,
                           sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .history(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .history", sourceLocation: sourceLocation)
     }
@@ -108,7 +108,7 @@ func expectFieldIsLyrics(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .lyrics(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .lyrics", sourceLocation: sourceLocation)
     }
@@ -135,7 +135,7 @@ func expectFieldIsNotes(_ field: ABCField,
                         _ expected: String,
                         sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .notes(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .notes", sourceLocation: sourceLocation)
     }
@@ -145,7 +145,7 @@ func expectFieldIsOrigin(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .origin(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .origin", sourceLocation: sourceLocation)
     }
@@ -172,7 +172,7 @@ func expectFieldIsRemark(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .remark(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .remark", sourceLocation: sourceLocation)
     }
@@ -182,7 +182,7 @@ func expectFieldIsRhythm(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .rhythm(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .rhythm", sourceLocation: sourceLocation)
     }
@@ -192,7 +192,7 @@ func expectFieldIsSource(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .source(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .source", sourceLocation: sourceLocation)
     }
@@ -219,7 +219,7 @@ func expectFieldIsTitle(_ field: ABCField,
                         _ expected: String,
                         sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .title(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .title", sourceLocation: sourceLocation)
     }
@@ -229,7 +229,7 @@ func expectFieldIsTranscription(_ field: ABCField,
                                 _ expected: String,
                                 sourceLocation: SourceLocation = #_sourceLocation) {
     if case let .transcription(v) = field {
-        #expect(v == expected, sourceLocation: sourceLocation)
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .transcription", sourceLocation: sourceLocation)
     }
@@ -302,9 +302,7 @@ func _alyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAlignedLyrics {
 // swiftlint:disable:next identifier_name
 func _dur(_ numerator: UInt,
           _ denominator: UInt) -> ABCDuration {
-    ABCDuration(numerator: numerator,
-                denominator: denominator,
-                reduce: true)
+    ABCDuration(numerator, denominator)
 }
 
 // swiftlint:disable:next identifier_name
@@ -397,23 +395,20 @@ func _tempo(_ text: String) -> ABCTempo {
 
 // swiftlint:disable:next identifier_name
 func _tsig(_ numerator: UInt,
-           _ denominator: UInt) -> ABCTimeSignature {
-    .explicit(ABCFraction(numerator: numerator,
-                          denominator: denominator,
-                          reduce: false))
+           _ denominator: UInt) throws -> ABCTimeSignature {
+    try .standard(#require(ABCTimeSignature.StandardMeter(numerator: numerator, denominator: denominator)))
 }
 
 // swiftlint:disable:next identifier_name
 func _tsig(_ numerators: [UInt],
-           _ denominator: UInt) -> ABCTimeSignature {
-    .complex(numerators, denominator)
+           _ denominator: UInt) throws -> ABCTimeSignature {
+    try .complex(#require(ABCTimeSignature.AdditiveMeter(numerators: numerators, denominator: denominator)))
 }
 
 // swiftlint:disable:next identifier_name
 func _deco(_ name: String,
            _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
-    ABCDecoration(name: name,
-                  dialect: dialect)
+    ABCDecoration(name, nil, dialect)
 }
 
 // swiftlint:disable:next identifier_name

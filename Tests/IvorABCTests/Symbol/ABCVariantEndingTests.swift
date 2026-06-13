@@ -11,25 +11,30 @@ struct ABCVariantEndingTests {
 extension ABCVariantEndingTests {
     @Test
     func equality() {
-        let a = ABCVariantEnding(endings: [1...1])
-        let b = ABCVariantEnding(endings: [1...1])
+        let a = ABCVariantEnding([1...1])
+        let b = ABCVariantEnding([1...1])
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let a = ABCVariantEnding(endings: [1...1])
-        let b = ABCVariantEnding(endings: [2...2])
+        let a = ABCVariantEnding([1...1])
+        let b = ABCVariantEnding([2...2])
 
         #expect(a != b)
     }
 
     @Test
     func init_storesEndings() {
-        let ending = ABCVariantEnding(endings: [1...3, 5...5])
+        let ending = ABCVariantEnding([1...3, 5...5])
 
         #expect(ending.endings == [1...3, 5...5])
+    }
+
+    @Test
+    func init_withEmptyEndingsReturnsNil() {
+        #expect(ABCVariantEnding(endings: []) == nil)
     }
 
     @Test
@@ -70,21 +75,21 @@ extension ABCVariantEndingTests {
 
     @Test
     func stringValue_multiple() {
-        let ending = ABCVariantEnding(endings: [1...1, 2...2])
+        let ending = ABCVariantEnding([1...1, 2...2])
 
         #expect(ending.stringValue == "[1,2")
     }
 
     @Test
     func stringValue_range() {
-        let ending = ABCVariantEnding(endings: [1...3])
+        let ending = ABCVariantEnding([1...3])
 
         #expect(ending.stringValue == "[1-3")
     }
 
     @Test
     func stringValue_single() {
-        let ending = ABCVariantEnding(endings: [1...1])
+        let ending = ABCVariantEnding([1...1])
 
         #expect(ending.stringValue == "[1")
     }

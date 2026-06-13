@@ -22,7 +22,7 @@ public struct ABCAnnotation {
     public init(position: Position,
                 text: String) {
         self.position = position
-        self.text = text
+        self.text = text        // validate?
     }
 }
 

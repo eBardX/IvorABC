@@ -5,12 +5,17 @@ public struct ABCVariantEnding {
 
     // MARK: Public Initializers
 
-    /// Creates a new variant ending with the given ending ranges.
+    /// Creates a new variant ending with the given ending ranges, or `nil` if
+    /// `endings` is empty.
     ///
     /// - Parameter endings: The ending numbers this marker applies to, each a
-    ///                      range of consecutive ending numbers.
-    public init(endings: [ClosedRange<UInt>]) {
-        self.endings = endings
+    ///                      range of consecutive ending numbers. Must not be
+    ///                      empty.
+    public init?(endings: [ClosedRange<UInt>]) {
+        guard !endings.isEmpty  // other validation?
+        else { return nil }
+
+        self.init(endings)
     }
 
     // MARK: Public Instance Properties
@@ -20,6 +25,14 @@ public struct ABCVariantEnding {
     /// Each element is a range of consecutive ending numbers, e.g. `1...1`
     /// for a single ending or `1...3` for endings 1 through 3.
     public let endings: [ClosedRange<UInt>]
+
+    // MARK: Internal Initializers
+
+    /// Creates a new variant ending without validating `endings`.
+    /// The caller is responsible for ensuring `endings` is non-empty.
+    internal init(_ endings: [ClosedRange<UInt>]) {
+        self.endings = endings
+    }
 }
 
 // MARK: -
@@ -64,7 +77,7 @@ extension ABCVariantEnding {
         guard !ranges.isEmpty
         else { return nil }
 
-        self.endings = ranges
+        self.init(ranges)
     }
 }
 

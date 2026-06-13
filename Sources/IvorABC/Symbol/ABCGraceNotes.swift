@@ -5,14 +5,17 @@ public struct ABCGraceNotes {
 
     // MARK: Public Initializers
 
-    /// Creates a new grace note group with the provided slash flag and notes.
+    /// Creates a new grace note group with the provided slash flag and notes, or
+    /// `nil` if `notes` is empty.
     ///
+    /// - Parameter notes:     The notes in the group. Must not be empty.
     /// - Parameter isSlashed: Whether the grace note group has a slash (acciaccatura).
-    /// - Parameter notes:     The notes in the group.
-    public init(isSlashed: Bool,
-                notes: [ABCNote]) {
-        self.isSlashed = isSlashed
-        self.notes = notes
+    public init?(notes: [ABCNote],
+                 isSlashed: Bool) {
+        guard !notes.isEmpty
+        else { return nil }
+
+        self.init(notes, isSlashed)
     }
 
     // MARK: Public Instance Properties
@@ -22,6 +25,14 @@ public struct ABCGraceNotes {
 
     /// The notes in this grace note group.
     public let notes: [ABCNote]
+
+    // MARK: Internal Initializers
+
+    internal init(_ notes: [ABCNote],
+                  _ isSlashed: Bool) {
+        self.isSlashed = isSlashed
+        self.notes = notes
+    }
 }
 
 // MARK: - Equatable

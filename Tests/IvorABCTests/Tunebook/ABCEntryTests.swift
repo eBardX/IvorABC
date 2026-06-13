@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCEntryTests {
 }
@@ -24,7 +25,7 @@ extension ABCEntryTests {
     @Test
     func equality_symbols() {
         let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
         let symbols: [ABCSymbol] = [.note(note)]
 

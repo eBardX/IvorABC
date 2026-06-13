@@ -55,6 +55,20 @@ extension Character {
         }
     }
 
+    internal var isABCVisible: Bool {
+        switch self {
+        case "\u{00}"..."\u{1f}",
+             "\u{7f}"..."\u{a0}",
+             "\u{034f}",
+             "\u{200b}"..."\u{200d}",
+             "\u{feff}":
+            false
+
+        default:
+            true
+        }
+    }
+
     internal var isABCWhitespace: Bool {
         switch self {
         case " ",

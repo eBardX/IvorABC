@@ -80,19 +80,14 @@ extension ABCParseContext {
 
     // MARK: Private Type Properties
 
-    private static let durationEighths = ABCDuration(numerator: 1,
-                                                     denominator: 8,
-                                                     reduce: false)
-
-    private static let durationSixteenths = ABCDuration(numerator: 1,
-                                                        denominator: 16,
-                                                        reduce: false)
+    private static let durationEighths = ABCDuration(1, 8)
+    private static let durationSixteenths = ABCDuration(1, 16)
 
     // MARK: Private Type Methods
 
     private static func _determineDuration(from timeSignature: ABCTimeSignature) -> ABCDuration {
         switch timeSignature {
-        case let .explicit(fraction):
+        case let .standard(fraction):
             if Double(fraction.numerator) / Double(fraction.denominator) < 0.75 {
                 durationSixteenths
             } else {

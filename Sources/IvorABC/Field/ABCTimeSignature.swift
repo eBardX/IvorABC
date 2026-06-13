@@ -6,7 +6,7 @@ public enum ABCTimeSignature {
     case common
 
     /// A complex time signature with a compound numerator, e.g. `M:(2+3+2)/8`.
-    case complex([UInt], UInt)
+    case complex(AdditiveMeter)
 
     /// Cut time (2/2).
     case cut
@@ -14,8 +14,8 @@ public enum ABCTimeSignature {
     /// An empty time signature.
     case empty
 
-    /// An explicit time signature expressed as a fraction.
-    case explicit(ABCFraction)
+    /// A standard time signature expressed as a fraction.
+    case standard(StandardMeter)
 }
 
 // MARK: -
@@ -27,10 +27,10 @@ extension ABCTimeSignature {
     /// A Boolean value indicating whether this time signature is a compound
     /// meter (i.e. beats subdivide into three), such as 6/8, 9/8, 12/8, or 15/8.
     public var isCompound: Bool {
-        guard case let .explicit(fraction) = self
+        guard case let .standard(meter) = self
         else { return false }
 
-        return [6, 9, 12, 15, 18].contains(fraction.numerator)
+        return [6, 9, 12, 15, 18].contains(meter.numerator)
     }
 }
 

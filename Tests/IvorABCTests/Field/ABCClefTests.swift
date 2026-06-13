@@ -11,76 +11,48 @@ struct ABCClefTests {
 extension ABCClefTests {
     @Test
     func equality() {
-        var clef1 = ABCClef()
-
-        clef1.name = "treble"
-        clef1.middle = "B"
-        clef1.octave = -1
-        clef1.stafflines = 5
-        clef1.transpose = 0
-
-        var clef2 = ABCClef()
-
-        clef2.name = "treble"
-        clef2.middle = "B"
-        clef2.octave = -1
-        clef2.stafflines = 5
-        clef2.transpose = 0
+        let clef1 = ABCClef(name: "treble", middle: "B", octave: -1, stafflines: 5, transpose: 0)
+        let clef2 = ABCClef(name: "treble", middle: "B", octave: -1, stafflines: 5, transpose: 0)
 
         #expect(clef1 == clef2)
     }
 
     @Test
     func inequality_differentMiddle() {
-        var clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef1.middle = "B"
-        clef2.middle = "C"
+        let clef1 = ABCClef(middle: "B")
+        let clef2 = ABCClef(middle: "C")
 
         #expect(clef1 != clef2)
     }
 
     @Test
     func inequality_differentName() {
-        var clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef1.name = "treble"
-        clef2.name = "bass"
+        let clef1 = ABCClef(name: "treble")
+        let clef2 = ABCClef(name: "bass")
 
         #expect(clef1 != clef2)
     }
 
     @Test
     func inequality_differentOctave() {
-        var clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef1.octave = 1
-        clef2.octave = -1
+        let clef1 = ABCClef(octave: 1)
+        let clef2 = ABCClef(octave: -1)
 
         #expect(clef1 != clef2)
     }
 
     @Test
     func inequality_differentStafflines() {
-        var clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef1.stafflines = 5
-        clef2.stafflines = 4
+        let clef1 = ABCClef(stafflines: 5)
+        let clef2 = ABCClef(stafflines: 4)
 
         #expect(clef1 != clef2)
     }
 
     @Test
     func inequality_differentTranspose() {
-        var clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef1.transpose = 12
-        clef2.transpose = -12
+        let clef1 = ABCClef(transpose: 12)
+        let clef2 = ABCClef(transpose: -12)
 
         #expect(clef1 != clef2)
     }
@@ -88,9 +60,7 @@ extension ABCClefTests {
     @Test
     func inequality_nilVsNonNilName() {
         let clef1 = ABCClef()
-        var clef2 = ABCClef()
-
-        clef2.name = "treble"
+        let clef2 = ABCClef(name: "treble")
 
         #expect(clef1 != clef2)
     }

@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCParseContextTests {
 }
@@ -13,25 +14,17 @@ extension ABCParseContextTests {
     func baseDuration_defaultIsEighths() {
         let ctx = ABCParseContext()
 
-        #expect(ctx.baseDuration == ABCDuration(numerator: 1,
-                                                denominator: 8,
-                                                reduce: false))
+        #expect(ctx.baseDuration == ABCDuration(1, 8))
     }
 
     @Test
-    func baseDuration_unitNoteLengthOverridesMeter() {
+    func baseDuration_unitNoteLengthOverridesMeter() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .meter(.explicit(ABCFraction(numerator: 3,
-                                                      denominator: 16,
-                                                      reduce: false))))
-        ctx.update(with: .unitNoteLength(ABCDuration(numerator: 1,
-                                                     denominator: 4,
-                                                     reduce: false)))
+        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 16)))))
+        ctx.update(with: .unitNoteLength(ABCDuration(1, 4)))
 
-        #expect(ctx.baseDuration == ABCDuration(numerator: 1,
-                                                denominator: 4,
-                                                reduce: false))
+        #expect(ctx.baseDuration == ABCDuration(1, 4))
     }
 
     @Test
@@ -74,51 +67,39 @@ extension ABCParseContextTests {
     }
 
     @Test
-    func update_meter_compoundTime_setsIsCompoundMeter() {
+    func update_meter_compoundTime_setsIsCompoundMeter() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .meter(.explicit(ABCFraction(numerator: 6,
-                                                      denominator: 8,
-                                                      reduce: false))))
+        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 6, denominator: 8)))))
 
         #expect(ctx.isCompoundMeter)
     }
 
     @Test
-    func update_meter_simpleTime_clearsIsCompoundMeter() {
+    func update_meter_simpleTime_clearsIsCompoundMeter() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .meter(.explicit(ABCFraction(numerator: 4,
-                                                      denominator: 4,
-                                                      reduce: false))))
+        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 4, denominator: 4)))))
 
         #expect(!ctx.isCompoundMeter)
     }
 
     @Test
-    func update_meter_threeQuarterTime_baseDurationEighths() {
+    func update_meter_threeQuarterTime_baseDurationEighths() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .meter(.explicit(ABCFraction(numerator: 3,
-                                                      denominator: 4,
-                                                      reduce: false))))
+        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4)))))
 
-        #expect(ctx.baseDuration == ABCDuration(numerator: 1,
-                                                denominator: 8,
-                                                reduce: false))
+        #expect(ctx.baseDuration == ABCDuration(1, 8))
     }
 
     @Test
-    func update_meter_threeSixteenthTime_baseDurationSixteenths() {
+    func update_meter_threeSixteenthTime_baseDurationSixteenths() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .meter(.explicit(ABCFraction(numerator: 3,
-                                                      denominator: 16,
-                                                      reduce: false))))
+        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 16)))))
 
-        #expect(ctx.baseDuration == ABCDuration(numerator: 1,
-                                                denominator: 16,
-                                                reduce: false))
+        #expect(ctx.baseDuration == ABCDuration(1, 16))
     }
 
     @Test
@@ -129,8 +110,6 @@ extension ABCParseContextTests {
 
         #expect(ctx.accidentalsInKey.isEmpty)
         #expect(!ctx.isCompoundMeter)
-        #expect(ctx.baseDuration == ABCDuration(numerator: 1,
-                                                denominator: 8,
-                                                reduce: false))
+        #expect(ctx.baseDuration == ABCDuration(1, 8))
     }
 }

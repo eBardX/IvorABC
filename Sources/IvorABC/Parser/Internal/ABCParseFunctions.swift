@@ -52,8 +52,7 @@ internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
     }
 
     return ABCDuration(numerator: numerator,
-                       denominator: denominator,
-                       reduce: true)
+                       denominator: denominator)
 }
 
 internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
@@ -135,25 +134,25 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 
     switch ntext {
     case "A" where !isInline:
-        return .area(normalize(vtext))
+        return try .area(parseText(vtext))
 
     case "B" where !isInline:
-        return .book(normalize(vtext))
+        return try .book(parseText(vtext))
 
     case "C" where !isInline:
-        return .composer(normalize(vtext))
+        return try .composer(parseText(vtext))
 
     case "D" where !isInline:
-        return .discography(normalize(vtext))
+        return try .discography(parseText(vtext))
 
     case "F" where !isInline:
-        return .fileURL(normalize(vtext))
+        return try .fileURL(parseText(vtext))
 
     case "G" where !isInline:
-        return .group(normalize(vtext))
+        return try .group(parseText(vtext))
 
     case "H" where !isInline:
-        return .history(normalize(vtext))
+        return try .history(parseText(vtext))
 
     case "I":
         guard let dir = _parseInstruction(vtext)
@@ -186,10 +185,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .macro(macro)
 
     case "N":
-        return .notes(normalize(vtext))
+        return try .notes(parseText(vtext))
 
     case "O" where !isInline:
-        return .origin(normalize(vtext))
+        return try .origin(parseText(vtext))
 
     case "P":
         guard let ps = parsePartSequence(vtext)
@@ -204,13 +203,13 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .tempo(tempo)
 
     case "R":
-        return .rhythm(normalize(vtext))
+        return try .rhythm(parseText(vtext))
 
     case "r":
-        return .remark(normalize(vtext))
+        return try .remark(parseText(vtext))
 
     case "S" where !isInline:
-        return .source(normalize(vtext))
+        return try .source(parseText(vtext))
 
     case "s" where !isInline:
         guard let sl = parseSymbolLine(vtext)
@@ -219,7 +218,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .symbolLine(sl)
 
     case "T" where !isInline:
-        return .title(normalize(vtext))
+        return try .title(parseText(vtext))
 
     case "U":
         guard let uds = parseUserSymbol(vtext)
@@ -234,7 +233,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .voice(voice)
 
     case "W" where !isInline:
-        return .lyrics(normalize(vtext))
+        return try .lyrics(parseText(vtext))
 
     case "w" where !isInline:
         return .alignedLyrics(parseAlignedLyrics(Substring(unescape(String(vtext)))))
@@ -246,7 +245,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .refNumber(rn)
 
     case "Z" where !isInline:
-        return .transcription(normalize(vtext))
+        return try .transcription(parseText(vtext))
 
     default:
         break
@@ -423,8 +422,7 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
             else { return nil }
 
             duration = ABCDuration(numerator: cnt,
-                                   denominator: 1,
-                                   reduce: false)
+                                   denominator: 1)
         } else {
             guard let dur = parseDuration(tail)
             else { return nil }
@@ -462,8 +460,9 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
             else { return nil }
 
-            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
-                                                      dialect: .bang)))
+            elements.append(.decoration(ABCDecoration(String(rest[..<closeIdx]),
+                                                      nil,
+                                                      .bang)))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -475,8 +474,9 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) })
             else { return nil }
 
-            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
-                                                      dialect: .plus)))
+            elements.append(.decoration(ABCDecoration(String(rest[..<closeIdx]),
+                                                      nil,
+                                                      .plus)))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -555,6 +555,13 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
                     text: text)
 }
 
+internal func parseText(_ tidyInput: Substring) throws -> ABCText {
+    guard let text = ABCText(stringValue: normalize(tidyInput))
+    else { throw ABCParser.Error.invalidText(tidyInput) }
+
+    return text
+}
+
 internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     switch tidyInput {
     case "C":
@@ -574,11 +581,11 @@ internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
         return _parseComplexTimeSignature(tidyInput)
     }
 
-    guard let fraction = _parseFraction(tidyInput),
-          [1, 2, 4, 8, 16, 32, 64].contains(fraction.denominator)
+    guard let meter = _parseStandardMeter(tidyInput),
+          [1, 2, 4, 8, 16, 32, 64].contains(meter.denominator)
     else { return nil }
 
-    return .explicit(fraction)
+    return .standard(meter)
 }
 
 /// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
@@ -630,9 +637,8 @@ internal func parseLegacyBeatTempo(_ tidyInput: Substring,
     else { return nil }
 
     // Resolve C×n against the active base duration
-    let beat = ABCDuration(numerator: baseDuration.numerator * multiplier,
-                           denominator: baseDuration.denominator,
-                           reduce: true)
+    let beat = ABCDuration(baseDuration.numerator * multiplier,
+                           baseDuration.denominator)
 
     return ABCTempo(durations: [beat],
                     rate: rate,
@@ -700,7 +706,7 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard !raw.isEmpty
     else { return nil }
 
-    let decoration = if raw.count >= 2, raw.first == "!", raw.last == "!" {
+    let decoration: ABCDecoration? = if raw.count >= 2, raw.first == "!", raw.last == "!" {
         ABCDecoration(name: String(raw.dropFirst().dropLast()),
                       dialect: .bang)
     } else if raw.count >= 2, raw.first == "+", raw.last == "+" {
@@ -711,7 +717,7 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
                       dialect: .bang)
     }
 
-    guard !decoration.name.isEmpty
+    guard let decoration
     else { return nil }
 
     return ABCUserSymbol(symbol: symbol,
@@ -902,7 +908,8 @@ private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignat
         numerators.append(num)
     }
 
-    return .complex(numerators, denominator)
+    return ABCTimeSignature.AdditiveMeter(numerators: numerators, denominator: denominator)
+                           .map { .complex($0) }
 }
 
 private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
@@ -923,12 +930,11 @@ private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
         denominator = 1
     }
 
-    return ABCFraction(numerator: numerator,
-                       denominator: denominator,
-                       reduce: true)
+    return ABCDuration(numerator: numerator,
+                       denominator: denominator)
 }
 
-private func _parseFraction(_ tidyInput: Substring) -> ABCFraction? {
+private func _parseStandardMeter(_ tidyInput: Substring) -> ABCTimeSignature.StandardMeter? {
     let result = tidyInput.splitBeforeFirst("/")
 
     guard let numerator = UInt(result.head),
@@ -938,9 +944,7 @@ private func _parseFraction(_ tidyInput: Substring) -> ABCFraction? {
           denominator > 0
     else { return nil }
 
-    return ABCFraction(numerator: numerator,
-                       denominator: denominator,
-                       reduce: false)
+    return ABCTimeSignature.StandardMeter(numerator: numerator, denominator: denominator)
 }
 
 private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
@@ -975,7 +979,11 @@ private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySig
 }
 
 private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
-    var clef = ABCClef()
+    var name: String?
+    var middle: String?
+    var octave: Int?
+    var stafflines: Int?
+    var transpose: Int?
 
     for token in propertyTokens {
         guard let eqIdx = token.firstIndex(of: "=")
@@ -986,35 +994,35 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
 
         switch key {
         case "clef":
-            clef.name = value
+            name = value
 
         case "middle":
-            clef.middle = value
+            middle = value
 
         case "octave":
             guard let n = Int(value)
             else { return nil }
 
-            clef.octave = n
+            octave = n
 
         case "stafflines":
             guard let n = Int(value)
             else { return nil }
 
-            clef.stafflines = n
+            stafflines = n
 
         case "transpose":
             guard let n = Int(value)
             else { return nil }
 
-            clef.transpose = n
+            transpose = n
 
         default:
             return nil
         }
     }
 
-    return clef
+    return ABCClef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
 }
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {

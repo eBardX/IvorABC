@@ -4,6 +4,8 @@
 
 internal import Foundation
 
+private import XestiTools
+
 // MARK: Internal Functions
 
 internal func formatAccidental(_ accidental: ABCPitch.Accidental) -> String {
@@ -16,67 +18,49 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("w", _formatAlignedLyrics(alignedLyrics))
 
     case let .area(text):
-        return try ("A", _validateText(text))
+        return ("A", _formatText(text))
 
     case let .book(text):
-        return try ("B", _validateText(text))
+        return ("B", _formatText(text))
 
     case let .composer(text):
-        return try ("C", _validateText(text))
+        return ("C", _formatText(text))
 
     case let .discography(text):
-        return try ("D", _validateText(text))
+        return ("D", _formatText(text))
 
     case let .fileURL(text):
-        return try ("F", _validateText(text))
+        return ("F", _formatText(text))
 
     case let .group(text):
-        return try ("G", _validateText(text))
+        return ("G", _formatText(text))
 
     case let .history(text):
-        return try ("H", _validateText(text))
+        return ("H", _formatText(text))
 
     case let .instruction(directive):
-        let value = directive.value.isEmpty
-                    ? directive.name
-                    : "\(directive.name) \(directive.value)"
-
-        return try ("I", _validateText(value))
+        return ("I", _formatInstructionDirective(directive))
 
     case let .key(ABCKeySignature):
-        return ("K", _formatKey(ABCKeySignature))
+        return ("K", _formatKeySignature(ABCKeySignature))
 
     case let .legacy(letter, text):
-        return try (String(letter), _validateText(text))
+        return (String(letter), _formatText(text))
 
     case let .lyrics(text):
-        return try ("W", _validateText(text))
+        return ("W", _formatText(text))
 
     case let .macro(macro):
-        return try ("m", _validateText("\(macro.trigger)=\(macro.replacement)"))
+        return ("m", _formatMacro(macro))
 
     case let .meter(timeSignature):
-        switch timeSignature {
-        case let .explicit(fraction):
-            guard isPowerOfTwo(fraction.denominator)
-            else { throw ABCFormatter.Error.invalidTimeSignature(timeSignature) }
-
-        case let .complex(nums, den):
-            guard !nums.isEmpty,
-                  isPowerOfTwo(den)
-            else { throw ABCFormatter.Error.invalidTimeSignature(timeSignature) }
-
-        default:
-            break
-        }
-
-        return ("M", _formatMeter(timeSignature))
+        return ("M", _formatTimeSignature(timeSignature))
 
     case let .notes(text):
-        return try ("N", _validateText(text))
+        return ("N", _formatText(text))
 
     case let .origin(text):
-        return try ("O", _validateText(text))
+        return ("O", _formatText(text))
 
     case let .parts(partSequence):
         return ("P", _formatPartSequence(partSequence))
@@ -85,13 +69,13 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("X", "\(refNumber.uintValue)")
 
     case let .remark(text):
-        return try ("r", _validateText(text))
+        return ("r", _formatText(text))
 
     case let .rhythm(text):
-        return try ("R", _validateText(text))
+        return ("R", _formatText(text))
 
     case let .source(text):
-        return try ("S", _validateText(text))
+        return ("S", _formatText(text))
 
     case let .symbolLine(symbolLine):
         return ("s", _formatSymbolLine(symbolLine))
@@ -100,19 +84,16 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("Q", _formatTempo(tempo))
 
     case let .title(text):
-        return try ("T", _validateText(text))
+        return ("T", _formatText(text))
 
     case let .transcription(text):
-        return try ("Z", _validateText(text))
+        return ("Z", _formatText(text))
 
     case let .unitNoteLength(duration):
-        guard isPowerOfTwo(duration.denominator)
-        else { throw ABCFormatter.Error.invalidUnitNoteLength(duration) }
-
         return ("L", "\(duration.numerator)/\(duration.denominator)")
 
     case let .userSymbol(userSymbol):
-        return ("U", "\(userSymbol.symbol)=\(userSymbol.decoration.stringValue)")
+        return ("U", "\(userSymbol.symbol)=\(_formatDecoration(userSymbol.decoration, false))")
 
     case let .voice(voice):
         guard !voice.id.isEmpty
@@ -193,7 +174,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return "\"\(text)\""
 
     case let .decoration(decoration):
-        return decoration.stringValue
+        return _formatDecoration(decoration, true)
 
     case let .graceNotes(graceNotes):
         return try _formatGraceNotes(graceNotes,
@@ -209,9 +190,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return macroCall.trigger
 
     case let .note(note):
-        guard note.duration.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
-
         return formatNote(note,
                           unitNoteLength,
                           meter)
@@ -230,9 +208,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
             return measureCount == 1 ? letter : "\(letter)\(measureCount)"
 
         case let .regular(invisible, duration):
-            guard duration.numerator > 0
-            else { throw ABCFormatter.Error.invalidDuration(duration) }
-
             let letter = invisible ? "x" : "z"
 
             return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
@@ -245,9 +220,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return text
 
     case let .spacer(duration):
-        guard duration.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(duration) }
-
         return "y\(_formatDuration(duration, unitNoteLength, meter))"
 
     case let .tuplet(tuplet):
@@ -262,10 +234,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
         return variantEnding.stringValue
     }
-}
-
-internal func isPowerOfTwo(_ value: UInt) -> Bool {
-    value > 0 && (value & (value - 1)) == 0
 }
 
 internal func log2Integer(_ inValue: UInt) -> Int {
@@ -333,21 +301,15 @@ private let tonics: [ABCKeySignature.Tonic: String] = [.a: "A",
 
 private func _durationFromMeter(_ meter: ABCTimeSignature) -> ABCDuration {
     switch meter {
-    case let .explicit(fraction):
+    case let .standard(fraction):
         let ratio = Double(fraction.numerator) / Double(fraction.denominator)
 
         return ratio < 0.75
-        ? ABCDuration(numerator: 1,
-                      denominator: 16,
-                      reduce: false)
-        : ABCDuration(numerator: 1,
-                      denominator: 8,
-                      reduce: false)
+        ? ABCDuration(1, 16)
+        : ABCDuration(1, 8)
 
     default:
-        return ABCDuration(numerator: 1,
-                           denominator: 8,
-                           reduce: false)
+        return ABCDuration(1, 8)
     }
 }
 
@@ -361,9 +323,7 @@ private func _effectiveBase(_ unitNoteLength: ABCDuration?,
         return _durationFromMeter(meter)
     }
 
-    return ABCDuration(numerator: 1,
-                       denominator: 8,
-                       reduce: false)
+    return ABCDuration(1, 8)
 }
 
 private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
@@ -416,8 +376,7 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
                 result.append(" ")
             }
 
-            result.append(string.replacingOccurrences(of: "%",
-                                                      with: "\\%"))
+            result.append(escape(string))
 
             prevIsConnector = false
 
@@ -436,14 +395,6 @@ private func _formatChord(_ chord: ABCChord,
                           _ meter: ABCTimeSignature?) throws -> String {
     guard !chord.notes.isEmpty
     else { throw ABCFormatter.Error.emptyChord }
-
-    guard chord.duration.numerator > 0
-    else { throw ABCFormatter.Error.invalidDuration(chord.duration) }
-
-    for note in chord.notes {
-        guard note.duration.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
-    }
 
     var result = "["
 
@@ -487,15 +438,25 @@ private func _formatClef(_ clef: ABCClef) -> String {
     return parts.joined(separator: " ")
 }
 
+private func _formatDecoration(_ decoration: ABCDecoration,
+                               _ shorthandAllowed: Bool) -> String {
+    if shorthandAllowed,
+       let shorthand = decoration.shorthand {
+        String(shorthand)
+    } else if decoration.dialect == .plus {
+        "+\(decoration.name)+"
+    } else {
+        "!\(decoration.name)!"
+    }
+}
+
 private func _formatDuration(_ duration: ABCDuration,
                              _ unitNoteLength: ABCDuration?,
                              _ meter: ABCTimeSignature?) -> String {
     let base = _effectiveBase(unitNoteLength, meter)
     let mn = duration.numerator * base.denominator
     let md = duration.denominator * base.numerator
-    let reduced = ABCFraction(numerator: mn,
-                              denominator: md,
-                              reduce: true)
+    let reduced = ABCDuration(mn, md)
     let rn = reduced.numerator
     let rd = reduced.denominator
 
@@ -508,7 +469,7 @@ private func _formatDuration(_ duration: ABCDuration,
     }
 
     if rn == 1 {
-        if isPowerOfTwo(rd) {
+        if rd.isPowerOf2 {
             return String(repeating: "/",
                           count: log2Integer(rd))
         } else {
@@ -525,11 +486,6 @@ private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
     guard !graceNotes.notes.isEmpty
     else { throw ABCFormatter.Error.emptyGraceNotes }
 
-    for note in graceNotes.notes {
-        guard note.duration.numerator > 0
-        else { throw ABCFormatter.Error.invalidDuration(note.duration) }
-    }
-
     var result = "{"
 
     if graceNotes.isSlashed {
@@ -543,7 +499,18 @@ private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
     return result
 }
 
-private func _formatKey(_ keySignature: ABCKeySignature) -> String {
+private func _formatInstructionDirective(_ directive: ABCDirective) -> String {
+    var result = directive.name
+
+    if !directive.value.isEmpty {
+        result += " "
+        result += directive.value
+    }
+
+    return result
+}
+
+private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     switch keySignature {
     case let .clefOnly(clef):
         return _formatClef(clef)
@@ -558,7 +525,7 @@ private func _formatKey(_ keySignature: ABCKeySignature) -> String {
         return "Hp"
 
     case let .standard(tonic, mode, accidentals, clef):
-        var result = _formatTonic(tonic)
+        var result = _formatKeySignatureTonic(tonic)
 
         let modeSuffix = _formatMode(mode)
 
@@ -569,7 +536,7 @@ private func _formatKey(_ keySignature: ABCKeySignature) -> String {
 
         for pitch in accidentals {
             result.append(" ")
-            result.append(_formatKeyAccidental(pitch.accidental))
+            result.append(_formatKeySignatureAccidental(pitch.accidental))
             result.append(formatPitchLetterOctave(pitch.letter, pitch.octave))
         }
 
@@ -586,27 +553,16 @@ private func _formatKey(_ keySignature: ABCKeySignature) -> String {
     }
 }
 
-private func _formatKeyAccidental(_ accidental: ABCPitch.Accidental) -> String {
+private func _formatKeySignatureAccidental(_ accidental: ABCPitch.Accidental) -> String {
     pitchAccidentals[accidental]?.key ?? ""
 }
 
-private func _formatMeter(_ timeSignature: ABCTimeSignature) -> String {
-    switch timeSignature {
-    case .common:
-        "C"
+private func _formatKeySignatureTonic(_ tonic: ABCKeySignature.Tonic) -> String {
+    tonics[tonic] ?? ""
+}
 
-    case .cut:
-        "C|"
-
-    case .empty:
-        "none"
-
-    case let .explicit(fraction):
-        "\(fraction.numerator)/\(fraction.denominator)"
-
-    case let .complex(numerators, denominator):
-        "(\(numerators.map { "\($0)" }.joined(separator: "+")))/\(denominator)"
-    }
+private func _formatMacro(_ macro: ABCMacro) -> String {
+    "\(macro.trigger)=\(macro.replacement)"
 }
 
 private func _formatMode(_ mode: ABCKeySignature.Mode) -> String {
@@ -641,7 +597,7 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
             "\"\(text)\""
 
         case let .decoration(decoration):
-            decoration.stringValue
+            _formatDecoration(decoration, true)
 
         case .skip:
             "*"
@@ -671,8 +627,27 @@ private func _formatTempo(_ tempo: ABCTempo) -> String {
     return parts.joined(separator: " ")
 }
 
-private func _formatTonic(_ tonic: ABCKeySignature.Tonic) -> String {
-    tonics[tonic] ?? ""
+private func _formatText(_ text: ABCText) -> String {
+    escape(text.stringValue)
+}
+
+private func _formatTimeSignature(_ timeSignature: ABCTimeSignature) -> String {
+    switch timeSignature {
+    case .common:
+        "C"
+
+    case .cut:
+        "C|"
+
+    case .empty:
+        "none"
+
+    case let .standard(meter):
+        "\(meter.numerator)/\(meter.denominator)"
+
+    case let .complex(meter):
+        "(\(meter.numerators.map { "\($0)" }.joined(separator: "+")))/\(meter.denominator)"
+    }
 }
 
 private func _formatVoice(_ voice: ABCVoice) -> String {
@@ -690,14 +665,4 @@ private func _formatVoice(_ voice: ABCVoice) -> String {
     }
 
     return parts.joined(separator: " ")
-}
-
-private func _validateText(_ text: String) throws -> String {
-    guard !text.contains(where: { $0.isNewline })
-    else { throw ABCFormatter.Error.invalidTextValue(text) }
-
-    return text.contains("%")
-           ? text.replacingOccurrences(of: "%",
-                                       with: "\\%")
-           : text
 }

@@ -18,7 +18,7 @@ public struct ABCUserSymbol {
     public init(symbol: Character,
                 decoration: ABCDecoration) {
         self.decoration = decoration
-        self.symbol = symbol
+        self.symbol = symbol        // validate?
     }
 
     // MARK: Public Instance Properties

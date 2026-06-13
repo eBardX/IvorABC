@@ -11,9 +11,7 @@ struct ABCKeySignatureTests {
 extension ABCKeySignatureTests {
     @Test
     func equality_clefOnly() {
-        var clef = ABCClef()
-
-        clef.name = "bass"
+        let clef = ABCClef(name: "bass")
 
         #expect(ABCKeySignature.clefOnly(clef) == .clefOnly(clef))
     }

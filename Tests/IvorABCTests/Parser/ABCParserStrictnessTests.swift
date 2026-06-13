@@ -3,6 +3,7 @@
 import Foundation
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCParserStrictnessTests {
 }
@@ -292,7 +293,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.legacyBeatMultiple == 1)
-        #expect(tempo?.durations == [ABCDuration(numerator: 1, denominator: 8, reduce: false)])
+        #expect(tempo?.durations == [ABCDuration(1, 8)])
     }
 
     @Test
@@ -313,7 +314,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 40)
         #expect(tempo?.legacyBeatMultiple == 3)
-        #expect(tempo?.durations == [ABCDuration(numerator: 3, denominator: 8, reduce: false)])
+        #expect(tempo?.durations == [ABCDuration(3, 8)])
     }
 
     @Test

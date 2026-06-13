@@ -83,7 +83,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")
         try expectFieldIsSource(parseField("S:collected by ..."), "collected by ...")
         try expectFieldIsSymbolLine(parseField("s:!p! * * *"),
-                                    _sline([.decoration(ABCDecoration(name: "p")), .skip, .skip, .skip]))
+                                    _sline([.decoration(ABCDecoration("p", nil, .bang)), .skip, .skip, .skip]))
         try expectFieldIsTempo(parseField("Q:1/4=120"))
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
@@ -94,22 +94,10 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseKeySignature_clef() {
-        var bassClef = ABCClef()
-
-        bassClef.name = "bass"
-
-        var trebleClef = ABCClef()
-
-        trebleClef.name = "treble"
-
-        var transposeClef = ABCClef()
-
-        transposeClef.transpose = -2
-
-        var combinedClef = ABCClef()
-
-        combinedClef.name = "bass"
-        combinedClef.transpose = -2
+        let bassClef = ABCClef(name: "bass")
+        let trebleClef = ABCClef(name: "treble")
+        let transposeClef = ABCClef(transpose: -2)
+        let combinedClef = ABCClef(name: "bass", transpose: -2)
 
         #expect(parseKeySignature("G clef=bass") == .standard(.g, .major, [], bassClef))
         #expect(parseKeySignature("C transpose=-2") == .standard(.c, .major, [], transposeClef))
@@ -284,14 +272,16 @@ extension ABCParseFunctionsTests {
         #expect(parseSymbolLine("") == _sline())
         #expect(parseSymbolLine("*") == _sline([.skip]))
         #expect(parseSymbolLine("**") == _sline([.skip, .skip]))
-        #expect(parseSymbolLine("!p!") == _sline([.decoration(ABCDecoration(name: "p"))]))
-        #expect(parseSymbolLine("!pp!") == _sline([.decoration(ABCDecoration(name: "pp"))]))
+        #expect(parseSymbolLine("!p!") == _sline([.decoration(ABCDecoration("p", nil, .bang))]))
+        #expect(parseSymbolLine("!pp!") == _sline([.decoration(ABCDecoration("pp", nil, .bang))]))
         #expect(parseSymbolLine("\"Am\"") == _sline([.chordSymbol("Am")]))
         #expect(parseSymbolLine("\"^forte\"") == _sline([.annotation(ABCAnnotation(position: .above, text: "forte"))]))
         #expect(parseSymbolLine("\"_text\"") == _sline([.annotation(ABCAnnotation(position: .below, text: "text"))]))
-        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration(ABCDecoration(name: "p")), .skip, .skip, .skip]))
-        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration(ABCDecoration(name: "pp")), .skip, .decoration(ABCDecoration(name: "f"))]))
-        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration(ABCDecoration(name: "trill"))]))
+        #expect(parseSymbolLine("!p! * * *") == _sline([.decoration(ABCDecoration("p", nil, .bang)), .skip, .skip, .skip]))
+        #expect(parseSymbolLine("!pp! * !f!") == _sline([.decoration(ABCDecoration("pp", nil, .bang)),
+                                                         .skip,
+                                                         .decoration(ABCDecoration("f", nil, .bang))]))
+        #expect(parseSymbolLine("\"Am\" * !trill!") == _sline([.chordSymbol("Am"), .skip, .decoration(ABCDecoration("trill", nil, .bang))]))
         #expect(parseSymbolLine("\"^p\" \"Am\" *") == _sline([.annotation(ABCAnnotation(position: .above, text: "p")), .chordSymbol("Am"), .skip]))
     }
 
@@ -342,13 +332,13 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseTimeSignature_complex_success() {
-        #expect(parseTimeSignature("(2+3+2)/8") == _tsig([2, 3, 2], 8))
-        #expect(parseTimeSignature("2+3+2/8") == _tsig([2, 3, 2], 8))
-        #expect(parseTimeSignature("(3+3)/8") == _tsig([3, 3], 8))
-        #expect(parseTimeSignature("3+3/8") == _tsig([3, 3], 8))
-        #expect(parseTimeSignature("(2+3)/4") == _tsig([2, 3], 4))
-        #expect(parseTimeSignature("3+3+2/8") == _tsig([3, 3, 2], 8))
+    func parseTimeSignature_complex_success() throws {
+        #expect(try parseTimeSignature("(2+3+2)/8") == _tsig([2, 3, 2], 8))
+        #expect(try parseTimeSignature("2+3+2/8") == _tsig([2, 3, 2], 8))
+        #expect(try parseTimeSignature("(3+3)/8") == _tsig([3, 3], 8))
+        #expect(try parseTimeSignature("3+3/8") == _tsig([3, 3], 8))
+        #expect(try parseTimeSignature("(2+3)/4") == _tsig([2, 3], 4))
+        #expect(try parseTimeSignature("3+3+2/8") == _tsig([3, 3, 2], 8))
     }
 
     @Test
@@ -358,14 +348,14 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseTimeSignature_success() {
+    func parseTimeSignature_success() throws {
         #expect(parseTimeSignature("C") == .common)
         #expect(parseTimeSignature("C|") == .cut)
-        #expect(parseTimeSignature("12/8") == _tsig(12, 8))
-        #expect(parseTimeSignature("3/4") == _tsig(3, 4))
-        #expect(parseTimeSignature("4/4") == _tsig(4, 4))
-        #expect(parseTimeSignature("6/8") == _tsig(6, 8))
-        #expect(parseTimeSignature("9/8") == _tsig(9, 8))
+        #expect(try parseTimeSignature("12/8") == _tsig(12, 8))
+        #expect(try parseTimeSignature("3/4") == _tsig(3, 4))
+        #expect(try parseTimeSignature("4/4") == _tsig(4, 4))
+        #expect(try parseTimeSignature("6/8") == _tsig(6, 8))
+        #expect(try parseTimeSignature("9/8") == _tsig(9, 8))
     }
 
     @Test

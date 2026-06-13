@@ -76,9 +76,8 @@ extension ABCSymbolMatcher {
         let baseDuration = context.baseDuration
 
         if let duration {
-            return ABCDuration(numerator: baseDuration.numerator * duration.numerator,
-                               denominator: baseDuration.denominator * duration.denominator,
-                               reduce: true)
+            return ABCDuration(baseDuration.numerator * duration.numerator,
+                               baseDuration.denominator * duration.denominator)
         }
 
         return baseDuration
@@ -144,9 +143,12 @@ extension ABCSymbolMatcher {
             isTied = false
         }
 
-        return .chord(ABCChord(notes: chord,
-                               duration: duration,
-                               isTied: isTied))
+        guard let chord = ABCChord(notes: chord,
+                                   duration: duration,
+                                   isTied: isTied)
+        else { return nil }
+
+        return .chord(chord)
     }
 
     private mutating func _matchChordNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -182,9 +184,9 @@ extension ABCSymbolMatcher {
                   ?? Self.builtinShorthandDecorations[letter]
             else { throw ABCParser.Error.invalidSymbols(value) }
 
-            return .decoration(ABCDecoration(name: name,
-                                             shorthand: letter,
-                                             dialect: context.decorationDialect))
+            return .decoration(ABCDecoration(name,
+                                             letter,
+                                             context.decorationDialect))
         }
 
         // In + dialect mode, !...! decorations are an error per spec §12.1.2.
@@ -194,8 +196,9 @@ extension ABCSymbolMatcher {
 
         let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
 
-        return .decoration(ABCDecoration(name: String(value.dropFirst().dropLast()),
-                                         dialect: dialect))
+        return .decoration(ABCDecoration(String(value.dropFirst().dropLast()),
+                                         nil,
+                                         dialect))
     }
 
     private mutating func _matchGraceNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -225,8 +228,11 @@ extension ABCSymbolMatcher {
 
         try tokenMatcher.readMustMatch(.graceNotesEnd)
 
-        return .graceNotes(ABCGraceNotes(isSlashed: hasSlash,
-                                         notes: graceNotes))
+        guard let graceNotes = ABCGraceNotes(notes: graceNotes,
+                                             isSlashed: hasSlash)
+        else { return nil }
+
+        return .graceNotes(graceNotes)
     }
 
     private mutating func _matchInlineField(_ context: inout ABCParseContext) throws -> ABCSymbol? {

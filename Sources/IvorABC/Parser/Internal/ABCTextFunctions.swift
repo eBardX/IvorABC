@@ -2,6 +2,37 @@
 
 // MARK: Internal Functions
 
+internal func escape(_ input: String) -> String {
+    guard input.contains(where: { !$0.isABCVisible || $0 == "\\" || $0 == "%" || $0 == "&" })
+    else { return input }
+
+    var result = ""
+
+    result.reserveCapacity(input.count)
+
+    for ch in input {
+        switch ch {
+        case "\\":
+            result += "\\\\"
+
+        case "%":
+            result += "\\%"
+
+        case "&":
+            result += "\\&"
+
+        default:
+            if ch.isABCVisible {
+                result.append(ch)
+            } else {
+                result += _unicodeEscape(ch)
+            }
+        }
+    }
+
+    return result
+}
+
 internal func unescape(_ input: String) -> String {
     guard input.contains("\\") || input.contains("&")
     else { return input }
@@ -150,6 +181,17 @@ private func _decodeHTMLEntity(_ chars: [Character],
     return index + 1
 }
 
+private func _unicodeEscape(_ ch: Character) -> String {
+    guard let scalar = ch.unicodeScalars.first
+    else { return "" }
+
+    let hex = String(scalar.value,
+                     radix: 16)
+
+    return "\\u" + String(repeating: "0",
+                          count: max(0, 4 - hex.count)) + hex
+}
+
 // MARK: Private Data
 
 // Two-character TeX-style backslash escapes: \Xc where X is the modifier and c is the base character.
@@ -280,6 +322,8 @@ private let _texEscapeMap: [String: Character] = ["`a": "à",  // Grave accent
 
 // Single-character backslash escapes: \X
 private let _texSingleMap: [String: Character] = ["%": "%",
+                                                  "&": "&",
+                                                  "\\": "\\",
                                                   "#": "♯",
                                                   "=": "♮",
                                                   "b": "♭"]

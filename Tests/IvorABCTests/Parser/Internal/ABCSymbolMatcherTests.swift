@@ -54,9 +54,13 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord() throws {
         let symbols = try _matchSymbols("[CE]")
 
-        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .omitted, 4), duration: _dur(1, 8), isTied: false),
-                                ABCNote(pitch: _pit(.e, .omitted, 4), duration: _dur(1, 8), isTied: false)]
-        let expected: [ABCSymbol] = [.chord(ABCChord(notes: notes, duration: _dur(1, 8), isTied: false))]
+        let notes: [ABCNote] = [ABCNote(pitch: _pit(.c, .omitted, 4),
+                                        duration: _dur(1, 8),
+                                        isTied: false),
+                                ABCNote(pitch: _pit(.e, .omitted, 4),
+                                        duration: _dur(1, 8),
+                                        isTied: false)]
+        let expected: [ABCSymbol] = [.chord(ABCChord(notes, _dur(1, 8), false))]
 
         #expect(symbols == expected)
     }
@@ -110,14 +114,14 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_decoration() throws {
         let symbols = try _matchSymbols("~")
 
-        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
+        #expect(symbols == [.decoration(ABCDecoration("roll", "~", .bang))])
     }
 
     @Test
     func matchSymbols_decoration_legacyPlusSyntax() throws {
         let symbols = try _matchSymbols("+trill+")
 
-        #expect(symbols == [.decoration(ABCDecoration(name: "trill", shorthand: nil))])
+        #expect(symbols == [.decoration(ABCDecoration("trill", nil, .plus))])
     }
 
     @Test
@@ -135,7 +139,7 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try _matchSymbols("W", context: &ctx)
 
-        #expect(symbols == [.decoration(ABCDecoration(name: "trill", shorthand: "W"))])
+        #expect(symbols == [.decoration(ABCDecoration("trill", "W", .bang))])
     }
 
     @Test
@@ -149,10 +153,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_graceNotes() throws {
         let symbols = try _matchSymbols("{C}")
 
-        let expected: [ABCSymbol] = [.graceNotes(ABCGraceNotes(isSlashed: false,
-                                                               notes: [ABCNote(pitch: _pit(.c, .omitted, 4),
-                                                                               duration: _dur(1, 8),
-                                                                               isTied: false)]))]
+        let expected: [ABCSymbol] = [.graceNotes(ABCGraceNotes([ABCNote(pitch: _pit(.c, .omitted, 4),
+                                                                        duration: _dur(1, 8),
+                                                                        isTied: false)],
+                                                               false))]
 
         #expect(symbols == expected)
     }
@@ -201,7 +205,8 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_macroCall_inlineFieldUpdate() throws {
         var ctx = ABCParseContext()
 
-        let symbols = try _matchSymbols("[m:~n=!trill!n]~G", context: &ctx)
+        let symbols = try _matchSymbols("[m:~n=!trill!n]~G",
+                                        context: &ctx)
 
         guard case .inlineField = try #require(symbols.first)
         else {
@@ -223,8 +228,10 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_macroCall_longestTriggerWins() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .macro(ABCMacro(trigger: "~G", replacement: "!trill!G")))
-        ctx.update(with: .macro(ABCMacro(trigger: "~G2", replacement: "{A}G{F}G")))
+        ctx.update(with: .macro(ABCMacro(trigger: "~G",
+                                         replacement: "!trill!G")))
+        ctx.update(with: .macro(ABCMacro(trigger: "~G2",
+                                         replacement: "{A}G{F}G")))
 
         let symbols = try _matchSymbols("~G2", context: &ctx)
 
@@ -241,18 +248,19 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_macroCall_noMacrosFallsThroughToDecoration() throws {
         let symbols = try _matchSymbols("~")
 
-        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
+        #expect(symbols == [.decoration(ABCDecoration("roll", "~", .bang))])
     }
 
     @Test
     func matchSymbols_macroCall_noMatchFallsThroughToDecoration() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .macro(ABCMacro(trigger: "~A", replacement: "!trill!A")))
+        ctx.update(with: .macro(ABCMacro(trigger: "~A",
+                                         replacement: "!trill!A")))
 
         let symbols = try _matchSymbols("~", context: &ctx)
 
-        #expect(symbols == [.decoration(ABCDecoration(name: "roll", shorthand: "~"))])
+        #expect(symbols == [.decoration(ABCDecoration("roll", "~", .bang))])
     }
 
     @Test
@@ -280,9 +288,9 @@ extension ABCSymbolMatcherTests {
         let graceF = ABCNote(pitch: _pit(.f, .omitted, 4), duration: _dur(1, 8), isTied: false)
         let noteG  = ABCNote(pitch: _pit(.g, .omitted, 4), duration: _dur(1, 8), isTied: false)
 
-        let expansion: [ABCSymbol] = [.graceNotes(ABCGraceNotes(isSlashed: false, notes: [graceA])),
+        let expansion: [ABCSymbol] = [.graceNotes(ABCGraceNotes([graceA], false)),
                                       .note(noteG),
-                                      .graceNotes(ABCGraceNotes(isSlashed: false, notes: [graceF])),
+                                      .graceNotes(ABCGraceNotes([graceF], false)),
                                       .note(noteG)]
 
         #expect(symbols == [.macroCall(ABCMacroCall(trigger: "~G2",
@@ -297,7 +305,7 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try _matchSymbols("~G", context: &ctx)
 
-        let expansion: [ABCSymbol] = [.decoration(ABCDecoration(name: "trill", shorthand: nil)),
+        let expansion: [ABCSymbol] = [.decoration(ABCDecoration("trill", nil, .bang)),
                                       .note(ABCNote(pitch: _pit(.g, .omitted, 4),
                                                     duration: _dur(1, 8),
                                                     isTied: false))]
@@ -370,41 +378,41 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_tuplet_pAndQ() throws {
         let symbols = try _matchSymbols("(3:2")
 
-        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2))])
+        #expect(symbols == [.tuplet(ABCTuplet(3, 2))])
     }
 
     @Test
     func matchSymbols_tuplet_pOnly() throws {
         let symbols = try _matchSymbols("(3")
 
-        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3))])
+        #expect(symbols == [.tuplet(ABCTuplet(3))])
     }
 
     @Test
     func matchSymbols_tuplet_pQAndR() throws {
         let symbols = try _matchSymbols("(3:2:4")
 
-        #expect(symbols == [.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 4))])
+        #expect(symbols == [.tuplet(ABCTuplet(3, 2, 4))])
     }
 
     @Test
     func matchSymbols_variantEnding() throws {
         let symbols = try _matchSymbols("[1")
 
-        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...1]))])
+        #expect(symbols == [.variantEnding(ABCVariantEnding([1...1]))])
     }
 
     @Test
     func matchSymbols_variantEnding_list() throws {
         let symbols = try _matchSymbols("[1,3")
 
-        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...1, 3...3]))])
+        #expect(symbols == [.variantEnding(ABCVariantEnding([1...1, 3...3]))])
     }
 
     @Test
     func matchSymbols_variantEnding_range() throws {
         let symbols = try _matchSymbols("[1-3")
 
-        #expect(symbols == [.variantEnding(ABCVariantEnding(endings: [1...3]))])
+        #expect(symbols == [.variantEnding(ABCVariantEnding([1...3]))])
     }
 }

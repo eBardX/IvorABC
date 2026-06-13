@@ -10,32 +10,32 @@ struct ABCDecorationTests {
 
 extension ABCDecorationTests {
     @Test
-    func equality() {
-        let a = ABCDecoration(name: "roll", shorthand: "~")
-        let b = ABCDecoration(name: "roll", shorthand: "~")
+    func equality() throws {
+        let a = try #require(ABCDecoration(name: "roll", shorthand: "~"))
+        let b = try #require(ABCDecoration(name: "roll", shorthand: "~"))
 
         #expect(a == b)
     }
 
     @Test
-    func inequality_differentName() {
-        let a = ABCDecoration(name: "roll")
-        let b = ABCDecoration(name: "trill")
+    func inequality_differentName() throws {
+        let a = try #require(ABCDecoration(name: "roll"))
+        let b = try #require(ABCDecoration(name: "trill"))
 
         #expect(a != b)
     }
 
     @Test
-    func inequality_differentShorthand() {
-        let a = ABCDecoration(name: "staccato", shorthand: ".")
-        let b = ABCDecoration(name: "staccato")
+    func inequality_differentShorthand() throws {
+        let a = try #require(ABCDecoration(name: "staccato", shorthand: "."))
+        let b = try #require(ABCDecoration(name: "staccato"))
 
         #expect(a != b)
     }
 
     @Test
-    func init_storesProperties_withShorthand() {
-        let decoration = ABCDecoration(name: "roll", shorthand: "~")
+    func init_storesProperties_withShorthand() throws {
+        let decoration = try #require(ABCDecoration(name: "roll", shorthand: "~"))
 
         #expect(decoration.dialect == .bang)
         #expect(decoration.name == "roll")
@@ -43,11 +43,16 @@ extension ABCDecorationTests {
     }
 
     @Test
-    func init_storesProperties_withoutShorthand() {
-        let decoration = ABCDecoration(name: "trill")
+    func init_storesProperties_withoutShorthand() throws {
+        let decoration = try #require(ABCDecoration(name: "trill"))
 
         #expect(decoration.dialect == .bang)
         #expect(decoration.name == "trill")
         #expect(decoration.shorthand == nil)
+    }
+
+    @Test
+    func init_withEmptyNameReturnsNil() {
+        #expect(ABCDecoration(name: "") == nil)
     }
 }

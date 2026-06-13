@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCSymbolTests {
 }
@@ -29,11 +30,11 @@ extension ABCSymbolTests {
     @Test
     func equality_chord() {
         let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        #expect(ABCSymbol.chord(ABCChord(notes: [note], duration: duration, isTied: false))
-                    == .chord(ABCChord(notes: [note], duration: duration, isTied: false)))
+        #expect(ABCSymbol.chord(ABCChord([note], duration, false))
+                    == .chord(ABCChord([note], duration, false)))
     }
 
     @Test
@@ -43,19 +44,19 @@ extension ABCSymbolTests {
 
     @Test
     func equality_decoration() {
-        #expect(ABCSymbol.decoration(ABCDecoration(name: "p")) == .decoration(ABCDecoration(name: "p")))
+        #expect(ABCSymbol.decoration(ABCDecoration("p", nil, .bang)) == .decoration(ABCDecoration("p", nil, .bang)))
     }
 
     @Test
     func equality_graceNotes() {
         let pitch = ABCPitch(letter: .g, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
+        let duration = ABCDuration(1, 8)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
-        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: false, notes: [note]))
-                    == .graceNotes(ABCGraceNotes(isSlashed: false, notes: [note])))
-        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: true, notes: [note]))
-                    == .graceNotes(ABCGraceNotes(isSlashed: true, notes: [note])))
+        #expect(ABCSymbol.graceNotes(ABCGraceNotes([note], false))
+                    == .graceNotes(ABCGraceNotes([note], false)))
+        #expect(ABCSymbol.graceNotes(ABCGraceNotes([note], true))
+                    == .graceNotes(ABCGraceNotes([note], true)))
     }
 
     @Test
@@ -66,7 +67,7 @@ extension ABCSymbolTests {
     @Test
     func equality_note() {
         let pitch = ABCPitch(letter: .a, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
 
         #expect(ABCSymbol.note(note) == .note(note))
@@ -74,7 +75,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_rest() {
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = ABCDuration(1, 4)
         let rest = ABCRest.regular(false, duration)
 
         #expect(ABCSymbol.rest(rest) == .rest(rest))
@@ -87,21 +88,21 @@ extension ABCSymbolTests {
 
     @Test
     func equality_spacer() {
-        let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
+        let duration = ABCDuration(1, 8)
 
         #expect(ABCSymbol.spacer(duration) == .spacer(duration))
     }
 
     @Test
     func equality_tuplet() {
-        let t = ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3)
+        let t = ABCTuplet(3, 2, 3)
 
         #expect(ABCSymbol.tuplet(t) == .tuplet(t))
     }
 
     @Test
     func equality_variantEnding() {
-        #expect(ABCSymbol.variantEnding(ABCVariantEnding(endings: [1...1])) == .variantEnding(ABCVariantEnding(endings: [1...1])))
+        #expect(ABCSymbol.variantEnding(ABCVariantEnding([1...1])) == .variantEnding(ABCVariantEnding([1...1])))
     }
 
     @Test
@@ -109,8 +110,8 @@ extension ABCSymbolTests {
         #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .annotation(ABCAnnotation(position: .below, text: "foo")))
         #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .chordSymbol("foo"))
         #expect(ABCSymbol.overlay != .slur("("))
-        #expect(ABCSymbol.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3))
-                    != .tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 4)))
+        #expect(ABCSymbol.tuplet(ABCTuplet(3, 2, 3))
+                    != .tuplet(ABCTuplet(3, 2, 4)))
     }
 
     @Test

@@ -27,27 +27,6 @@ extension ABCAnnotation {
 
 extension ABCAnnotation.Position {
 
-    // MARK: Internal Computed Properties
-
-    internal var prefix: Character {
-        switch self {
-        case .above:
-            "^"
-
-        case .auto:
-            "@"
-
-        case .below:
-            "_"
-
-        case .left:
-            "<"
-
-        case .right:
-            ">"
-        }
-    }
-
     // MARK: Internal Initializers
 
     internal init?(prefix: Character) {
@@ -69,6 +48,27 @@ extension ABCAnnotation.Position {
 
         default:
             return nil
+        }
+    }
+
+    // MARK: Internal Instance Properties
+
+    internal var prefix: Character {
+        switch self {
+        case .above:
+            "^"
+
+        case .auto:
+            "@"
+
+        case .below:
+            "_"
+
+        case .left:
+            "<"
+
+        case .right:
+            ">"
         }
     }
 }

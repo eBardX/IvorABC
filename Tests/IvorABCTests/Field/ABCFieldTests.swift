@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCFieldTests {
 }
@@ -47,9 +48,7 @@ extension ABCFieldTests {
                                        .rhythm(""),
                                        .source(""),
                                        .transcription(""),
-                                       .unitNoteLength(ABCDuration(numerator: 1,
-                                                                   denominator: 8,
-                                                                   reduce: false)),
+                                       .unitNoteLength(ABCDuration(1, 8)),
                                        .userSymbol(_usym("~", _deco("roll")))]
 
         for field in validFields {
@@ -94,9 +93,7 @@ extension ABCFieldTests {
                                                        rate: nil,
                                                        text: nil)),
                                        .title(""),
-                                       .unitNoteLength(ABCDuration(numerator: 1,
-                                                                   denominator: 8,
-                                                                   reduce: false)),
+                                       .unitNoteLength(ABCDuration(1, 8)),
                                        .userSymbol(_usym("~", _deco("roll"))),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
@@ -142,9 +139,7 @@ extension ABCFieldTests {
                                                        text: nil)),
                                        .title(""),
                                        .transcription(""),
-                                       .unitNoteLength(ABCDuration(numerator: 1,
-                                                                   denominator: 8,
-                                                                   reduce: false)),
+                                       .unitNoteLength(ABCDuration(1, 8)),
                                        .userSymbol(_usym("~", _deco("roll"))),
                                        .voice(ABCVoice(id: "1",
                                                        properties: [:]))]
