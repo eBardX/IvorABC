@@ -11,7 +11,7 @@ struct ABCKeySignatureTests {
 extension ABCKeySignatureTests {
     @Test
     func equality_clefOnly() {
-        let clef = ABCClef(name: "bass")
+        let clef = ABCKeySignature.Clef(name: "bass")
 
         #expect(ABCKeySignature.clefOnly(clef) == .clefOnly(clef))
     }
@@ -33,17 +33,17 @@ extension ABCKeySignatureTests {
 
     @Test
     func equality_standard() {
-        let sig = ABCKeySignature.standard(.g, .major, [], nil)
+        let sig = makeKeySignature(.g, .major)
 
-        #expect(sig == .standard(.g, .major, [], nil))
+        #expect(sig == makeKeySignature(.g, .major))
     }
 
     @Test
     func inequality() {
         #expect(ABCKeySignature.empty != .highlandPipes)
         #expect(ABCKeySignature.highlandPipes != .highlandPipesPreset)
-        #expect(ABCKeySignature.standard(.g, .major, [], nil) != .standard(.d, .major, [], nil))
-        #expect(ABCKeySignature.standard(.g, .major, [], nil) != .standard(.g, .minor, [], nil))
-        #expect(ABCKeySignature.empty != .standard(.c, .major, [], nil))
+        #expect(makeKeySignature(.g, .major) != makeKeySignature(.d, .major))
+        #expect(makeKeySignature(.g, .major) != makeKeySignature(.g, .minor))
+        #expect(ABCKeySignature.empty != makeKeySignature(.c, .major))
     }
 }

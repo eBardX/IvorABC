@@ -13,9 +13,9 @@ public struct ABCDirective {
     public init(name: String,
                 value: String,
                 content: [String]? = nil) {
-        self.content = content
-        self.name = name        // validate?
-        self.value = value
+        self.content = content  // validate ???
+        self.name = name        // validate ???
+        self.value = value      // validate ???
     }
 
     // MARK: Public Instance Properties

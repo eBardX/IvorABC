@@ -58,6 +58,7 @@ extension ABCParser {
         /// ``ABCParser/Diagnostic/bareTempoRate(_:)``.
         case invalidTempo(Substring)
 
+        /// The parser encountered an invalid text value.
         case invalidText(Substring)
 
         /// The parser encountered an invalid time signature.

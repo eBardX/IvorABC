@@ -301,7 +301,7 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
         }
     }
 
-    let clef: ABCClef?
+    let clef: ABCKeySignature.Clef?
 
     if propertyTokens.isEmpty {
         clef = nil
@@ -330,7 +330,7 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
     let accidentals: [ABCKeySignature.Accidental]
 
     if let tail = result.tail {
-        guard let acc = _parseKeySignatureAccidentals(trimPrefix(tail))
+        guard let acc = _parseKeySignatureExtraAccidentals(trimPrefix(tail))
         else { return nil }
 
         accidentals = acc
@@ -338,7 +338,13 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
         accidentals = []
     }
 
-    return .standard(tonic, mode, accidentals, clef)
+    guard let standard = ABCKeySignature.Standard(tonic: tonic,
+                                                  mode: mode,
+                                                  extraAccidentals: accidentals,
+                                                  clef: clef)
+    else { return nil }
+
+    return .standard(standard)
 }
 
 /// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
@@ -1017,26 +1023,7 @@ private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
                         value: value)
 }
 
-private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.Accidental]? {
-    var accidentals: [ABCKeySignature.Accidental] = []
-
-    var chunker = tidyInput.split { $0.isABCWhitespace }.makeIterator()
-
-    while let chunk = chunker.next() {
-        guard let result = parsePitch(chunk)
-        else { return nil }
-
-        let accidental = ABCPitch(letter: result.letter,
-                                  accidental: result.accidental ?? .natural,
-                                  octave: result.octave)
-
-        accidentals.append(accidental)
-    }
-
-    return accidentals
-}
-
-private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
+private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySignature.Clef? {
     var name: String?
     var middle: String?
     var octave: Int?
@@ -1080,7 +1067,26 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
         }
     }
 
-    return ABCClef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
+    return ABCKeySignature.Clef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
+}
+
+private func _parseKeySignatureExtraAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.Accidental]? {
+    var accidentals: [ABCKeySignature.Accidental] = []
+
+    var chunker = tidyInput.split { $0.isABCWhitespace }.makeIterator()
+
+    while let chunk = chunker.next() {
+        guard let result = parsePitch(chunk)
+        else { return nil }
+
+        let accidental = ABCPitch(letter: result.letter,
+                                  accidental: result.accidental ?? .natural,
+                                  octave: result.octave)
+
+        accidentals.append(accidental)
+    }
+
+    return accidentals
 }
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {

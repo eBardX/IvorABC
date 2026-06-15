@@ -22,8 +22,8 @@ public struct ABCMacro {
     /// - Parameter replacement: The replacement string (right-hand side of `=`).
     public init(trigger: String,
                 replacement: String) {
-        self.replacement = replacement  // validate?
-        self.trigger = trigger          // validate?
+        self.replacement = replacement  // validate ???
+        self.trigger = trigger          // validate ???
     }
 
     // MARK: Public Instance Properties

@@ -12,7 +12,7 @@ extension ABCSymbolLine {
         /// A chord symbol to attach to the corresponding note.
         ///
         /// The string does not include the surrounding quotes.
-        case chordSymbol(String)
+        case chordSymbol(String)    // validate ???
 
         /// A decoration to apply to the corresponding note.
         case decoration(ABCDecoration)

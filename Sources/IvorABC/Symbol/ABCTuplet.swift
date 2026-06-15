@@ -18,12 +18,15 @@ public struct ABCTuplet {
     public init?(noteCount: UInt,
                  beatCount: UInt? = nil,
                  affectedCount: UInt? = nil) {
-        guard noteCount > 0 // other validation?
+        // guard Self._isValid(noteCount, beatCount, affectedCount)
+        // else { return nil }
+
+        guard noteCount > 0
         else { return nil }
 
-        self.affectedCount = affectedCount
-        self.beatCount = beatCount
-        self.noteCount = noteCount
+        self.affectedCount = affectedCount  // validate ???
+        self.beatCount = beatCount          // validate ???
+        self.noteCount = noteCount          // validate ???
     }
 
     // MARK: Public Instance Properties

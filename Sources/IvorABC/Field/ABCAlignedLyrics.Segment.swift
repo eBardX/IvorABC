@@ -22,7 +22,7 @@ extension ABCAlignedLyrics {
         case skip
 
         /// A run of plain lyric text (no special characters).
-        case text(String)
+        case text(String)                       // ABCText ???
 
         /// A word-internal space (`~`); renders as a space within a syllable.
         case tilde

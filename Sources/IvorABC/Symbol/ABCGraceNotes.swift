@@ -12,6 +12,9 @@ public struct ABCGraceNotes {
     /// - Parameter isSlashed: Whether the grace note group has a slash (acciaccatura).
     public init?(notes: [ABCNote],
                  isSlashed: Bool) {
+        // guard Self._isValid(notes)
+        // else { return nil }
+
         guard !notes.isEmpty
         else { return nil }
 

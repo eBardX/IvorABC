@@ -20,8 +20,8 @@ public struct ABCMacroCall {
     /// - Parameter expansion: The pre-parsed symbols produced by expanding the macro.
     public init(trigger: String,
                 expansion: [ABCSymbol]) {
-        self.expansion = expansion
-        self.trigger = trigger      // validate?
+        self.expansion = expansion  // validate ???
+        self.trigger = trigger      // validate ???
     }
 
     // MARK: Public Instance Properties

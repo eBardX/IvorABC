@@ -31,7 +31,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_afterReset_keyAccidentalRestored() {
         // G major: F♯ from key, cancelled in bar, restored after reset
-        var ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+        var ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let dur = makeDuration(1, 8)
 
         let cancel = makeNote(makePitch(.f, .natural, 4),
@@ -51,7 +51,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_barPropagation_naturalCancelsKeyAccidental() {
         // G major has F♯; explicit ♮ cancels it for the rest of the bar
-        var ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+        var ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let dur = makeDuration(1, 8)
 
         let cancel = makeNote(makePitch(.f, .natural, 4),
@@ -97,7 +97,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_keySignature_impliedAccidental() {
         // G major has F♯
-        let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+        let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.f, .omitted, 4),
                             makeDuration(1, 8),
                             false)
@@ -108,7 +108,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_keySignature_unaffectedPitch_returnsNatural() {
         // G major has no accidental on C
-        let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+        let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.c, .omitted, 4),
                             makeDuration(1, 8),
                             false)
@@ -119,7 +119,7 @@ extension ABCAccidentalContextTests {
     @Test
     func resolveAccidental_keySignature_writtenAccidentalOverridesKey() {
         // G major has F♯, but written ♮ overrides it
-        let ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+        let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.f, .natural, 4),
                             makeDuration(1, 8),
                             false)

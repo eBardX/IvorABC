@@ -26,8 +26,8 @@ public struct ABCVersion {
     /// - Parameter minor: The minor version number.
     public init(major: UInt,
                 minor: UInt) {
-        self.major = major
-        self.minor = minor
+        self.major = major  // validate ???
+        self.minor = minor  // validate ???
     }
 
     // MARK: Public Instance Properties

@@ -27,10 +27,10 @@ public struct ABCTempo {
                 rate: UInt?,
                 text: String?,
                 legacyBeatMultiple: UInt? = nil) {
-        self.durations = durations  // validate?
-        self.legacyBeatMultiple = legacyBeatMultiple
-        self.rate = rate
-        self.text = text
+        self.durations = durations                      // validate ???
+        self.legacyBeatMultiple = legacyBeatMultiple    // validate ???
+        self.rate = rate                                // validate ???
+        self.text = text                                // validate ???
     }
 
     // MARK: Public Instance Properties

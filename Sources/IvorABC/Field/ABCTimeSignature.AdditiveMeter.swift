@@ -23,6 +23,9 @@ extension ABCTimeSignature {
         ///                          power of 2 in the range 1...64.
         public init?(numerators: [UInt],
                      denominator: UInt) {
+            // guard Self._isValid(numerators, denominator)
+            // else { return nil }
+
             guard !numerators.isEmpty,
                   numerators.allSatisfy({ $0 > 0 }),
                   (1...64).contains(denominator),

@@ -179,7 +179,7 @@ extension ABCSymbolMatcherTests {
 
         if case let .inlineField(field) = try #require(symbols.first),
            case let .key(sig) = field {
-            #expect(sig == .standard(.g, .major, [], nil))
+            #expect(sig == makeKeySignature(.g, .major))
         } else {
             Issue.record("Expected .inlineField(.key)")
         }
@@ -189,7 +189,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_keyContextDoesNotAffectAccidentals() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .key(.standard(.g, .major, [], nil)))
+        ctx.update(with: .key(makeKeySignature(.g, .major)))
 
         let symbols = try matchSymbols("F", context: &ctx)
 

@@ -26,6 +26,9 @@ public struct ABCDecoration {
     public init?(name: String,
                  shorthand: Character? = nil,
                  dialect: Dialect = .bang) {
+        // guard Self._isValid(name, shorthand, dialect)
+        // else { return nil }
+
         guard !name.isEmpty
         else { return nil }
 
@@ -42,7 +45,7 @@ public struct ABCDecoration {
     public let dialect: Dialect
 
     /// The decoration name, without delimiters.
-    public let name: String
+    public let name: String             // ABCDecoration.Name (StringRepresentable) ???
 
     /// The shorthand character used to write this decoration, or `nil` if it was
     /// written in longhand (`!name!`) or legacy (`+name+`) form.

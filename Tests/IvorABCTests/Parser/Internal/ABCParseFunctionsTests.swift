@@ -94,15 +94,15 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseKeySignature_clef() {
-        let bassClef = ABCClef(name: "bass")
-        let trebleClef = ABCClef(name: "treble")
-        let transposeClef = ABCClef(transpose: -2)
-        let combinedClef = ABCClef(name: "bass", transpose: -2)
+        let bassClef = ABCKeySignature.Clef(name: "bass")
+        let trebleClef = ABCKeySignature.Clef(name: "treble")
+        let transposeClef = ABCKeySignature.Clef(transpose: -2)
+        let combinedClef = ABCKeySignature.Clef(name: "bass", transpose: -2)
 
-        #expect(parseKeySignature("G clef=bass") == .standard(.g, .major, [], bassClef))
-        #expect(parseKeySignature("C transpose=-2") == .standard(.c, .major, [], transposeClef))
-        #expect(parseKeySignature("C major transpose=-2") == .standard(.c, .major, [], transposeClef))
-        #expect(parseKeySignature("G clef=bass transpose=-2") == .standard(.g, .major, [], combinedClef))
+        #expect(parseKeySignature("G clef=bass") == makeKeySignature(.g, .major, bassClef))
+        #expect(parseKeySignature("C transpose=-2") == makeKeySignature(.c, .major, transposeClef))
+        #expect(parseKeySignature("C major transpose=-2") == makeKeySignature(.c, .major, transposeClef))
+        #expect(parseKeySignature("G clef=bass transpose=-2") == makeKeySignature(.g, .major, combinedClef))
         #expect(parseKeySignature("clef=treble") == .clefOnly(trebleClef))
         #expect(parseKeySignature("none clef=treble") == .clefOnly(trebleClef))
     }
@@ -118,24 +118,23 @@ extension ABCParseFunctionsTests {
     @Test
     func parseKeySignature_success() {
         #expect(parseKeySignature("") == .empty)
-        #expect(parseKeySignature("ADor") == .standard(.a, .dorian, [], nil))
-        #expect(parseKeySignature("AMix") == .standard(.a, .mixolydian, [], nil))
-        #expect(parseKeySignature("D =c") == .standard(.d, .major, [makePitch(.c, .natural, 5)], nil))
-        #expect(parseKeySignature("D exp _b _e ^f") == .standard(.d,
-                                                                 .explicit,
-                                                                 [makePitch(.b, .flat, 5),
-                                                                  makePitch(.e, .flat, 5),
-                                                                  makePitch(.f, .sharp, 5)],
-                                                                 nil))
-        #expect(parseKeySignature("D maj =c") == .standard(.d, .major, [makePitch(.c, .natural, 5)], nil))
-        #expect(parseKeySignature("D Phr ^f") == .standard(.d, .phrygian, [makePitch(.f, .sharp, 5)], nil))
-        #expect(parseKeySignature("D") == .standard(.d, .major, [], nil))
-        #expect(parseKeySignature("Dm") == .standard(.d, .minor, [], nil))
-        #expect(parseKeySignature("Eb") == .standard(.eFlat, .major, [], nil))
-        #expect(parseKeySignature("F# mixolydian") == .standard(.fSharp, .mixolydian, [], nil))
-        #expect(parseKeySignature("F#Mix") == .standard(.fSharp, .mixolydian, [], nil))
-        #expect(parseKeySignature("F#MIX") == .standard(.fSharp, .mixolydian, [], nil))
-        #expect(parseKeySignature("G") == .standard(.g, .major, [], nil))
+        #expect(parseKeySignature("ADor") == makeKeySignature(.a, .dorian))
+        #expect(parseKeySignature("AMix") == makeKeySignature(.a, .mixolydian))
+        #expect(parseKeySignature("D =c") == makeKeySignature(.d, .major, [makePitch(.c, .natural, 5)]))
+        #expect(parseKeySignature("D exp _b _e ^f") == makeKeySignature(.d,
+                                                                        .explicit,
+                                                                        [makePitch(.b, .flat, 5),
+                                                                         makePitch(.e, .flat, 5),
+                                                                         makePitch(.f, .sharp, 5)]))
+        #expect(parseKeySignature("D maj =c") == makeKeySignature(.d, .major, [makePitch(.c, .natural, 5)]))
+        #expect(parseKeySignature("D Phr ^f") == makeKeySignature(.d, .phrygian, [makePitch(.f, .sharp, 5)]))
+        #expect(parseKeySignature("D") == makeKeySignature(.d, .major))
+        #expect(parseKeySignature("Dm") == makeKeySignature(.d, .minor))
+        #expect(parseKeySignature("Eb") == makeKeySignature(.eFlat, .major))
+        #expect(parseKeySignature("F# mixolydian") == makeKeySignature(.fSharp, .mixolydian))
+        #expect(parseKeySignature("F#Mix") == makeKeySignature(.fSharp, .mixolydian))
+        #expect(parseKeySignature("F#MIX") == makeKeySignature(.fSharp, .mixolydian))
+        #expect(parseKeySignature("G") == makeKeySignature(.g, .major))
         #expect(parseKeySignature("HP") == .highlandPipes)
         #expect(parseKeySignature("Hp") == .highlandPipesPreset)
         #expect(parseKeySignature("none") == .empty)

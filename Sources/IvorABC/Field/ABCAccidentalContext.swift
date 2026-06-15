@@ -11,16 +11,23 @@
 /// whenever a bar line is crossed.
 ///
 /// ```swift
-/// var ctx = ABCAccidentalContext(keySignature: .standard(.g, .major, [], nil))
+/// let gMajor = ABCKeySignature.Standard(tonic: .g,
+///                                       mode: .major)!
+///
+/// var ctx = ABCAccidentalContext(keySignature: .standard(gMajor))
 ///
 /// for symbol in symbols {
 ///     switch symbol {
 ///     case let .note(note):
 ///         let acc = ctx.resolveAccidental(for: note)
+///
 ///         ctx.update(with: note)
+///
 ///         // use acc …
+///
 ///     case .barRepeat:
 ///         ctx.reset()
+///
 ///     default:
 ///         break
 ///     }
@@ -36,8 +43,16 @@ public struct ABCAccidentalContext {
     ///                           no key (equivalent to C major / no accidentals).
     public init(keySignature: ABCKeySignature? = nil) {
         self.barAccidentals = [:]
-        self.keyAccidentals = keySignature?.keyAccidentals ?? [:]
+        self.keyAccidentals = keySignature?.accidentals ?? [:]
     }
+
+    // MARK: Private Instance Properties
+
+    private var barAccidentals: [ABCPitch.Letter: ABCPitch.Accidental]
+    private let keyAccidentals: [ABCPitch.Letter: ABCPitch.Accidental]
+}
+
+extension ABCAccidentalContext {
 
     // MARK: Public Instance Methods
 
@@ -92,11 +107,6 @@ public struct ABCAccidentalContext {
 
         barAccidentals[note.pitch.letter] = acc
     }
-
-    // MARK: Private Instance Properties
-
-    private var barAccidentals: [ABCPitch.Letter: ABCPitch.Accidental]
-    private let keyAccidentals: [ABCPitch.Letter: ABCPitch.Accidental]
 }
 
 // MARK: - Sendable

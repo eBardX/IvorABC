@@ -111,8 +111,8 @@ internal func formatNote(_ note: ABCNote,
                          _ meter: ABCTimeSignature?) -> String {
     var result = formatAccidental(note.pitch.accidental)
 
-    result += formatPitchLetterOctave(note.pitch.letter,
-                                      note.pitch.octave)
+    result += _formatPitchLetterOctave(note.pitch.letter,
+                                       note.pitch.octave)
 
     result += _formatDuration(note.duration,
                               unitNoteLength,
@@ -123,20 +123,6 @@ internal func formatNote(_ note: ABCNote,
     }
 
     return result
-}
-
-internal func formatPitchLetterOctave(_ letter: ABCPitch.Letter,
-                                      _ octave: ABCPitch.Octave) -> String {
-    guard let (upper, lower) = pitchLetters[letter]
-    else { preconditionFailure("Unknown pitch letter: \(letter)") }
-
-    if octave <= 4 {
-        return upper + String(repeating: ",",
-                              count: 4 - octave)
-    } else {
-        return lower + String(repeating: "'",
-                              count: octave - 5)
-    }
 }
 
 internal func formatSymbol(_ symbol: ABCSymbol,
@@ -430,32 +416,6 @@ private func _formatChord(_ chord: ABCChord,
     return result
 }
 
-private func _formatClef(_ clef: ABCClef) -> String {
-    var parts: [String] = []
-
-    if let name = clef.name {
-        parts.append("clef=\(name)")
-    }
-
-    if let middle = clef.middle {
-        parts.append("middle=\(middle)")
-    }
-
-    if let transpose = clef.transpose {
-        parts.append("transpose=\(transpose)")
-    }
-
-    if let octave = clef.octave {
-        parts.append("octave=\(octave)")
-    }
-
-    if let stafflines = clef.stafflines {
-        parts.append("stafflines=\(stafflines)")
-    }
-
-    return parts.joined(separator: " ")
-}
-
 private func _formatDecoration(_ decoration: ABCDecoration,
                                _ shorthandAllowed: Bool) -> String {
     if shorthandAllowed,
@@ -548,7 +508,7 @@ private func _formatInstructionDirective(_ directive: ABCDirective) -> String {
 private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     switch keySignature {
     case let .clefOnly(clef):
-        return _formatClef(clef)
+        return _formatKeySignatureClef(clef)
 
     case .empty:
         return "none"
@@ -559,24 +519,24 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     case .highlandPipesPreset:
         return "Hp"
 
-    case let .standard(tonic, mode, accidentals, clef):
-        var result = _formatKeySignatureTonic(tonic)
+    case let .standard(std):
+        var result = _formatKeySignatureTonic(std.tonic)
 
-        let modeSuffix = _formatMode(mode)
+        let modeSuffix = _formatKeySignatureMode(std.mode)
 
         if !modeSuffix.isEmpty {
             result.append(" ")
             result.append(modeSuffix)
         }
 
-        for pitch in accidentals {
+        for pitch in std.extraAccidentals {
             result.append(" ")
             result.append(_formatKeySignatureAccidental(pitch.accidental))
-            result.append(formatPitchLetterOctave(pitch.letter, pitch.octave))
+            result.append(_formatPitchLetterOctave(pitch.letter, pitch.octave))
         }
 
-        if let clef {
-            let clefStr = _formatClef(clef)
+        if let clef = std.clef {
+            let clefStr = _formatKeySignatureClef(clef)
 
             if !clefStr.isEmpty {
                 result.append(" ")
@@ -592,16 +552,42 @@ private func _formatKeySignatureAccidental(_ accidental: ABCPitch.Accidental) ->
     pitchAccidentals[accidental]?.key ?? ""
 }
 
+private func _formatKeySignatureClef(_ clef: ABCKeySignature.Clef) -> String {
+    var parts: [String] = []
+
+    if let name = clef.name {
+        parts.append("clef=\(name)")
+    }
+
+    if let middle = clef.middle {
+        parts.append("middle=\(middle)")
+    }
+
+    if let transpose = clef.transpose {
+        parts.append("transpose=\(transpose)")
+    }
+
+    if let octave = clef.octave {
+        parts.append("octave=\(octave)")
+    }
+
+    if let stafflines = clef.stafflines {
+        parts.append("stafflines=\(stafflines)")
+    }
+
+    return parts.joined(separator: " ")
+}
+
+private func _formatKeySignatureMode(_ mode: ABCKeySignature.Mode) -> String {
+    keySignatureModes[mode] ?? ""
+}
+
 private func _formatKeySignatureTonic(_ tonic: ABCKeySignature.Tonic) -> String {
     keySignatureTonics[tonic] ?? ""
 }
 
 private func _formatMacro(_ macro: ABCMacro) -> String {
     "\(macro.trigger)=\(macro.replacement)"
-}
-
-private func _formatMode(_ mode: ABCKeySignature.Mode) -> String {
-    keySignatureModes[mode] ?? ""
 }
 
 private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
@@ -620,6 +606,20 @@ private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
 
 private func _formatPartSequence(_ partSequence: ABCPartSequence) -> String {
     _formatPartItems(partSequence.items)
+}
+
+private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
+                                      _ octave: ABCPitch.Octave) -> String {
+    guard let (upper, lower) = pitchLetters[letter]
+    else { preconditionFailure("Unknown pitch letter: \(letter)") }
+
+    if octave <= 4 {
+        return upper + String(repeating: ",",
+                              count: 4 - octave)
+    } else {
+        return lower + String(repeating: "'",
+                              count: octave - 5)
+    }
 }
 
 private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {

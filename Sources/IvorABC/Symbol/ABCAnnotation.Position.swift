@@ -5,7 +5,7 @@ extension ABCAnnotation {
     // MARK: Public Nested Types
 
     /// The positioning of an annotation relative to the staff.
-    public enum Position {
+    public enum Position {  // rename to `Positioning` or `Placement` ???
         /// Above the staff (`^`).
         case above
 

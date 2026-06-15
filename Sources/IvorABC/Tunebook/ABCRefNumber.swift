@@ -1,7 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
 /// An ABC reference number.
-public struct ABCRefNumber {
+public struct ABCRefNumber {    // UIntRepresentable ???
 
     // MARK: Public Initializers
 

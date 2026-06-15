@@ -38,14 +38,14 @@ extension ABCPartSequence {
         /// inside the parentheses. The second is the repeat count that follows
         /// the closing parenthesis; `1` is used when no count appears in the
         /// source.
-        case group([Self], UInt)
+        case group([Self], UInt)    // validate ???
 
         /// A single part letter (`A`–`Z`) with an optional repeat count.
         ///
         /// The first associated value is the uppercase ASCII letter that names
         /// the part. The second is the repeat count; `1` is used when no count
         /// appears in the source.
-        case part(Character, UInt)
+        case part(Character, UInt)  // validate ???
     }
 }
 

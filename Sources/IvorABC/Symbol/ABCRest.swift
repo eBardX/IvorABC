@@ -6,7 +6,7 @@ public enum ABCRest {
     ///
     /// The associated `Bool` value indicates whether the rest is invisible, and
     /// the associated `UInt` value is the number of measures.
-    case multiMeasure(Bool, UInt)
+    case multiMeasure(Bool, UInt)                   // validate ???
 
     /// A regular rest.
     ///

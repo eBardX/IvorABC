@@ -9,7 +9,7 @@ public struct ABCTune {
     ///
     /// - Parameter entries: The entries that make up the tune.
     public init(entries: [ABCEntry]) {
-        self.entries = entries
+        self.entries = entries  // validate ???
     }
 
     // MARK: Public Instance Properties

@@ -39,7 +39,7 @@ extension ABCParseContextTests {
     func update_key_cMajor_noAccidentals() {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .key(.standard(.c, .major, [], nil)))
+        ctx.update(with: .key(makeKeySignature(.c, .major)))
 
         #expect(ctx.accidentalsInKey.isEmpty)
     }
@@ -48,7 +48,7 @@ extension ABCParseContextTests {
     func update_key_gMajor_fSharp() {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .key(.standard(.g, .major, [], nil)))
+        ctx.update(with: .key(makeKeySignature(.g, .major)))
 
         #expect(ctx.accidentalsInKey.count == 1)
         #expect(ctx.accidentalsInKey[.f] == .sharp)

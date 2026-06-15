@@ -12,7 +12,7 @@ public struct ABCSymbolLine {
     ///
     /// - Parameter elements: The positional elements.
     public init(elements: [Element]) {
-        self.elements = elements
+        self.elements = elements    // validate ???
     }
 
     // MARK: Public Instance Properties

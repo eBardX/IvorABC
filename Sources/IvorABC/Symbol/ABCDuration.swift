@@ -16,6 +16,9 @@ public struct ABCDuration {
     ///                          greater than zero.
     public init?(numerator: UInt,
                  denominator: UInt = 1) {
+        // guard Self._isValid(numerator, denominator)
+        // else { return nil }
+
         guard numerator > 0,
               (1...512).contains(denominator),
               denominator.isPowerOf2

@@ -14,6 +14,9 @@ public struct ABCChord {
     public init?(notes: [ABCNote],
                  duration: ABCDuration,
                  isTied: Bool) {
+        // guard Self._isValid(notes, duration, isTied)
+        // else { return nil }
+
         guard !notes.isEmpty
         else { return nil }
 

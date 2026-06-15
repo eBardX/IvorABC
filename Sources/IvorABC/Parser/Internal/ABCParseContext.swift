@@ -58,7 +58,7 @@ extension ABCParseContext {
             update(with: directive)
 
         case let .key(keySignature):
-            accidentalsInKey = keySignature.keyAccidentals
+            accidentalsInKey = keySignature.accidentals
 
         case let .macro(macro):
             macros[macro.trigger] = macro

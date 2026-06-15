@@ -11,7 +11,7 @@ public enum ABCSymbol {
     ///
     /// The string is the verbatim ABC bar repeat notation, such as `|:`,
     /// `:|`, `||`, or `|`.
-    case barRepeat(String)
+    case barRepeat(String)  // validate ???
 
     /// A beam-break marker.
     ///
@@ -24,7 +24,7 @@ public enum ABCSymbol {
     ///
     /// The string is the verbatim ABC broken rhythm notation: one to three
     /// `>` or `<` characters.
-    case brokenRhythm(String)
+    case brokenRhythm(String)   // validate ???
 
     /// A chord.
     case chord(ABCChord)
@@ -33,7 +33,7 @@ public enum ABCSymbol {
     ///
     /// The string is the chord name without the surrounding quotes,
     /// e.g. `Am` or `G7`.
-    case chordSymbol(String)
+    case chordSymbol(String)    // validate ???
 
     /// A decoration.
     case decoration(ABCDecoration)
@@ -62,7 +62,7 @@ public enum ABCSymbol {
     /// A slur marker.
     ///
     /// The string is `(` for a slur begin or `)` for a slur end.
-    case slur(String)
+    case slur(String)   // validate ???
 
     /// A typesetting spacer (`y`).
     ///

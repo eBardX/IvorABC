@@ -12,7 +12,10 @@ public struct ABCVariantEnding {
     ///                      range of consecutive ending numbers. Must not be
     ///                      empty.
     public init?(endings: [ClosedRange<UInt>]) {
-        guard !endings.isEmpty  // other validation?
+        // guard Self._isValid(endings)
+        // else { return nil }
+
+        guard !endings.isEmpty
         else { return nil }
 
         self.endings = endings

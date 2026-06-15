@@ -30,7 +30,7 @@ extension ABCTimeSignature {
         guard case let .standard(meter) = self
         else { return false }
 
-        return [6, 9, 12, 15, 18].contains(meter.numerator)
+        return [6, 9, 12, 15, 18].contains(meter.numerator) // just check if divisible by 3?
     }
 }
 

@@ -344,6 +344,28 @@ func makeGraceNotes(_ notes: [ABCNote],
                   isSlashed: isSlashed)!    // swiftlint:disable:this force_unwrapping
 }
 
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode)!)    // swiftlint:disable:this force_unwrapping
+}
+
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode,
+                      _ extraAccidentals: [ABCKeySignature.Accidental]) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode,
+                                       extraAccidentals: extraAccidentals)!)    // swiftlint:disable:this force_unwrapping
+}
+
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode,
+                      _ clef: ABCKeySignature.Clef) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode,
+                                       clef: clef)!)    // swiftlint:disable:this force_unwrapping
+}
+
 func makeMacro(_ trigger: String,
                _ replacement: String) -> ABCMacro {
     ABCMacro(trigger: trigger,
@@ -484,7 +506,7 @@ func format(_ tunebook: ABCTunebook) throws -> String {
     return String(bytes: data, encoding: .utf8) ?? ""
 }
 
-func minimalTunebook(key: ABCKeySignature = .standard(.c, .major, [], nil),
+func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major)!),    // swiftlint:disable:this force_unwrapping
                      symbols: [ABCSymbol] = []) -> ABCTunebook {
     ABCTunebook(version: ABCVersion(major: 2, minor: 1),
                 headers: [],
@@ -499,7 +521,7 @@ func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
                 headers: [],
                 tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
                                           .field(.unitNoteLength(makeDuration(1, 4))),
-                                          .field(.key(.standard(.c, .major, [], nil))),
+                                          .field(.key(makeKeySignature(.c, .major))),
                                           .symbols(symbols)])])
 }
 
@@ -508,6 +530,6 @@ func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
                 headers: [],
                 tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
                                           .field(.tempo(tempo)),
-                                          .field(.key(.standard(.c, .major, [], nil))),
+                                          .field(.key(makeKeySignature(.c, .major))),
                                           .symbols([])])])
 }

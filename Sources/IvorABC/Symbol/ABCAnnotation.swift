@@ -21,8 +21,8 @@ public struct ABCAnnotation {
     ///                       or positioning prefix.
     public init(position: Position,
                 text: String) {
-        self.position = position
-        self.text = text        // validate?
+        self.position = position    // rename to `positioning` ???
+        self.text = text            // validate ???
     }
 }
 
