@@ -11,24 +11,24 @@ struct ABCPitchTests {
 extension ABCPitchTests {
     @Test
     func equality() {
-        let a = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let b = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
+        let a = makePitch(.c, .omitted, 4)
+        let b = makePitch(.c, .omitted, 4)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let base = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
+        let base = makePitch(.c, .omitted, 4)
 
-        #expect(base != ABCPitch(letter: .d, accidental: .omitted, octave: 4))
-        #expect(base != ABCPitch(letter: .c, accidental: .sharp, octave: 4))
-        #expect(base != ABCPitch(letter: .c, accidental: .omitted, octave: 5))
+        #expect(base != makePitch(.d, .omitted, 4))
+        #expect(base != makePitch(.c, .sharp, 4))
+        #expect(base != makePitch(.c, .omitted, 5))
     }
 
     @Test
     func init_storesValues() {
-        let pitch = ABCPitch(letter: .g, accidental: .flat, octave: 3)
+        let pitch = makePitch(.g, .flat, 3)
 
         #expect(pitch.letter == .g)
         #expect(pitch.accidental == .flat)

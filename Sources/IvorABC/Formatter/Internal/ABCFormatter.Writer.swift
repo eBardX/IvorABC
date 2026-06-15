@@ -37,7 +37,7 @@ extension ABCFormatter.Writer {
         guard tunebook.version == ABCVersion.current
         else { throw ABCFormatter.Error.unsupportedVersion(tunebook.version) }
 
-        buffer.append("%abc-\(tunebook.version.stringValue)\n")
+        buffer.append("%abc-\(tunebook.version.major).\(tunebook.version.minor)\n")
 
         try _writeFileHeaders()
 

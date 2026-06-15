@@ -6,7 +6,77 @@ import Testing
 struct ABCTextFunctionsTests {
 }
 
-// MARK: -
+// MARK: - escape
+
+extension ABCTextFunctionsTests {
+    @Test
+    func encodeTextEscapes_ampersand() {
+        #expect(escape("gin & tonic") == "gin \\& tonic")
+        #expect(escape("a&b") == "a\\&b")
+        #expect(escape("&") == "\\&")
+    }
+
+    @Test
+    func encodeTextEscapes_backslash() {
+        #expect(escape("foo\\bar") == "foo\\\\bar")
+        #expect(escape("\\") == "\\\\")
+        #expect(escape("a\\b\\c") == "a\\\\b\\\\c")
+    }
+
+    @Test
+    func encodeTextEscapes_mixed() {
+        #expect(escape("100% & \\cost") == "100\\% \\& \\\\cost")
+    }
+
+    @Test
+    func encodeTextEscapes_noSpecialChars_returnsInput() {
+        #expect(escape("Cafe au lait") == "Cafe au lait")
+        #expect(escape("").isEmpty)
+    }
+
+    @Test
+    func encodeTextEscapes_percent() {
+        #expect(escape("100%") == "100\\%")
+        #expect(escape("%") == "\\%")
+    }
+
+    @Test
+    func encodeTextEscapes_invisibleChars() {
+        #expect(escape("\t") == "\\u0009")
+        #expect(escape("\n") == "\\u000a")
+        #expect(escape("\r") == "\\u000d")
+        #expect(escape("\u{00a0}") == "\\u00a0")
+        #expect(escape("\u{034f}") == "\\u034f")
+        #expect(escape("\u{200b}") == "\\u200b")
+        #expect(escape("\u{200c}") == "\\u200c")
+        #expect(escape("\u{200d}") == "\\u200d")
+        #expect(escape("\u{feff}") == "\\ufeff")
+        #expect(escape("foo\tbar") == "foo\\u0009bar")
+    }
+
+    @Test
+    func encodeTextEscapes_roundTrip_withUnescape() {
+        let originals = ["hello",
+                         "foo\\bar",
+                         "gin & tonic",
+                         "100%",
+                         "a\\b%c&d",
+                         "\\&%",
+                         "\t",
+                         "\n",
+                         "foo\tbar",
+                         "line1\nline2",
+                         "\u{00a0}",
+                         "\u{034f}"]
+
+        for original in originals {
+            #expect(unescape(escape(original)) == original,
+                    "round-trip failed for \(original.debugDescription)")
+        }
+    }
+}
+
+// MARK: - unescape
 
 extension ABCTextFunctionsTests {
     @Test
@@ -106,6 +176,19 @@ extension ABCTextFunctionsTests {
     }
 
     @Test
+    func decodeTextEscapes_tex_single_ampersand() {
+        #expect(unescape("\\&") == "&")
+        #expect(unescape("gin \\& tonic") == "gin & tonic")
+    }
+
+    @Test
+    func decodeTextEscapes_tex_single_backslash() {
+        #expect(unescape("\\\\") == "\\")
+        #expect(unescape("foo\\\\bar") == "foo\\bar")
+        #expect(unescape("a\\\\b\\\\c") == "a\\b\\c")
+    }
+
+    @Test
     func decodeTextEscapes_tex_single_percent() {
         #expect(unescape("\\%") == "%")
     }
@@ -171,5 +254,7 @@ extension ABCTextFunctionsTests {
         try expectFieldIsTitle(parseField("T:&Eacute;tude"), "Étude")
         try expectFieldIsHistory(parseField("H:\\u00e9"), "é")
         try expectFieldIsNotes(parseField("N:&#228;"), "ä")
+        try expectFieldIsComposer(parseField("C:foo\\\\bar"), "foo\\bar")
+        try expectFieldIsSource(parseField("S:gin \\& tonic"), "gin & tonic")
     }
 }

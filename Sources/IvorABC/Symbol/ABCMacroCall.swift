@@ -21,7 +21,7 @@ public struct ABCMacroCall {
     public init(trigger: String,
                 expansion: [ABCSymbol]) {
         self.expansion = expansion
-        self.trigger = trigger
+        self.trigger = trigger      // validate?
     }
 
     // MARK: Public Instance Properties

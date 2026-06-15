@@ -77,8 +77,7 @@ extension ABCSymbolMatcher {
 
         if let duration {
             return ABCDuration(numerator: baseDuration.numerator * duration.numerator,
-                               denominator: baseDuration.denominator * duration.denominator,
-                               reduce: true)
+                               denominator: baseDuration.denominator * duration.denominator)!   // swiftlint:disable:this force_unwrapping
         }
 
         return baseDuration
@@ -96,9 +95,8 @@ extension ABCSymbolMatcher {
 
     private mutating func _matchAnnotation() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.annotation)
-        let stripped = token.value.dropFirst().dropLast()
 
-        guard let annotation = ABCAnnotation(stringValue: stripped)
+        guard let annotation = parseAnnotation(token.value)
         else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .annotation(annotation)
@@ -144,9 +142,12 @@ extension ABCSymbolMatcher {
             isTied = false
         }
 
-        return .chord(ABCChord(notes: chord,
-                               duration: duration,
-                               isTied: isTied))
+        guard let chord = ABCChord(notes: chord,
+                                   duration: duration,
+                                   isTied: isTied)
+        else { return nil }
+
+        return .chord(chord)
     }
 
     private mutating func _matchChordNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -178,24 +179,29 @@ extension ABCSymbolMatcher {
 
         if value.count == 1,
            let letter = value.first {
-            guard let name = context.userSymbolDecorations[letter]
-                  ?? Self.builtinShorthandDecorations[letter]
+            guard let name = context.userSymbolDecorations[letter] ?? Self.builtinShorthandDecorations[letter],
+                  let decoration = ABCDecoration(name: name,
+                                                 shorthand: letter,
+                                                 dialect: context.decorationDialect)
             else { throw ABCParser.Error.invalidSymbols(value) }
 
-            return .decoration(ABCDecoration(name: name,
-                                             shorthand: letter,
-                                             dialect: context.decorationDialect))
+            return .decoration(decoration)
         }
 
         // In + dialect mode, !...! decorations are an error per spec §12.1.2.
-        if context.decorationDialect == .plus, value.first == "!" {
+        if context.decorationDialect == .plus,
+           value.first == "!" {
             throw ABCParser.Error.invalidSymbols(value)
         }
 
         let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
 
-        return .decoration(ABCDecoration(name: String(value.dropFirst().dropLast()),
-                                         dialect: dialect))
+        guard let decoration = ABCDecoration(name: String(value.dropFirst().dropLast()),
+                                             shorthand: nil,
+                                             dialect: dialect)
+        else { throw ABCParser.Error.invalidSymbols(value) }
+
+        return .decoration(decoration)
     }
 
     private mutating func _matchGraceNote(_ context: inout ABCParseContext) throws -> ABCNote? {
@@ -225,8 +231,11 @@ extension ABCSymbolMatcher {
 
         try tokenMatcher.readMustMatch(.graceNotesEnd)
 
-        return .graceNotes(ABCGraceNotes(isSlashed: hasSlash,
-                                         notes: graceNotes))
+        guard let graceNotes = ABCGraceNotes(notes: graceNotes,
+                                             isSlashed: hasSlash)
+        else { return nil }
+
+        return .graceNotes(graceNotes)
     }
 
     private mutating func _matchInlineField(_ context: inout ABCParseContext) throws -> ABCSymbol? {
@@ -430,7 +439,10 @@ extension ABCSymbolMatcher {
     private mutating func _matchTuplet() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.tuplet)
 
-        guard let tuplet = ABCTuplet(stringValue: token.value)
+        guard let result = parseTuplet(token.value),
+              let tuplet = ABCTuplet(noteCount: result.pcount,
+                                     beatCount: result.qcount,
+                                     affectedCount: result.rcount)
         else { throw ABCParser.Error.invalidTuplet(token.value) }
 
         return .tuplet(tuplet)
@@ -439,7 +451,7 @@ extension ABCSymbolMatcher {
     private mutating func _matchVariantEnding() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.variantEnding)
 
-        guard let variantEnding = ABCVariantEnding(stringValue: token.value)
+        guard let variantEnding = parseVariantEnding(token.value)
         else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .variantEnding(variantEnding)

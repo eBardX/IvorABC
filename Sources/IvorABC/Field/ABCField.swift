@@ -6,25 +6,25 @@ public enum ABCField {
     case alignedLyrics(ABCAlignedLyrics)
 
     /// An area field (`A:`).
-    case area(String)
+    case area(ABCText)
 
     /// A book field (`B:`).
-    case book(String)
+    case book(ABCText)
 
     /// A composer field (`C:`).
-    case composer(String)
+    case composer(ABCText)
 
     /// A discography field (`D:`).
-    case discography(String)
+    case discography(ABCText)
 
     /// A file URL field (`F:`).
-    case fileURL(String)
+    case fileURL(ABCText)
 
     /// A group field (`G:`).
-    case group(String)
+    case group(ABCText)
 
     /// A history field (`H:`).
-    case history(String)
+    case history(ABCText)
 
     /// An inline instruction field (`[I:]`).
     ///
@@ -48,10 +48,10 @@ public enum ABCField {
     /// The first associated value is the raw field letter and the second is
     /// the text content. ``ABCTunebook/migrated()`` collapses these fields to
     /// ``remark(_:)`` when upgrading to ABC 2.1.
-    case legacy(Character, String)
+    case legacy(Character, ABCText)
 
     /// A lyrics field (`W:`).
-    case lyrics(String)
+    case lyrics(ABCText)
 
     /// A macro field (`m:`).
     case macro(ABCMacro)
@@ -60,10 +60,10 @@ public enum ABCField {
     case meter(ABCTimeSignature)
 
     /// A notes field (`N:`).
-    case notes(String)
+    case notes(ABCText)
 
     /// An origin field (`O:`).
-    case origin(String)
+    case origin(ABCText)
 
     /// A parts field (`P:`).
     ///
@@ -87,13 +87,13 @@ public enum ABCField {
     case refNumber(ABCRefNumber)
 
     /// A remark field (`r:`).
-    case remark(String)
+    case remark(ABCText)
 
     /// A rhythm field (`R:`).
-    case rhythm(String)
+    case rhythm(ABCText)
 
     /// A source field (`S:`).
-    case source(String)
+    case source(ABCText)
 
     /// A symbol line field (`s:`).
     case symbolLine(ABCSymbolLine)
@@ -102,10 +102,10 @@ public enum ABCField {
     case tempo(ABCTempo)
 
     /// A title field (`T:`).
-    case title(String)
+    case title(ABCText)
 
     /// A transcription field (`Z:`).
-    case transcription(String)
+    case transcription(ABCText)
 
     /// A unit note length field (`L:`).
     case unitNoteLength(ABCDuration)

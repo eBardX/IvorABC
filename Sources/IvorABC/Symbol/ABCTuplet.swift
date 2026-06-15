@@ -3,7 +3,34 @@
 /// A tuplet specification in ABC music notation.
 public struct ABCTuplet {
 
+    // MARK: Public Initializers
+
+    /// Creates a new tuplet specification, or `nil` if `noteCount` is zero.
+    ///
+    /// - Parameter noteCount:     The number of notes in the tuplet group.
+    ///                            Must be greater than zero.
+    /// - Parameter beatCount:     The number of beats the group occupies, or
+    ///                            `nil` when not explicitly written in the
+    ///                            source.
+    /// - Parameter affectedCount: The number of notes the specification applies
+    ///                            to, or `nil` when not explicitly written in the
+    ///                            source.
+    public init?(noteCount: UInt,
+                 beatCount: UInt? = nil,
+                 affectedCount: UInt? = nil) {
+        guard noteCount > 0 // other validation?
+        else { return nil }
+
+        self.affectedCount = affectedCount
+        self.beatCount = beatCount
+        self.noteCount = noteCount
+    }
+
     // MARK: Public Instance Properties
+
+    /// The number of notes the specification applies to, or `nil` when not
+    /// explicitly written in the source.
+    public let affectedCount: UInt?
 
     /// The number of notes in the tuplet group.
     public let noteCount: UInt
@@ -11,63 +38,11 @@ public struct ABCTuplet {
     /// The number of beats the group occupies, or `nil` when not explicitly
     /// written in the source.
     public let beatCount: UInt?
-
-    /// The number of notes the specification applies to, or `nil` when not
-    /// explicitly written in the source.
-    public let affectedCount: UInt?
-
-    // MARK: Public Initializers
-
-    /// Creates a new tuplet specification.
-    ///
-    /// - Parameter noteCount:     The number of notes in the tuplet group.
-    /// - Parameter beatCount:     The number of beats the group occupies, or
-    ///                            `nil` when not explicitly written in the
-    ///                            source.
-    /// - Parameter affectedCount: The number of notes the specification applies
-    ///                            to, or `nil` when not explicitly written in the
-    ///                            source.
-    public init(noteCount: UInt,
-                beatCount: UInt? = nil,
-                affectedCount: UInt? = nil) {
-        self.noteCount = noteCount
-        self.beatCount = beatCount
-        self.affectedCount = affectedCount
-    }
 }
 
 // MARK: -
 
 extension ABCTuplet {
-
-    // MARK: Internal Computed Properties
-
-    internal var stringValue: String {
-        var result = "(\(noteCount)"
-
-        if let q = beatCount {
-            result += ":\(q)"
-
-            if let r = affectedCount {
-                result += ":\(r)"
-            }
-        }
-
-        return result
-    }
-
-    // MARK: Internal Initializers
-
-    /// Parses a tuplet from the ABC token text (e.g. `(3` or `(3:2` or
-    /// `(3:2:4`).
-    internal init?(stringValue: some StringProtocol) {
-        guard let result = parseTuplet(String(stringValue)[...])
-        else { return nil }
-
-        self.noteCount = result.pcount
-        self.beatCount = result.qcount
-        self.affectedCount = result.rcount
-    }
 
     // MARK: Public Instance Methods
 

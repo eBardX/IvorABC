@@ -15,17 +15,19 @@ public struct ABCDecoration {
 
     // MARK: Public Initializers
 
-    /// Creates a new decoration.
+    /// Creates a new decoration, or `nil` if `name` is empty.
     ///
-    /// - Parameter name:      The decoration name (without delimiters), e.g. `"roll"`.
+    /// - Parameter name:      The decoration name (without delimiters), e.g.
+    ///                        `"roll"`. Must not be empty.
     /// - Parameter shorthand: The shorthand character, if the decoration was written
     ///                        as a shorthand (e.g. `~`); otherwise `nil`.
     /// - Parameter dialect:   The delimiter dialect in effect; defaults to
     ///                        ``Dialect/bang`` (ABC 2.1 standard).
-    public init(name: String,
-                shorthand: Character? = nil,
-                dialect: Dialect = .bang) {
-        precondition(!name.isEmpty, "ABCDecoration name must not be empty")
+    public init?(name: String,
+                 shorthand: Character? = nil,
+                 dialect: Dialect = .bang) {
+        guard !name.isEmpty
+        else { return nil }
 
         self.dialect = dialect
         self.name = name
@@ -66,29 +68,6 @@ extension ABCDecoration {
                                                              "T",
                                                              "u",
                                                              "v"]
-
-//    // MARK: Internal Initializers
-//
-//    internal init?(stringValue: some StringProtocol) {
-//        guard let first = stringValue.first,
-//              let pos = Position(prefix: first)
-//        else { return nil }
-//
-//        self.position = pos
-//        self.text = String(stringValue.dropFirst())
-//    }
-
-    // MARK: Internal Instance Properties
-
-    internal var stringValue: String {
-        if let shorthand {
-            String(shorthand)
-        } else if dialect == .plus {
-            "+\(name)+"
-        } else {
-            "!\(name)!"
-        }
-    }
 }
 
 // MARK: - Equatable

@@ -26,9 +26,6 @@ extension ABCFormatter {
         /// A broken rhythm marker string is invalid.
         case invalidBrokenRhythm(String)
 
-        /// A note, rest, or spacer duration has a zero numerator.
-        case invalidDuration(ABCDuration)
-
         /// A multi-measure rest has a count of zero.
         case invalidMultiMeasureRestCount
 
@@ -40,7 +37,7 @@ extension ABCFormatter {
 
         /// A time signature has a structurally invalid value.
         ///
-        /// This is thrown when an `M:explicit` time signature has a non-power-of-two
+        /// This is thrown when an `M:standard` time signature has a non-power-of-two
         /// denominator, or when an `M:complex` time signature has an empty numerator
         /// list or a non-power-of-two denominator.
         case invalidTimeSignature(ABCTimeSignature)
@@ -102,9 +99,6 @@ extension ABCFormatter.Error: EnhancedError {
         case let .invalidBrokenRhythm(s):
             "Broken rhythm marker is invalid: \(s.isEmpty ? "(empty)" : s)"
 
-        case let .invalidDuration(dur):
-            "Duration has a zero numerator: \(dur.numerator)/\(dur.denominator)"
-
         case .invalidMultiMeasureRestCount:
             "Multi-measure rest has a count of zero"
 
@@ -139,7 +133,7 @@ extension ABCFormatter.Error: EnhancedError {
             "Failed to convert string to UTF-8 data"
 
         case let .unsupportedVersion(version):
-            "Unsupported ABC version: \(version.stringValue)"
+            "Unsupported ABC version: \(version.major).\(version.minor)"
         }
     }
 }

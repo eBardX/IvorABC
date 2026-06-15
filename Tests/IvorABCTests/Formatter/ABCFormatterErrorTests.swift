@@ -60,14 +60,6 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidDuration() {
-        let dur = ABCDuration(numerator: 0, denominator: 4, reduce: false)
-        let error = ABCFormatter.Error.invalidDuration(dur)
-
-        #expect(error.message.contains("0/4"))
-    }
-
-    @Test
     func message_invalidMultiMeasureRestCount() {
         #expect(ABCFormatter.Error.invalidMultiMeasureRestCount.message.contains("zero"))
     }
@@ -87,10 +79,8 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidTimeSignature() {
-        let ts = ABCTimeSignature.explicit(ABCFraction(numerator: 3,
-                                                       denominator: 5,
-                                                       reduce: false))
+    func message_invalidTimeSignature() throws {
+        let ts = try ABCTimeSignature.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4)))
         let error = ABCFormatter.Error.invalidTimeSignature(ts)
 
         #expect(error.message.contains("structurally invalid"))
@@ -99,14 +89,6 @@ extension ABCFormatterErrorTests {
     @Test
     func message_invalidTupletNoteCount() {
         #expect(ABCFormatter.Error.invalidTupletNoteCount.message.contains("zero"))
-    }
-
-    @Test
-    func message_invalidUnitNoteLength() {
-        let dur = ABCDuration(numerator: 1, denominator: 3, reduce: false)
-        let error = ABCFormatter.Error.invalidUnitNoteLength(dur)
-
-        #expect(error.message.contains("1/3"))
     }
 
     @Test
@@ -140,7 +122,7 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_unsupportedVersion() {
-        let error = ABCFormatter.Error.unsupportedVersion(ABCVersion(major: 1, minor: 6))
+        let error = ABCFormatter.Error.unsupportedVersion(makeVersion(1, 6))
 
         #expect(error.message.contains("1.6"))
     }

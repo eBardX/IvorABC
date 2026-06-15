@@ -17,45 +17,6 @@ internal func normalize(_ input: Substring) -> String {
     unescape(String(input).normalizedABCWhitespace())
 }
 
-internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
-    guard !tidyInput.isEmpty
-    else { return nil }
-
-    //
-    // <decUInteger>? "/" ( <decUInteger>? | "/"{2,6} )
-    //
-    let result = tidyInput.splitBeforeFirst("/")
-
-    var denominator: UInt = 1
-    var numerator: UInt = 1
-
-    if !result.head.isEmpty {
-        guard let numer = UInt(result.head)
-        else { return nil }
-
-        numerator = numer
-    }
-
-    if var tail = result.tail {
-        while tail.hasPrefix("/") {
-            denominator *= 2
-            tail = tail.dropFirst()
-        }
-
-        if !tail.isEmpty {
-            guard denominator == 2,         // i.e. only one "/" seen
-                  let denom = UInt(tail)
-            else { return nil }
-
-            denominator = denom
-        }
-    }
-
-    return ABCDuration(numerator: numerator,
-                       denominator: denominator,
-                       reduce: true)
-}
-
 internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
     var segments: [ABCAlignedLyrics.Segment] = []
     var input = tidyInput
@@ -120,6 +81,21 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
     return ABCAlignedLyrics(segments: segments)
 }
 
+internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
+    guard tidyInput.first == "\"",
+          tidyInput.last == "\""
+    else { return nil }
+
+    let content = tidyInput.dropFirst().dropLast()
+
+    guard !tidyInput.isEmpty,
+          let position = _parseAnnotationPosition(content[...content.startIndex])
+    else { return nil }
+
+    return ABCAnnotation(position: position,
+                         text: String(content.dropFirst()))
+}
+
 internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
     guard let head = tidyInput.first,
           head.isABCDirectiveNameHead,
@@ -129,31 +105,69 @@ internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
     return String(tidyInput)
 }
 
+internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
+    guard !tidyInput.isEmpty
+    else { return nil }
+
+    //
+    // <decUInteger>? "/" ( <decUInteger>? | "/"{2,6} )
+    //
+    let result = tidyInput.splitBeforeFirst("/")
+
+    var denominator: UInt = 1
+    var numerator: UInt = 1
+
+    if !result.head.isEmpty {
+        guard let numer = UInt(result.head)
+        else { return nil }
+
+        numerator = numer
+    }
+
+    if var tail = result.tail {
+        while tail.hasPrefix("/") {
+            denominator *= 2
+            tail = tail.dropFirst()
+        }
+
+        if !tail.isEmpty {
+            guard denominator == 2,         // i.e. only one "/" seen
+                  let denom = UInt(tail)
+            else { return nil }
+
+            denominator = denom
+        }
+    }
+
+    return ABCDuration(numerator: numerator,
+                       denominator: denominator)
+}
+
 // swiftlint:disable:next cyclomatic_complexity
 internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     let (ntext, vtext, isInline) = try _splitField(tidyInput)
 
     switch ntext {
     case "A" where !isInline:
-        return .area(normalize(vtext))
+        return try .area(parseText(vtext))
 
     case "B" where !isInline:
-        return .book(normalize(vtext))
+        return try .book(parseText(vtext))
 
     case "C" where !isInline:
-        return .composer(normalize(vtext))
+        return try .composer(parseText(vtext))
 
     case "D" where !isInline:
-        return .discography(normalize(vtext))
+        return try .discography(parseText(vtext))
 
     case "F" where !isInline:
-        return .fileURL(normalize(vtext))
+        return try .fileURL(parseText(vtext))
 
     case "G" where !isInline:
-        return .group(normalize(vtext))
+        return try .group(parseText(vtext))
 
     case "H" where !isInline:
-        return .history(normalize(vtext))
+        return try .history(parseText(vtext))
 
     case "I":
         guard let dir = _parseInstruction(vtext)
@@ -186,10 +200,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .macro(macro)
 
     case "N":
-        return .notes(normalize(vtext))
+        return try .notes(parseText(vtext))
 
     case "O" where !isInline:
-        return .origin(normalize(vtext))
+        return try .origin(parseText(vtext))
 
     case "P":
         guard let ps = parsePartSequence(vtext)
@@ -204,13 +218,13 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .tempo(tempo)
 
     case "R":
-        return .rhythm(normalize(vtext))
+        return try .rhythm(parseText(vtext))
 
     case "r":
-        return .remark(normalize(vtext))
+        return try .remark(parseText(vtext))
 
     case "S" where !isInline:
-        return .source(normalize(vtext))
+        return try .source(parseText(vtext))
 
     case "s" where !isInline:
         guard let sl = parseSymbolLine(vtext)
@@ -219,7 +233,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .symbolLine(sl)
 
     case "T" where !isInline:
-        return .title(normalize(vtext))
+        return try .title(parseText(vtext))
 
     case "U":
         guard let uds = parseUserSymbol(vtext)
@@ -234,7 +248,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .voice(voice)
 
     case "W" where !isInline:
-        return .lyrics(normalize(vtext))
+        return try .lyrics(parseText(vtext))
 
     case "w" where !isInline:
         return .alignedLyrics(parseAlignedLyrics(Substring(unescape(String(vtext)))))
@@ -246,7 +260,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .refNumber(rn)
 
     case "Z" where !isInline:
-        return .transcription(normalize(vtext))
+        return try .transcription(parseText(vtext))
 
     default:
         break
@@ -309,6 +323,63 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
     }
 
     return .standard(tonic, mode, accidentals, clef)
+}
+
+/// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
+/// surrounded by a quoted text label), resolving `C` against `baseDuration`.
+///
+/// Returns `nil` if the input does not match the 1.6 C-form.
+internal func parseLegacyBeatTempo(_ tidyInput: Substring,
+                                   baseDuration: ABCDuration) -> ABCTempo? {
+    var input = tidyInput
+    var text: String?
+
+    // Leading optional "text"
+    if let (t, rest) = _consumeTempoText(input) {
+        text = t
+        input = rest
+    }
+
+    // Must start with 'C'
+    guard input.first == "C"
+    else { return nil }
+
+    input = input.dropFirst()
+
+    // Optional integer multiplier (e.g. the 3 in Q:C3=40)
+    guard let (multiplier, afterMultiplier) = _consumePositiveUInt(input, defaultValue: 1)
+    else { return nil }
+
+    input = afterMultiplier
+
+    // Must have '=' followed by rate
+    guard input.first == "="
+    else { return nil }
+
+    input = trimPrefix(input.dropFirst())
+
+    // Rate integer
+    guard let (rate, afterRate) = _consumePositiveUInt(input, defaultValue: nil)
+    else { return nil }
+
+    input = trimPrefix(afterRate)
+
+    // Trailing optional "text"
+    if let (t, rest) = _consumeTempoText(input) {
+        text = t
+        input = rest
+    }
+
+    guard input.isEmpty,
+          // Resolve C×n against the active base duration
+          let beat = ABCDuration(numerator: baseDuration.numerator * multiplier,
+                                 denominator: baseDuration.denominator)
+    else { return nil }
+
+    return ABCTempo(durations: [beat],
+                    rate: rate,
+                    text: text,
+                    legacyBeatMultiple: multiplier)
 }
 
 internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
@@ -423,8 +494,7 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
             else { return nil }
 
             duration = ABCDuration(numerator: cnt,
-                                   denominator: 1,
-                                   reduce: false)
+                                   denominator: 1)
         } else {
             guard let dur = parseDuration(tail)
             else { return nil }
@@ -459,11 +529,13 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
 
             guard let closeIdx = rest.firstIndex(of: "!"),
                   !rest[..<closeIdx].isEmpty,
-                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) })
+                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) }),
+                  let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
+                                                 shorthand: nil,
+                                                 dialect: .bang)
             else { return nil }
 
-            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
-                                                      dialect: .bang)))
+            elements.append(.decoration(decoration))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -472,11 +544,13 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
 
             guard let closeIdx = rest.firstIndex(of: "+"),
                   !rest[..<closeIdx].isEmpty,
-                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) })
+                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) }),
+                  let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
+                                                 shorthand: nil,
+                                                 dialect: .plus)
             else { return nil }
 
-            elements.append(.decoration(ABCDecoration(name: String(rest[..<closeIdx]),
-                                                      dialect: .plus)))
+            elements.append(.decoration(decoration))
 
             input = rest[rest.index(after: closeIdx)...]
 
@@ -486,17 +560,17 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             guard let closeIdx = rest.firstIndex(of: "\"")
             else { return nil }
 
-            let content = String(rest[..<closeIdx])
-
-            if let annotation = ABCAnnotation(stringValue: content) {
+            if let annotation = parseAnnotation(input[...closeIdx]) {
                 elements.append(.annotation(annotation))
             } else {
+                let content = String(rest[..<closeIdx])
+
                 elements.append(.chordSymbol(content))
             }
 
             input = rest[rest.index(after: closeIdx)...]
 
-        default:
+        default:        // what about decoration shorthands?
             return nil
         }
     }
@@ -555,6 +629,13 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
                     text: text)
 }
 
+internal func parseText(_ tidyInput: Substring) throws -> ABCText {
+    guard let text = ABCText(stringValue: normalize(tidyInput))
+    else { throw ABCParser.Error.invalidText(tidyInput) }
+
+    return text
+}
+
 internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     switch tidyInput {
     case "C":
@@ -574,70 +655,11 @@ internal func parseTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
         return _parseComplexTimeSignature(tidyInput)
     }
 
-    guard let fraction = _parseFraction(tidyInput),
-          [1, 2, 4, 8, 16, 32, 64].contains(fraction.denominator)
+    guard let meter = _parseStandardMeter(tidyInput),
+          [1, 2, 4, 8, 16, 32, 64].contains(meter.denominator)
     else { return nil }
 
-    return .explicit(fraction)
-}
-
-/// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
-/// surrounded by a quoted text label), resolving `C` against `baseDuration`.
-///
-/// Returns `nil` if the input does not match the 1.6 C-form.
-internal func parseLegacyBeatTempo(_ tidyInput: Substring,
-                                   baseDuration: ABCDuration) -> ABCTempo? {
-    var input = tidyInput
-    var text: String?
-
-    // Leading optional "text"
-    if let (t, rest) = _consumeTempoText(input) {
-        text = t
-        input = rest
-    }
-
-    // Must start with 'C'
-    guard input.first == "C"
-    else { return nil }
-
-    input = input.dropFirst()
-
-    // Optional integer multiplier (e.g. the 3 in Q:C3=40)
-    guard let (multiplier, afterMultiplier) = _consumePositiveUInt(input, defaultValue: 1)
-    else { return nil }
-
-    input = afterMultiplier
-
-    // Must have '=' followed by rate
-    guard input.first == "="
-    else { return nil }
-
-    input = trimPrefix(input.dropFirst())
-
-    // Rate integer
-    guard let (rate, afterRate) = _consumePositiveUInt(input, defaultValue: nil)
-    else { return nil }
-
-    input = trimPrefix(afterRate)
-
-    // Trailing optional "text"
-    if let (t, rest) = _consumeTempoText(input) {
-        text = t
-        input = rest
-    }
-
-    guard input.isEmpty
-    else { return nil }
-
-    // Resolve C×n against the active base duration
-    let beat = ABCDuration(numerator: baseDuration.numerator * multiplier,
-                           denominator: baseDuration.denominator,
-                           reduce: true)
-
-    return ABCTempo(durations: [beat],
-                    rate: rate,
-                    text: text,
-                    legacyBeatMultiple: multiplier)
+    return .standard(meter)
 }
 
 internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
@@ -700,7 +722,7 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard !raw.isEmpty
     else { return nil }
 
-    let decoration = if raw.count >= 2, raw.first == "!", raw.last == "!" {
+    let decoration: ABCDecoration? = if raw.count >= 2, raw.first == "!", raw.last == "!" {
         ABCDecoration(name: String(raw.dropFirst().dropLast()),
                       dialect: .bang)
     } else if raw.count >= 2, raw.first == "+", raw.last == "+" {
@@ -711,11 +733,37 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
                       dialect: .bang)
     }
 
-    guard !decoration.name.isEmpty
+    guard let decoration
     else { return nil }
 
     return ABCUserSymbol(symbol: symbol,
                          decoration: decoration)
+}
+
+internal func parseVariantEnding(_ tidyInput: Substring) -> ABCVariantEnding? {
+    // Parses a variant ending from the ABC token text (e.g. `[1` or
+    // `[2,3` or `[1-3`).
+    guard tidyInput.hasPrefix("[")
+    else { return nil }
+
+    var ranges: [ClosedRange<UInt>] = []
+
+    for part in tidyInput.dropFirst().split(separator: ",") {
+        if let dashIdx = part.firstIndex(of: "-") {
+            guard let lo = UInt(part[..<dashIdx]),
+                  let hi = UInt(part[part.index(after: dashIdx)...])
+            else { return nil }
+
+            ranges.append(lo...hi)
+        } else {
+            guard let n = UInt(part)
+            else { return nil }
+
+            ranges.append(n...n)
+        }
+    }
+
+    return ABCVariantEnding(endings: ranges)
 }
 
 internal func parseVoice(_ tidyInput: Substring) -> ABCVoice? {
@@ -799,18 +847,24 @@ private let octaveCS: Set<Character>      = [",", "'"]
 private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
 
-private let modes: [String: ABCKeySignature.Mode] = ["": .major,
-                                                     "aeo": .aeolian,
-                                                     "dor": .dorian,
-                                                     "exp": .explicit,
-                                                     "ion": .ionian,
-                                                     "loc": .locrian,
-                                                     "lyd": .lydian,
-                                                     "m": .minor,
-                                                     "maj": .major,
-                                                     "min": .minor,
-                                                     "mix": .mixolydian,
-                                                     "phr": .phrygian]
+private let annotationPositions: [String: ABCAnnotation.Position] = ["^": .above,
+                                                                     "@": .auto,
+                                                                     "_": .below,
+                                                                     "<": .left,
+                                                                     ">": .right]
+
+private let keySignatureModes: [String: ABCKeySignature.Mode] = ["": .major,
+                                                                 "aeo": .aeolian,
+                                                                 "dor": .dorian,
+                                                                 "exp": .explicit,
+                                                                 "ion": .ionian,
+                                                                 "loc": .locrian,
+                                                                 "lyd": .lydian,
+                                                                 "m": .minor,
+                                                                 "maj": .major,
+                                                                 "min": .minor,
+                                                                 "mix": .mixolydian,
+                                                                 "phr": .phrygian]
 
 private let pitchAccidentals: [Substring: ABCPitch.Accidental] = ["_": .flat,
                                                                   "__": .doubleFlat,
@@ -833,29 +887,36 @@ private let pitchLetters: [Substring: PitchLetterResult] = ["A": (.a, 4),
                                                             "G": (.g, 4),
                                                             "g": (.g, 5)]
 
-private let tonics: [Substring: ABCKeySignature.Tonic] = ["A": .a,
-                                                          "A#": .aSharp,
-                                                          "Ab": .aFlat,
-                                                          "B": .b,
-                                                          "B#": .bSharp,
-                                                          "Bb": .bFlat,
-                                                          "C": .c,
-                                                          "C#": .cSharp,
-                                                          "Cb": .cFlat,
-                                                          "D": .d,
-                                                          "D#": .dSharp,
-                                                          "Db": .dFlat,
-                                                          "E": .e,
-                                                          "E#": .eSharp,
-                                                          "Eb": .eFlat,
-                                                          "F": .f,
-                                                          "F#": .fSharp,
-                                                          "Fb": .fFlat,
-                                                          "G": .g,
-                                                          "G#": .gSharp,
-                                                          "Gb": .gFlat]
+private let keySignatureTonics: [Substring: ABCKeySignature.Tonic] = ["A": .a,
+                                                                      "A#": .aSharp,
+                                                                      "Ab": .aFlat,
+                                                                      "B": .b,
+                                                                      "B#": .bSharp,
+                                                                      "Bb": .bFlat,
+                                                                      "C": .c,
+                                                                      "C#": .cSharp,
+                                                                      "Cb": .cFlat,
+                                                                      "D": .d,
+                                                                      "D#": .dSharp,
+                                                                      "Db": .dFlat,
+                                                                      "E": .e,
+                                                                      "E#": .eSharp,
+                                                                      "Eb": .eFlat,
+                                                                      "F": .f,
+                                                                      "F#": .fSharp,
+                                                                      "Fb": .fFlat,
+                                                                      "G": .g,
+                                                                      "G#": .gSharp,
+                                                                      "Gb": .gFlat]
 
 // MARK: Private Functions
+
+private func _parseAnnotationPosition(_ tidyInput: Substring) -> ABCAnnotation.Position? {
+    guard let position = annotationPositions[String(tidyInput)]
+    else { return nil }
+
+    return position
+}
 
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     let numeratorText: Substring
@@ -902,7 +963,8 @@ private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignat
         numerators.append(num)
     }
 
-    return .complex(numerators, denominator)
+    return ABCTimeSignature.AdditiveMeter(numerators: numerators, denominator: denominator)
+                           .map { .complex($0) }
 }
 
 private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
@@ -923,24 +985,8 @@ private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
         denominator = 1
     }
 
-    return ABCFraction(numerator: numerator,
-                       denominator: denominator,
-                       reduce: true)
-}
-
-private func _parseFraction(_ tidyInput: Substring) -> ABCFraction? {
-    let result = tidyInput.splitBeforeFirst("/")
-
-    guard let numerator = UInt(result.head),
-          let dtext = result.tail?.dropFirst(),
-          let denominator = UInt(dtext),
-          numerator > 0,
-          denominator > 0
-    else { return nil }
-
-    return ABCFraction(numerator: numerator,
-                       denominator: denominator,
-                       reduce: false)
+    return ABCDuration(numerator: numerator,
+                       denominator: denominator)
 }
 
 private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
@@ -975,7 +1021,11 @@ private func _parseKeySignatureAccidentals(_ tidyInput: Substring) -> [ABCKeySig
 }
 
 private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
-    var clef = ABCClef()
+    var name: String?
+    var middle: String?
+    var octave: Int?
+    var stafflines: Int?
+    var transpose: Int?
 
     for token in propertyTokens {
         guard let eqIdx = token.firstIndex(of: "=")
@@ -986,35 +1036,35 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCClef? {
 
         switch key {
         case "clef":
-            clef.name = value
+            name = value
 
         case "middle":
-            clef.middle = value
+            middle = value
 
         case "octave":
             guard let n = Int(value)
             else { return nil }
 
-            clef.octave = n
+            octave = n
 
         case "stafflines":
             guard let n = Int(value)
             else { return nil }
 
-            clef.stafflines = n
+            stafflines = n
 
         case "transpose":
             guard let n = Int(value)
             else { return nil }
 
-            clef.transpose = n
+            transpose = n
 
         default:
             return nil
         }
     }
 
-    return clef
+    return ABCClef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
 }
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {
@@ -1045,14 +1095,14 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
         tonicCount += 1
     }
 
-    guard let tonic = tonics[tidyInput.prefix(tonicCount)]
+    guard let tonic = keySignatureTonics[tidyInput.prefix(tonicCount)]
     else { return nil }
 
     let rest = trimPrefix(tidyInput.dropFirst(tonicCount))
     let mode: ABCKeySignature.Mode
 
     if !rest.isEmpty {
-        guard let tmpMode = modes[rest.prefix(3).lowercased()]
+        guard let tmpMode = keySignatureModes[rest.prefix(3).lowercased()]
         else { return nil }
 
         mode = tmpMode
@@ -1061,6 +1111,81 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
     }
 
     return (tonic, mode)
+}
+
+private func _parsePartCount(_ input: inout Substring) -> UInt {
+    var digits = ""
+
+    while let ch = input.first, ch.isABCDigit {
+        digits.append(ch)
+        input = input.dropFirst()
+    }
+
+    return UInt(digits) ?? 1
+}
+
+private func _parsePartItems(_ input: inout Substring,
+                             terminator: Character?) -> [ABCPartSequence.Item]? {
+    var items: [ABCPartSequence.Item] = []
+
+    while true {
+        while input.first?.isABCWhitespace == true {
+            input = input.dropFirst()
+        }
+
+        if let term = terminator {
+            guard let ch = input.first
+            else { return nil }
+
+     // unmatched "("
+
+            if ch == term {
+                input = input.dropFirst()
+
+                return items
+            }
+        } else {
+            if input.isEmpty {
+                return items
+            }
+        }
+
+        let ch = input[input.startIndex]
+
+        input = input.dropFirst()
+
+        switch ch {
+        case "(":
+            guard let groupItems = _parsePartItems(&input,
+                                                   terminator: ")")
+            else { return nil }
+
+            let count = _parsePartCount(&input)
+
+            items.append(.group(groupItems, count))
+
+        case "A"..."Z":
+            let count = _parsePartCount(&input)
+
+            items.append(.part(ch, count))
+
+        default:
+            return nil
+        }
+    }
+}
+
+private func _parseStandardMeter(_ tidyInput: Substring) -> ABCTimeSignature.StandardMeter? {
+    let result = tidyInput.splitBeforeFirst("/")
+
+    guard let numerator = UInt(result.head),
+          let dtext = result.tail?.dropFirst(),
+          let denominator = UInt(dtext),
+          numerator > 0,
+          denominator > 0
+    else { return nil }
+
+    return ABCTimeSignature.StandardMeter(numerator: numerator, denominator: denominator)
 }
 
 private func _parseTempoDurationsRate(_ tidyInput: Substring) -> ParseTempoDurationsRateResult? {
@@ -1125,68 +1250,6 @@ private func _parseVoiceProperty(_ tidyInput: Substring) -> ParseVoicePropertyRe
     }
 
     return (String(key), String(value), trimPrefix(rest))
-}
-
-private func _parsePartCount(_ input: inout Substring) -> UInt {
-    var digits = ""
-
-    while let ch = input.first, ch.isABCDigit {
-        digits.append(ch)
-        input = input.dropFirst()
-    }
-
-    return UInt(digits) ?? 1
-}
-
-private func _parsePartItems(_ input: inout Substring,
-                             terminator: Character?) -> [ABCPartSequence.Item]? {
-    var items: [ABCPartSequence.Item] = []
-
-    while true {
-        while input.first?.isABCWhitespace == true {
-            input = input.dropFirst()
-        }
-
-        if let term = terminator {
-            guard let ch = input.first
-            else { return nil }
-
-     // unmatched "("
-
-            if ch == term {
-                input = input.dropFirst()
-
-                return items
-            }
-        } else {
-            if input.isEmpty {
-                return items
-            }
-        }
-
-        let ch = input[input.startIndex]
-
-        input = input.dropFirst()
-
-        switch ch {
-        case "(":
-            guard let groupItems = _parsePartItems(&input,
-                                                   terminator: ")")
-            else { return nil }
-
-            let count = _parsePartCount(&input)
-
-            items.append(.group(groupItems, count))
-
-        case "A"..."Z":
-            let count = _parsePartCount(&input)
-
-            items.append(.part(ch, count))
-
-        default:
-            return nil
-        }
-    }
 }
 
 private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring, Bool) {

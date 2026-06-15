@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCEntryTests {
 }
@@ -11,7 +12,7 @@ struct ABCEntryTests {
 extension ABCEntryTests {
     @Test
     func equality_directive() {
-        let directive = ABCDirective(name: "pagewidth", value: "21cm")
+        let directive = makeDirective("pagewidth", "21cm")
 
         #expect(ABCEntry.directive(directive) == .directive(directive))
     }
@@ -23,9 +24,9 @@ extension ABCEntryTests {
 
     @Test
     func equality_symbols() {
-        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
-        let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
+        let pitch = makePitch(.c, .omitted, 4)
+        let duration = makeDuration(1, 4)
+        let note = makeNote(pitch, duration, false)
         let symbols: [ABCSymbol] = [.note(note)]
 
         #expect(ABCEntry.symbols(symbols) == .symbols(symbols))
@@ -33,7 +34,7 @@ extension ABCEntryTests {
 
     @Test
     func inequality() {
-        let directive = ABCDirective(name: "pagewidth", value: "21cm")
+        let directive = makeDirective("pagewidth", "21cm")
 
         #expect(ABCEntry.directive(directive) != .field(.title("My Tune")))
         #expect(ABCEntry.field(.title("My Tune")) != .field(.title("Other Tune")))

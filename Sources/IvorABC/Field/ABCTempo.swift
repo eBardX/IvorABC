@@ -27,7 +27,7 @@ public struct ABCTempo {
                 rate: UInt?,
                 text: String?,
                 legacyBeatMultiple: UInt? = nil) {
-        self.durations = durations
+        self.durations = durations  // validate?
         self.legacyBeatMultiple = legacyBeatMultiple
         self.rate = rate
         self.text = text

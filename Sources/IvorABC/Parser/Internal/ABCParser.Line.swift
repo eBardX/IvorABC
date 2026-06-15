@@ -2,7 +2,7 @@
 
 extension ABCParser {
     internal enum Line {
-        case continuation(String)
+        case continuation(String)   // ABCText ???
         case directive(ABCDirective)
         case empty
         case field(ABCField)

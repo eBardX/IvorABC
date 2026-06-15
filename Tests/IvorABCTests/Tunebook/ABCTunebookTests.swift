@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCTunebookTests {
 }
@@ -11,7 +12,7 @@ struct ABCTunebookTests {
 extension ABCTunebookTests {
     @Test
     func equality() {
-        let version = ABCVersion(major: 2, minor: 1)
+        let version = makeVersion(2, 1)
         let a = ABCTunebook(version: version, headers: [], tunes: [])
         let b = ABCTunebook(version: version, headers: [], tunes: [])
 
@@ -20,8 +21,8 @@ extension ABCTunebookTests {
 
     @Test
     func inequality() {
-        let v21 = ABCVersion(major: 2, minor: 1)
-        let v20 = ABCVersion(major: 2, minor: 0)
+        let v21 = makeVersion(2, 1)
+        let v20 = makeVersion(2, 0)
 
         #expect(ABCTunebook(version: v21, headers: [], tunes: []) !=
                 ABCTunebook(version: v20, headers: [], tunes: []))
@@ -34,7 +35,7 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_fromV20_returnsCurrentVersion() {
-        let v20 = ABCVersion(major: 2, minor: 0)
+        let v20 = makeVersion(2, 0)
         let current = ABCVersion.current
         let tunebook = ABCTunebook(version: v20, headers: [], tunes: [])
 
@@ -43,7 +44,7 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_preservesHeadersAndTunes() {
-        let v20 = ABCVersion(major: 2, minor: 0)
+        let v20 = makeVersion(2, 0)
         let header = ABCHeader.field(.composer("J.S. Bach"))
         let tune = ABCTune(entries: [.field(.title("Test"))])
         let tunebook = ABCTunebook(version: v20, headers: [header], tunes: [tune])
@@ -63,7 +64,7 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_fromV16_returnsCurrentVersion() {
-        let v16 = ABCVersion(major: 1, minor: 6)
+        let v16 = makeVersion(1, 6)
         let tunebook = ABCTunebook(version: v16, headers: [], tunes: [])
 
         #expect(tunebook.migrated().version == ABCVersion.current)
@@ -71,7 +72,7 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_fromV16_legacyFieldBecomesRemark() {
-        let v16 = ABCVersion(major: 1, minor: 6)
+        let v16 = makeVersion(1, 6)
         let tune = ABCTune(entries: [.field(.legacy("E", "skip value"))])
         let tunebook = ABCTunebook(version: v16, headers: [], tunes: [tune])
         let migrated = tunebook.migrated()
@@ -82,7 +83,7 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_fromV16_headerLegacyFieldBecomesRemark() {
-        let v16 = ABCVersion(major: 1, minor: 6)
+        let v16 = makeVersion(1, 6)
         let tunebook = ABCTunebook(version: v16,
                                    headers: [.field(.legacy("I", "some info"))],
                                    tunes: [])
@@ -94,8 +95,8 @@ extension ABCTunebookTests {
 
     @Test
     func migrated_fromV16_tempoLegacyFlagCleared() {
-        let v16 = ABCVersion(major: 1, minor: 6)
-        let dottedQuarter = ABCDuration(numerator: 3, denominator: 8, reduce: false)
+        let v16 = makeVersion(1, 6)
+        let dottedQuarter = makeDuration(3, 8)
         let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, legacyBeatMultiple: 3)
         let tune = ABCTune(entries: [.field(.tempo(legacyTempo))])
         let tunebook = ABCTunebook(version: v16, headers: [], tunes: [tune])
@@ -120,7 +121,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_plusDecorationInBody_withoutDirective_returnsError() {
-        let tunebook = minimalTunebook(symbols: [.decoration(_deco("trill", .plus))])
+        let tunebook = minimalTunebook(symbols: [.decoration(makeDecoration("trill", nil, .plus))])
         let issues = tunebook.validate()
 
         #expect(issues == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
@@ -130,22 +131,22 @@ extension ABCTunebookTests {
 
     @Test
     func validate_plusDecorationInBody_withDirective_returnsNoIssues() {
-        let directive = ABCDirective(name: "decoration", value: "+")
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let directive = makeDirective("decoration", "+")
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.instruction(directive)),
-                                                             .symbols([.decoration(_deco("trill", .plus))])])])
+                                                             .symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
 
     @Test
     func validate_bangDecorationInBody_inPlusMode_returnsError() {
-        let directive = ABCDirective(name: "decoration", value: "+")
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let directive = makeDirective("decoration", "+")
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.instruction(directive)),
-                                                             .symbols([.decoration(_deco("trill", .bang))])])])
+                                                             .symbols([.decoration(makeDecoration("trill", nil, .bang))])])])
         let issues = tunebook.validate()
 
         #expect(issues == [.bangDialectDecorationInPlusMode(tuneIndex: 0)])
@@ -154,7 +155,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_shorthandDecoration_returnsNoIssues() {
-        let shorthand = ABCDecoration(name: "roll", shorthand: "~", dialect: .plus)
+        let shorthand = makeDecoration("roll", "~", .plus)
         let tunebook = minimalTunebook(symbols: [.decoration(shorthand)])
 
         #expect(tunebook.validate().isEmpty)
@@ -162,47 +163,48 @@ extension ABCTunebookTests {
 
     @Test
     func validate_plusDecorationInUserSymbol_withoutDirective_returnsError() {
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
-                                   tunes: [ABCTune(entries: [.field(.userSymbol(_usym("T", _deco("trill", .plus))))])])
+                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", nil, .plus))))])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
     }
 
     @Test
     func validate_plusDecorationInSymbolLine_withoutDirective_returnsError() {
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let symbolLine = makeSymbolLine([.decoration(makeDecoration("trill", nil, .plus))])
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
-                                   tunes: [ABCTune(entries: [.field(.symbolLine(_sline([.decoration(_deco("trill", .plus))])))])])
+                                   tunes: [ABCTune(entries: [.field(.symbolLine(symbolLine))])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
     }
 
     @Test
     func validate_fileHeaderDirective_setsDialectForTune() {
-        let directive = ABCDirective(name: "decoration", value: "+")
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let directive = makeDirective("decoration", "+")
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [.directive(directive)],
-                                   tunes: [ABCTune(entries: [.symbols([.decoration(_deco("trill", .plus))])])])
+                                   tunes: [ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
 
     @Test
     func validate_inlineDirective_affectsSubsequentSymbols() {
-        let directive = ABCDirective(name: "decoration", value: "+")
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let directive = makeDirective("decoration", "+")
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.symbols([.inlineField(.instruction(directive)),
-                                                                       .decoration(_deco("trill", .plus))])])])
+                                                                       .decoration(makeDecoration("trill", nil, .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
 
     @Test
     func validate_plusDecorationInFileHeader_withoutDirective_returnsError() {
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                                   headers: [.field(.userSymbol(_usym("T", _deco("trill", .plus))))],
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
+                                   headers: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", nil, .plus))))],
                                    tunes: [])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: nil)])
@@ -210,17 +212,17 @@ extension ABCTunebookTests {
 
     @Test
     func validate_tuneIndex_isCorrect() {
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: []),
-                                           ABCTune(entries: [.symbols([.decoration(_deco("trill", .plus))])])])
+                                           ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 1)])
     }
 
     @Test
     func validate_undefinedUserSymbol_returnsError() {
-        let custom = ABCDecoration(name: "trill", shorthand: "W")
+        let custom = makeDecoration("trill", "W")
         let tunebook = minimalTunebook(symbols: [.decoration(custom)])
         let issues = tunebook.validate()
 
@@ -231,10 +233,10 @@ extension ABCTunebookTests {
 
     @Test
     func validate_definedUserSymbol_returnsNoIssues() {
-        let custom = ABCDecoration(name: "trill", shorthand: "W")
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let custom = makeDecoration("trill", "W")
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
-                                   tunes: [ABCTune(entries: [.field(.userSymbol(_usym("W", _deco("trill")))),
+                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("W", makeDecoration("trill")))),
                                                              .symbols([.decoration(custom)])])])
 
         #expect(tunebook.validate().isEmpty)
@@ -242,7 +244,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_builtinShorthand_returnsNoIssues() {
-        let tilde = ABCDecoration(name: "roll", shorthand: "~")
+        let tilde = makeDecoration("roll", "~")
         let tunebook = minimalTunebook(symbols: [.decoration(tilde)])
 
         #expect(tunebook.validate().isEmpty)
@@ -261,9 +263,9 @@ extension ABCTunebookTests {
 
     @Test
     func validate_definedMacro_returnsNoIssues() {
-        let macro = ABCMacro(trigger: "~G2", replacement: "{A}G{F}G")
+        let macro = makeMacro("~G2", "{A}G{F}G")
         let call = ABCMacroCall(trigger: "~G2", expansion: [])
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.macro(macro)),
                                                              .symbols([.macroCall(call)])])])
@@ -273,9 +275,9 @@ extension ABCTunebookTests {
 
     @Test
     func validate_transposingMacro_returnsNoIssues() {
-        let macro = ABCMacro(trigger: "~n2", replacement: "{A}n{B}n")
+        let macro = makeMacro("~n2", "{A}n{B}n")
         let call = ABCMacroCall(trigger: "~G2", expansion: [])
-        let tunebook = ABCTunebook(version: ABCVersion(major: 2, minor: 1),
+        let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.macro(macro)),
                                                              .symbols([.macroCall(call)])])])
@@ -285,7 +287,7 @@ extension ABCTunebookTests {
 
     @Test
     func init_storesValues() {
-        let version = ABCVersion(major: 2, minor: 1)
+        let version = makeVersion(2, 1)
         let header = ABCHeader.field(.composer("J.S. Bach"))
         let tune = ABCTune(entries: [.field(.title("Test"))])
         let tunebook = ABCTunebook(version: version,

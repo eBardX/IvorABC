@@ -22,29 +22,7 @@ public struct ABCAnnotation {
     public init(position: Position,
                 text: String) {
         self.position = position
-        self.text = text
-    }
-}
-
-// MARK: -
-
-extension ABCAnnotation {
-
-    // MARK: Internal Initializers
-
-    internal init?(stringValue: some StringProtocol) {
-        guard let first = stringValue.first,
-              let pos = Position(prefix: first)
-        else { return nil }
-
-        self.position = pos
-        self.text = String(stringValue.dropFirst())
-    }
-
-    // MARK: Internal Instance Properties
-
-    internal var stringValue: String {
-        String(position.prefix) + text
+        self.text = text        // validate?
     }
 }
 

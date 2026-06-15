@@ -11,31 +11,31 @@ struct ABCDecorationTests {
 extension ABCDecorationTests {
     @Test
     func equality() {
-        let a = ABCDecoration(name: "roll", shorthand: "~")
-        let b = ABCDecoration(name: "roll", shorthand: "~")
+        let a = makeDecoration("roll", "~")
+        let b = makeDecoration("roll", "~")
 
         #expect(a == b)
     }
 
     @Test
     func inequality_differentName() {
-        let a = ABCDecoration(name: "roll")
-        let b = ABCDecoration(name: "trill")
+        let a = makeDecoration("roll")
+        let b = makeDecoration("trill")
 
         #expect(a != b)
     }
 
     @Test
     func inequality_differentShorthand() {
-        let a = ABCDecoration(name: "staccato", shorthand: ".")
-        let b = ABCDecoration(name: "staccato")
+        let a = makeDecoration("staccato", ".")
+        let b = makeDecoration("staccato")
 
         #expect(a != b)
     }
 
     @Test
     func init_storesProperties_withShorthand() {
-        let decoration = ABCDecoration(name: "roll", shorthand: "~")
+        let decoration = makeDecoration("roll", "~")
 
         #expect(decoration.dialect == .bang)
         #expect(decoration.name == "roll")
@@ -44,10 +44,15 @@ extension ABCDecorationTests {
 
     @Test
     func init_storesProperties_withoutShorthand() {
-        let decoration = ABCDecoration(name: "trill")
+        let decoration = makeDecoration("trill")
 
         #expect(decoration.dialect == .bang)
         #expect(decoration.name == "trill")
         #expect(decoration.shorthand == nil)
+    }
+
+    @Test
+    func init_withEmptyNameReturnsNil() {
+        #expect(ABCDecoration(name: "") == nil)
     }
 }

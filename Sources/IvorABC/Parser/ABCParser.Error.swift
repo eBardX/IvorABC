@@ -58,6 +58,8 @@ extension ABCParser {
         /// ``ABCParser/Diagnostic/bareTempoRate(_:)``.
         case invalidTempo(Substring)
 
+        case invalidText(Substring)
+
         /// The parser encountered an invalid time signature.
         case invalidTimeSignature(Substring)
 
@@ -155,6 +157,9 @@ extension ABCParser.Error: EnhancedError {
 
         case let .invalidTempo(value):
             "Invalid tempo: '\(value)'"
+
+        case let .invalidText(value):
+            "Invalid text: '\(value)'"
 
         case let .invalidTimeSignature(value):
             "Invalid time signature: '\(value)'"

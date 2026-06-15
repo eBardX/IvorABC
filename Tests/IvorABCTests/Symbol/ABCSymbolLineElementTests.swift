@@ -11,9 +11,9 @@ struct ABCSymbolLineElementTests {
 extension ABCSymbolLineElementTests {
     @Test
     func allCasesAreDistinct() {
-        let allCases: [ABCSymbolLine.Element] = [.annotation(ABCAnnotation(position: .above, text: "forte")),
+        let allCases: [ABCSymbolLine.Element] = [.annotation(makeAnnotation(.above, "forte")),
                                                  .chordSymbol("Am"),
-                                                 .decoration(ABCDecoration(name: "p")),
+                                                 .decoration(makeDecoration("p", nil, .bang)),
                                                  .skip]
 
         for i in allCases.indices {
@@ -25,21 +25,21 @@ extension ABCSymbolLineElementTests {
 
     @Test
     func equality() {
-        let a = ABCAnnotation(position: .above, text: "forte")
+        let a = makeAnnotation(.above, "forte")
 
         #expect(ABCSymbolLine.Element.annotation(a) == .annotation(a))
         #expect(ABCSymbolLine.Element.chordSymbol("Am") == .chordSymbol("Am"))
-        #expect(ABCSymbolLine.Element.decoration(ABCDecoration(name: "p")) == .decoration(ABCDecoration(name: "p")))
+        #expect(ABCSymbolLine.Element.decoration(makeDecoration("p", nil, .bang)) == .decoration(makeDecoration("p", nil, .bang)))
         #expect(ABCSymbolLine.Element.skip == .skip)
     }
 
     @Test
     func inequality_differentAssociatedValues() {
-        let above = ABCAnnotation(position: .above, text: "forte")
-        let below = ABCAnnotation(position: .below, text: "soft")
+        let above = makeAnnotation(.above, "forte")
+        let below = makeAnnotation(.below, "soft")
 
         #expect(ABCSymbolLine.Element.annotation(above) != .annotation(below))
         #expect(ABCSymbolLine.Element.chordSymbol("Am") != .chordSymbol("G"))
-        #expect(ABCSymbolLine.Element.decoration(ABCDecoration(name: "p")) != .decoration(ABCDecoration(name: "f")))
+        #expect(ABCSymbolLine.Element.decoration(makeDecoration("p", nil, .bang)) != .decoration(makeDecoration("f", nil, .bang)))
     }
 }

@@ -25,21 +25,19 @@ extension ABCTimeSignatureTests {
     }
 
     @Test
-    func equality_explicit() {
-        let frac = ABCFraction(numerator: 3, denominator: 4, reduce: false)
+    func equality_standard() throws {
+        let meter = try #require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4))
 
-        #expect(ABCTimeSignature.explicit(frac) == .explicit(frac))
+        #expect(ABCTimeSignature.standard(meter) == .standard(meter))
     }
 
     @Test
-    func inequality() {
-        let frac = ABCFraction(numerator: 3, denominator: 4, reduce: false)
+    func inequality() throws {
+        let meter = try #require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4))
 
         #expect(ABCTimeSignature.common != .cut)
         #expect(ABCTimeSignature.common != .empty)
-        #expect(ABCTimeSignature.common != .explicit(frac))
-        #expect(ABCTimeSignature.explicit(frac) != .explicit(ABCFraction(numerator: 4,
-                                                                         denominator: 4,
-                                                                         reduce: false)))
+        #expect(ABCTimeSignature.common != .standard(meter))
+        #expect(ABCTimeSignature.standard(meter) != makeTimeSignature(4, 4))
     }
 }

@@ -12,7 +12,7 @@ public struct ABCVoice {
     /// - Parameter properties: A dictionary of named properties for the voice.
     public init(id: String,
                 properties: [String: String]) {
-        self.id = id
+        self.id = id                    // validate?
         self.properties = properties
     }
 

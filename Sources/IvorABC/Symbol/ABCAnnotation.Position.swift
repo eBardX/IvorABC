@@ -23,56 +23,6 @@ extension ABCAnnotation {
     }
 }
 
-// MARK: -
-
-extension ABCAnnotation.Position {
-
-    // MARK: Internal Computed Properties
-
-    internal var prefix: Character {
-        switch self {
-        case .above:
-            "^"
-
-        case .auto:
-            "@"
-
-        case .below:
-            "_"
-
-        case .left:
-            "<"
-
-        case .right:
-            ">"
-        }
-    }
-
-    // MARK: Internal Initializers
-
-    internal init?(prefix: Character) {
-        switch prefix {
-        case "^":
-            self = .above
-
-        case "@":
-            self = .auto
-
-        case "_":
-            self = .below
-
-        case "<":
-            self = .left
-
-        case ">":
-            self = .right
-
-        default:
-            return nil
-        }
-    }
-}
-
 // MARK: - Equatable
 
 extension ABCAnnotation.Position: Equatable {

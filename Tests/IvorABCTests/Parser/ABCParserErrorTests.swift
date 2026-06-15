@@ -182,7 +182,7 @@ extension ABCParserErrorTests {
 
     @Test
     func message_unsupportedVersion() {
-        let version = ABCVersion(major: 3, minor: 0)
+        let version = makeVersion(3, 0)
         let error = ABCParser.Error.unsupportedVersion(version)
 
         #expect(error.message.contains("3.0"))

@@ -5,14 +5,18 @@ public struct ABCChord {
 
     // MARK: Public Initializers
 
-    /// Creates a new chord with the provided notes, duration, and tie flag.
+    /// Creates a new chord with the provided notes, duration, and tie flag, or
+    /// `nil` if `notes` is empty.
     ///
-    /// - Parameter notes:    The notes in the chord.
+    /// - Parameter notes:    The notes in the chord. Must not be empty.
     /// - Parameter duration: The chord-level duration (written after the closing `]`).
     /// - Parameter isTied:   Whether the chord is tied to the next chord or note.
-    public init(notes: [ABCNote],
-                duration: ABCDuration,
-                isTied: Bool) {
+    public init?(notes: [ABCNote],
+                 duration: ABCDuration,
+                 isTied: Bool) {
+        guard !notes.isEmpty
+        else { return nil }
+
         self.duration = duration
         self.isTied = isTied
         self.notes = notes

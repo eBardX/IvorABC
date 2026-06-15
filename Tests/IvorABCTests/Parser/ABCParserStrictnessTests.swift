@@ -3,6 +3,7 @@
 import Foundation
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCParserStrictnessTests {
 }
@@ -84,7 +85,7 @@ extension ABCParserStrictnessTests {
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(diagnostics.contains(.unsupportedVersion(ABCVersion(major: 3, minor: 0))))
+        #expect(diagnostics.contains(.unsupportedVersion(makeVersion(3, 0))))
     }
 
     @Test
@@ -95,7 +96,7 @@ extension ABCParserStrictnessTests {
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.unsupportedVersion(ABCVersion(major: 2, minor: 0))))
+        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(2, 0))))
     }
 
     @Test
@@ -180,7 +181,7 @@ extension ABCParserStrictnessTests {
 
         let tunebook = try parser.parse(data)
 
-        #expect(tunebook.version == ABCVersion(major: 2, minor: 0))
+        #expect(tunebook.version == makeVersion(2, 0))
         #expect(tunebook.tunes.count == 1)
     }
 
@@ -192,7 +193,7 @@ extension ABCParserStrictnessTests {
 
         let tunebook = try parser.parse(data)
 
-        #expect(tunebook.version == ABCVersion(major: 2, minor: 0))
+        #expect(tunebook.version == makeVersion(2, 0))
         #expect(tunebook.tunes.count == 1)
     }
 
@@ -236,7 +237,7 @@ extension ABCParserStrictnessTests {
 
         let tunebook = try parser.parse(data)
 
-        #expect(tunebook.version == ABCVersion(major: 1, minor: 6))
+        #expect(tunebook.version == makeVersion(1, 6))
         #expect(tunebook.tunes.count == 1)
     }
 
@@ -292,7 +293,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.legacyBeatMultiple == 1)
-        #expect(tempo?.durations == [ABCDuration(numerator: 1, denominator: 8, reduce: false)])
+        #expect(tempo?.durations == [makeDuration(1, 8)])
     }
 
     @Test
@@ -313,7 +314,7 @@ extension ABCParserStrictnessTests {
 
         #expect(tempo?.rate == 40)
         #expect(tempo?.legacyBeatMultiple == 3)
-        #expect(tempo?.durations == [ABCDuration(numerator: 3, denominator: 8, reduce: false)])
+        #expect(tempo?.durations == [makeDuration(3, 8)])
     }
 
     @Test
@@ -336,6 +337,6 @@ extension ABCParserStrictnessTests {
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.unsupportedVersion(ABCVersion(major: 1, minor: 6))))
+        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(1, 6))))
     }
 }

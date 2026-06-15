@@ -14,7 +14,7 @@ public struct ABCDirective {
                 value: String,
                 content: [String]? = nil) {
         self.content = content
-        self.name = name
+        self.name = name        // validate?
         self.value = value
     }
 

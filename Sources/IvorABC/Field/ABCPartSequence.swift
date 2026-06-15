@@ -52,7 +52,7 @@ public struct ABCPartSequence {
     /// - Parameter items: The top-level items in the sequence.
     public init(items: [Item]) {
         self.expansion = Self._expand(items)
-        self.items = items
+        self.items = items      // validate?
     }
 
     // MARK: Public Instance Properties

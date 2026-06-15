@@ -1,15 +1,5 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-// MARK: - Private Types
-
-private struct _ValidationState {
-    var activeDialect: ABCDecoration.Dialect = .bang
-    var definedMacros: [ABCMacro] = []
-    var definedUserSymbols: Set<Character> = []
-}
-
-// MARK: -
-
 extension ABCTunebook {
 
     // MARK: Public Instance Methods
@@ -187,4 +177,12 @@ private func _updateState(_ state: inout _ValidationState,
     default:
         break
     }
+}
+
+// MARK: - Private Types
+
+private struct _ValidationState {
+    var activeDialect: ABCDecoration.Dialect = .bang
+    var definedMacros: [ABCMacro] = []
+    var definedUserSymbols: Set<Character> = []
 }

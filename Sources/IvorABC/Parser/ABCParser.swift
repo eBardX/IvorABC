@@ -167,57 +167,67 @@ extension ABCParser {
         return tunes
     }
 
-    private func _mergeContinuation(_ text: String,
+    private func _mergeContinuation(_ tidyInput: String,
                                     _ field: ABCField) -> ABCField? {
-        func joined(_ s: String) -> String {
-            s.isEmpty ? text : "\(s) \(text)"
+        func joinText(_ text: ABCText) -> ABCText {
+            let tmpString = normalize(Substring(tidyInput))
+
+            var stringValue = text.stringValue
+
+            if !stringValue.isEmpty {
+                stringValue += " "
+            }
+
+            stringValue += tmpString
+
+            return ABCText(stringValue: stringValue)!   // swiftlint:disable:this force_unwrapping
         }
 
         switch field {
-        case let .area(s):
-            return .area(joined(s))
+        case let .area(text):
+            return .area(joinText(text))
 
-        case let .book(s):
-            return .book(joined(s))
+        case let .book(text):
+            return .book(joinText(text))
 
-        case let .composer(s):
-            return .composer(joined(s))
+        case let .composer(text):
+            return .composer(joinText(text))
 
-        case let .discography(s):
-            return .discography(joined(s))
+        case let .discography(text):
+            return .discography(joinText(text))
 
-        case let .fileURL(s):
-            return .fileURL(joined(s))
+        case let .fileURL(text):
+            return .fileURL(joinText(text))
 
-        case let .group(s):
-            return .group(joined(s))
+        case let .group(text):
+            return .group(joinText(text))
 
-        case let .history(s):
-            return .history(joined(s))
+        case let .history(text):
+            return .history(joinText(text))
 
-        case let .lyrics(s):
-            return .lyrics(joined(s))
+        case let .lyrics(text):
+            return .lyrics(joinText(text))
 
-        case let .notes(s):
-            return .notes(joined(s))
+        case let .notes(text):
+            return .notes(joinText(text))
 
-        case let .origin(s):
-            return .origin(joined(s))
+        case let .origin(text):
+            return .origin(joinText(text))
 
-        case let .remark(s):
-            return .remark(joined(s))
+        case let .remark(text):
+            return .remark(joinText(text))
 
-        case let .rhythm(s):
-            return .rhythm(joined(s))
+        case let .rhythm(text):
+            return .rhythm(joinText(text))
 
-        case let .source(s):
-            return .source(joined(s))
+        case let .source(text):
+            return .source(joinText(text))
 
-        case let .title(s):
-            return .title(joined(s))
+        case let .title(text):
+            return .title(joinText(text))
 
-        case let .transcription(s):
-            return .transcription(joined(s))
+        case let .transcription(text):
+            return .transcription(joinText(text))
 
         default:
             return nil
@@ -360,16 +370,18 @@ extension ABCParser {
             return .continuation(normalize(vtext))
         }
 
-        let isVersion16 = (version == ABCVersion(major: 1, minor: 6))
+        let isVersion16 = (version == ABCVersion(major: 1,
+                                                 minor: 6))
 
         //
         // E: (elemskip) is a 1.6-only field with no 2.x equivalent.
         // I: is free-text "information" in 1.6; in 2.x it is an instruction.
         //
-        if isVersion16, letter == "E" || letter == "I" {
+        if isVersion16,
+           letter == "E" || letter == "I" {
             let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
 
-            return .field(.legacy(letter, normalize(tidyInput)))
+            return try .field(.legacy(letter, parseText(tidyInput)))
         }
 
         if letter == "I" {
@@ -390,7 +402,8 @@ extension ABCParser {
             // default note length (L:).  Try this before the bare-integer
             // path so Q:C=120 is not mistaken for "invalid bare integer".
             //
-            if version == ABCVersion(major: 1, minor: 6) {
+            if version == ABCVersion(major: 1,
+                                     minor: 6) {
                 if let tempo = parseLegacyBeatTempo(trim(vtext),
                                                     baseDuration: context.baseDuration) {
                     let field = ABCField.tempo(tempo)
@@ -500,10 +513,17 @@ extension ABCParser {
     }
 
     private func _parseVersion(_ tidyInput: Substring) throws -> ABCVersion {
-        guard let version = ABCVersion(stringValue: tidyInput)
+        let parts = tidyInput.split(separator: ".",
+                                    maxSplits: 1,
+                                    omittingEmptySubsequences: false)
+
+        guard parts.count == 2,
+              let major = UInt(parts[0]),
+              let minor = UInt(parts[1])
         else { throw Error.invalidVersion(tidyInput) }
 
-        return version
+        return ABCVersion(major: major,
+                          minor: minor)
     }
 
     private func _processHeaderLine(_ line: Line) -> (header: ABCHeader?, empty: Bool) {

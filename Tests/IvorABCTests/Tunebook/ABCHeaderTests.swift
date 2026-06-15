@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCHeaderTests {
 }
@@ -11,7 +12,7 @@ struct ABCHeaderTests {
 extension ABCHeaderTests {
     @Test
     func equality_directive() {
-        let directive = ABCDirective(name: "pagewidth", value: "21cm")
+        let directive = makeDirective("pagewidth", "21cm")
 
         #expect(ABCHeader.directive(directive) == .directive(directive))
     }
@@ -23,7 +24,7 @@ extension ABCHeaderTests {
 
     @Test
     func inequality() {
-        let directive = ABCDirective(name: "pagewidth", value: "21cm")
+        let directive = makeDirective("pagewidth", "21cm")
 
         #expect(ABCHeader.directive(directive) != .field(.composer("J.S. Bach")))
         #expect(ABCHeader.field(.composer("Bach")) != .field(.composer("Handel")))

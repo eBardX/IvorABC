@@ -11,25 +11,25 @@ struct ABCFileIDTests {
 extension ABCFileIDTests {
     @Test
     func equality() {
-        let v = ABCVersion(major: 2, minor: 1)
-        let a = ABCFileID(version: v)
-        let b = ABCFileID(version: v)
+        let v = makeVersion(2, 1)
+        let a = makeFileID(v)
+        let b = makeFileID(v)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let a = ABCFileID(version: ABCVersion(major: 2, minor: 1))
-        let b = ABCFileID(version: ABCVersion(major: 2, minor: 0))
+        let a = makeFileID(makeVersion(2, 1))
+        let b = makeFileID(makeVersion(2, 0))
 
         #expect(a != b)
     }
 
     @Test
     func init_storesVersion() {
-        let version = ABCVersion(major: 2, minor: 1)
-        let fileID = ABCFileID(version: version)
+        let version = makeVersion(2, 1)
+        let fileID = makeFileID(version)
 
         #expect(fileID.version == version)
     }

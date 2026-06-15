@@ -11,20 +11,19 @@ struct ABCVersionTests {
 extension ABCVersionTests {
     @Test
     func current() {
-        #expect(ABCVersion.current == ABCVersion(major: 2, minor: 1))
+        #expect(ABCVersion.current == makeVersion(2, 1))
     }
 
     @Test
     func supported() {
-        #expect(ABCVersion.supported == [ABCVersion(major: 1, minor: 6),
-                                         ABCVersion(major: 2, minor: 0),
-                                         ABCVersion(major: 2, minor: 1)])
+        #expect(ABCVersion.supported == [makeVersion(1, 6),
+                                         makeVersion(2, 0),
+                                         makeVersion(2, 1)])
     }
 
     @Test
     func init_storesValues() {
-        let version = ABCVersion(major: 3,
-                                 minor: 5)
+        let version = makeVersion(3, 5)
 
         #expect(version.major == 3)
         #expect(version.minor == 5)

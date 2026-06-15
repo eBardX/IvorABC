@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCSymbolTests {
 }
@@ -11,7 +12,7 @@ struct ABCSymbolTests {
 extension ABCSymbolTests {
     @Test
     func equality_annotation() {
-        let a = ABCAnnotation(position: .above, text: "Allegro")
+        let a = makeAnnotation(.above, "Allegro")
 
         #expect(ABCSymbol.annotation(a) == .annotation(a))
     }
@@ -28,12 +29,12 @@ extension ABCSymbolTests {
 
     @Test
     func equality_chord() {
-        let pitch = ABCPitch(letter: .c, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
-        let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
+        let pitch = makePitch(.c, .omitted, 4)
+        let duration = makeDuration(1, 4)
+        let note = makeNote(pitch, duration, false)
 
-        #expect(ABCSymbol.chord(ABCChord(notes: [note], duration: duration, isTied: false))
-                    == .chord(ABCChord(notes: [note], duration: duration, isTied: false)))
+        #expect(ABCSymbol.chord(makeChord([note], duration, false))
+                == .chord(makeChord([note], duration, false)))
     }
 
     @Test
@@ -43,19 +44,19 @@ extension ABCSymbolTests {
 
     @Test
     func equality_decoration() {
-        #expect(ABCSymbol.decoration(ABCDecoration(name: "p")) == .decoration(ABCDecoration(name: "p")))
+        #expect(ABCSymbol.decoration(makeDecoration("p", nil, .bang)) == .decoration(makeDecoration("p", nil, .bang)))
     }
 
     @Test
     func equality_graceNotes() {
-        let pitch = ABCPitch(letter: .g, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
-        let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
+        let pitch = makePitch(.g, .omitted, 4)
+        let duration = makeDuration(1, 8)
+        let note = makeNote(pitch, duration, false)
 
-        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: false, notes: [note]))
-                    == .graceNotes(ABCGraceNotes(isSlashed: false, notes: [note])))
-        #expect(ABCSymbol.graceNotes(ABCGraceNotes(isSlashed: true, notes: [note]))
-                    == .graceNotes(ABCGraceNotes(isSlashed: true, notes: [note])))
+        #expect(ABCSymbol.graceNotes(makeGraceNotes([note], false))
+                == .graceNotes(makeGraceNotes([note], false)))
+        #expect(ABCSymbol.graceNotes(makeGraceNotes([note], true))
+                == .graceNotes(makeGraceNotes([note], true)))
     }
 
     @Test
@@ -65,16 +66,16 @@ extension ABCSymbolTests {
 
     @Test
     func equality_note() {
-        let pitch = ABCPitch(letter: .a, accidental: .omitted, octave: 4)
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
-        let note = ABCNote(pitch: pitch, duration: duration, isTied: false)
+        let pitch = makePitch(.a, .omitted, 4)
+        let duration = makeDuration(1, 4)
+        let note = makeNote(pitch, duration, false)
 
         #expect(ABCSymbol.note(note) == .note(note))
     }
 
     @Test
     func equality_rest() {
-        let duration = ABCDuration(numerator: 1, denominator: 4, reduce: false)
+        let duration = makeDuration(1, 4)
         let rest = ABCRest.regular(false, duration)
 
         #expect(ABCSymbol.rest(rest) == .rest(rest))
@@ -87,74 +88,74 @@ extension ABCSymbolTests {
 
     @Test
     func equality_spacer() {
-        let duration = ABCDuration(numerator: 1, denominator: 8, reduce: false)
+        let duration = makeDuration(1, 8)
 
         #expect(ABCSymbol.spacer(duration) == .spacer(duration))
     }
 
     @Test
     func equality_tuplet() {
-        let t = ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3)
+        let t = makeTuplet(3, 2, 3)
 
         #expect(ABCSymbol.tuplet(t) == .tuplet(t))
     }
 
     @Test
     func equality_variantEnding() {
-        #expect(ABCSymbol.variantEnding(ABCVariantEnding(endings: [1...1])) == .variantEnding(ABCVariantEnding(endings: [1...1])))
+        #expect(ABCSymbol.variantEnding(makeVariantEnding([1...1])) == .variantEnding(makeVariantEnding([1...1])))
     }
 
     @Test
     func inequality() {
-        #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .annotation(ABCAnnotation(position: .below, text: "foo")))
-        #expect(ABCSymbol.annotation(ABCAnnotation(position: .above, text: "foo")) != .chordSymbol("foo"))
+        #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .annotation(makeAnnotation(.below, "foo")))
+        #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .chordSymbol("foo"))
         #expect(ABCSymbol.overlay != .slur("("))
-        #expect(ABCSymbol.tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 3))
-                    != .tuplet(ABCTuplet(noteCount: 3, beatCount: 2, affectedCount: 4)))
+        #expect(ABCSymbol.tuplet(makeTuplet(3, 2, 3))
+                != .tuplet(makeTuplet(3, 2, 4)))
     }
 
     @Test
     func resolveBrokenRhythm_doubleRight_lengthensAndShortens() {
-        let result = ABCSymbol.brokenRhythm(">>").resolveBrokenRhythm(left: _dur(1, 4),
-                                                                      right: _dur(1, 4))
+        let result = ABCSymbol.brokenRhythm(">>").resolveBrokenRhythm(left: makeDuration(1, 4),
+                                                                      right: makeDuration(1, 4))
 
-        #expect(result?.left == _dur(7, 16))
-        #expect(result?.right == _dur(1, 16))
+        #expect(result?.left == makeDuration(7, 16))
+        #expect(result?.right == makeDuration(1, 16))
     }
 
     @Test
     func resolveBrokenRhythm_nonBrokenRhythm_returnsNil() {
-        let note = ABCSymbol.note(ABCNote(pitch: _pit(.c, .natural, 4),
-                                          duration: _dur(1, 4),
-                                          isTied: false))
+        let note = ABCSymbol.note(makeNote(makePitch(.c, .natural, 4),
+                                           makeDuration(1, 4),
+                                           false))
 
-        #expect(note.resolveBrokenRhythm(left: _dur(1, 4), right: _dur(1, 4)) == nil)
+        #expect(note.resolveBrokenRhythm(left: makeDuration(1, 4), right: makeDuration(1, 4)) == nil)
     }
 
     @Test
     func resolveBrokenRhythm_singleLeft_halvesAndDots() {
-        let result = ABCSymbol.brokenRhythm("<").resolveBrokenRhythm(left: _dur(1, 4),
-                                                                     right: _dur(1, 4))
+        let result = ABCSymbol.brokenRhythm("<").resolveBrokenRhythm(left: makeDuration(1, 4),
+                                                                     right: makeDuration(1, 4))
 
-        #expect(result?.left == _dur(1, 8))
-        #expect(result?.right == _dur(3, 8))
+        #expect(result?.left == makeDuration(1, 8))
+        #expect(result?.right == makeDuration(3, 8))
     }
 
     @Test
     func resolveBrokenRhythm_singleRight_dotsDurationAndHalvesNext() {
-        let result = ABCSymbol.brokenRhythm(">").resolveBrokenRhythm(left: _dur(1, 4),
-                                                                     right: _dur(1, 4))
+        let result = ABCSymbol.brokenRhythm(">").resolveBrokenRhythm(left: makeDuration(1, 4),
+                                                                     right: makeDuration(1, 4))
 
-        #expect(result?.left == _dur(3, 8))
-        #expect(result?.right == _dur(1, 8))
+        #expect(result?.left == makeDuration(3, 8))
+        #expect(result?.right == makeDuration(1, 8))
     }
 
     @Test
     func resolveBrokenRhythm_tripleRight_lengthensAndShortens() {
-        let result = ABCSymbol.brokenRhythm(">>>").resolveBrokenRhythm(left: _dur(1, 4),
-                                                                       right: _dur(1, 4))
+        let result = ABCSymbol.brokenRhythm(">>>").resolveBrokenRhythm(left: makeDuration(1, 4),
+                                                                       right: makeDuration(1, 4))
 
-        #expect(result?.left == _dur(15, 32))
-        #expect(result?.right == _dur(1, 32))
+        #expect(result?.left == makeDuration(15, 32))
+        #expect(result?.right == makeDuration(1, 32))
     }
 }
