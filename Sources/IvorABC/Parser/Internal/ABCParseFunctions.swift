@@ -143,6 +143,22 @@ internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
                        denominator: denominator)
 }
 
+internal func parseElemskip(_ tidyInput: Substring) -> ABCElemskip? {
+    let stringValue = normalize(tidyInput)
+
+    // Try Int first — Double("3") also succeeds, which would misclassify
+    // whole numbers as decimal.
+    if let intValue = Int(stringValue) {
+        return .integer(intValue)
+    }
+
+    if let doubleValue = Double(stringValue) {
+        return .decimal(doubleValue)
+    }
+
+    return nil
+}
+
 // swiftlint:disable:next cyclomatic_complexity
 internal func parseField(_ tidyInput: Substring) throws -> ABCField {
     let (ntext, vtext, isInline) = try _splitField(tidyInput)

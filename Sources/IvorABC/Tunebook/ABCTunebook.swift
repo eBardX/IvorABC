@@ -1,5 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
+internal import XestiTools
+
 /// An ABC tunebook.
 public struct ABCTunebook {
 
@@ -41,9 +43,10 @@ extension ABCTunebook {
     /// For ABC 2.0 and 2.1 tunebooks, the migration is lossless — only the
     /// ``version`` property changes.
     ///
-    /// For ABC 1.6 tunebooks, ``ABCField/legacy(_:_:)`` fields (`E:`,
-    /// free-text `I:`) are converted to ``ABCField/remark(_:)`` so the text
-    /// is preserved in valid 2.1. Tempo fields whose
+    /// For ABC 1.6 tunebooks, ``ABCField/elemskip(_:)`` and
+    /// ``ABCField/information(_:)`` fields are converted to
+    /// ``ABCField/remark(_:)`` so the text is preserved in valid 2.1. Tempo
+    /// fields whose
     /// ``ABCTempo/legacyBeatMultiple`` is set have that flag cleared (the
     /// `durations` array already holds the resolved beat).
     ///
@@ -68,8 +71,23 @@ extension ABCTunebook: Sendable {
 // MARK: - Private Functions
 
 private func _migrateField(_ field: ABCField) -> ABCField {
-    if case let .legacy(_, text) = field {
+    switch field {
+    case let .elemskip(elemskip):
+        let s = switch elemskip {
+        case let .integer(n):
+            String(n)
+
+        case let .decimal(d):
+            String(d)
+        }
+
+        return .remark(ABCText(s))
+
+    case let .information(text):
         return .remark(text)
+
+    default:
+        break
     }
 
     if case let .tempo(tempo) = field, tempo.legacyBeatMultiple != nil {

@@ -71,26 +71,26 @@ extension ABCTunebookTests {
     }
 
     @Test
-    func migrated_fromV16_legacyFieldBecomesRemark() {
+    func migrated_fromV16_elemskipBecomesRemark() {
         let v16 = makeVersion(1, 6)
-        let tune = ABCTune(entries: [.field(.legacy("E", "skip value"))])
+        let tune = ABCTune(entries: [.field(.elemskip(.integer(3)))])
         let tunebook = ABCTunebook(version: v16, headers: [], tunes: [tune])
         let migrated = tunebook.migrated()
 
-        #expect(migrated.tunes.first?.entries.contains(.field(.remark("skip value"))) == true)
-        #expect(migrated.tunes.first?.entries.contains(.field(.legacy("E", "skip value"))) == false)
+        #expect(migrated.tunes.first?.entries.contains(.field(.remark("3"))) == true)
+        #expect(migrated.tunes.first?.entries.contains(.field(.elemskip(.integer(3)))) == false)
     }
 
     @Test
-    func migrated_fromV16_headerLegacyFieldBecomesRemark() {
+    func migrated_fromV16_headerInformationBecomesRemark() {
         let v16 = makeVersion(1, 6)
         let tunebook = ABCTunebook(version: v16,
-                                   headers: [.field(.legacy("I", "some info"))],
+                                   headers: [.field(.information("some info"))],
                                    tunes: [])
         let migrated = tunebook.migrated()
 
         #expect(migrated.headers.contains(.field(.remark("some info"))) == true)
-        #expect(migrated.headers.contains(.field(.legacy("I", "some info"))) == false)
+        #expect(migrated.headers.contains(.field(.information("some info"))) == false)
     }
 
     @Test

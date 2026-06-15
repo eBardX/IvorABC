@@ -242,8 +242,8 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parse_v16_strict_elemskipProducesLegacyField() throws {
-        let input = "%abc-1.6\nX:1\nT:Test\nE:skip\nK:C\nCDEF|\n"
+    func parse_v16_strict_elemskipProducesElemskipField() throws {
+        let input = "%abc-1.6\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
@@ -255,11 +255,11 @@ extension ABCParserStrictnessTests {
             return f
         }
 
-        #expect(fields?.contains(.legacy("E", "skip")) == true)
+        #expect(fields?.contains(.elemskip(.integer(3))) == true)
     }
 
     @Test
-    func parse_v16_strict_informationFieldProducesLegacyField() throws {
+    func parse_v16_strict_informationFieldProducesInformationField() throws {
         let input = "%abc-1.6\nX:1\nT:Test\nI:some info\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
@@ -272,7 +272,7 @@ extension ABCParserStrictnessTests {
             return f
         }
 
-        #expect(fields?.contains(.legacy("I", "some info")) == true)
+        #expect(fields?.contains(.information("some info")) == true)
     }
 
     @Test

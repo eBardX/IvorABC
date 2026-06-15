@@ -38,14 +38,17 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
     case let .history(text):
         return ("H", _formatText(text))
 
+    case let .elemskip(elemskip):
+        return ("E", _formatElemskip(elemskip))
+
+    case let .information(text):
+        return ("I", _formatText(text))
+
     case let .instruction(directive):
         return ("I", _formatInstructionDirective(directive))
 
     case let .key(ABCKeySignature):
         return ("K", _formatKeySignature(ABCKeySignature))
-
-    case let .legacy(letter, text):
-        return (String(letter), _formatText(text))
 
     case let .lyrics(text):
         return ("W", _formatText(text))
@@ -500,6 +503,16 @@ private func _formatDuration(_ duration: ABCDuration,
     }
 
     return "\(rn)/\(rd)"
+}
+
+private func _formatElemskip(_ elemskip: ABCElemskip) -> String {
+    switch elemskip {
+    case let .decimal(doubleValue):
+        String(doubleValue)
+
+    case let .integer(intValue):
+        String(intValue)
+    }
 }
 
 private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,

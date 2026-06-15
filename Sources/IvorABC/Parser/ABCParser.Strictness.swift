@@ -40,8 +40,8 @@ extension ABCParser {
         ///
         /// ABC 1.6 differences accepted in strict mode:
         /// - `I:` is treated as a free-text information field (not a 2.x
-        ///   instruction/directive) and stored as ``ABCField/legacy(_:_:)``.
-        /// - `E:` (elemskip) is accepted and stored as ``ABCField/legacy(_:_:)``.
+        ///   instruction/directive) and stored as ``ABCField/information(_:)``.
+        /// - `E:` (elemskip) is accepted and stored as ``ABCField/elemskip(_:)``.
         case strict
     }
 }

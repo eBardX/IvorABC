@@ -17,6 +17,15 @@ public enum ABCField {
     /// A discography field (`D:`).
     case discography(ABCText)
 
+    /// A legacy elemskip field (`E:`).
+    ///
+    /// This is a 1.6-only field with no ABC 2.x equivalent. It was
+    /// specific to `abc2mtex` and controlled the `\elemskip` TeX dimension —
+    /// the horizontal spacing between notes on a staff. Modern tools ignore
+    /// it. ``ABCTunebook/migrated()`` collapses it to ``remark(_:)`` when
+    /// upgrading to ABC 2.1.
+    case elemskip(ABCElemskip)
+
     /// A file URL field (`F:`).
     case fileURL(ABCText)
 
@@ -25,6 +34,14 @@ public enum ABCField {
 
     /// A history field (`H:`).
     case history(ABCText)
+
+    /// A legacy information field (`I:`).
+    ///
+    /// In ABC 1.6, `I:` carried free-text information. ABC 2.x repurposed
+    /// `I:` as an inline instruction/directive; the 2.x form is represented
+    /// by ``instruction(_:)``. ``ABCTunebook/migrated()`` collapses this
+    /// case to ``remark(_:)`` when upgrading to ABC 2.1.
+    case information(ABCText)
 
     /// An inline instruction field (`[I:]`).
     ///
@@ -36,19 +53,6 @@ public enum ABCField {
 
     /// A key signature field (`K:`).
     case key(ABCKeySignature)
-
-    /// A legacy free-text field preserved for round-tripping ABC 1.6 files.
-    ///
-    /// This case captures field letters that are valid in ABC 1.6 but have no
-    /// direct equivalent in later versions:
-    /// - `E:` (elemskip) — a 1.6-only pagination hint.
-    /// - `I:` — plain informational text in 1.6 (2.x repurposed `I:` as an
-    ///   inline instruction/directive).
-    ///
-    /// The first associated value is the raw field letter and the second is
-    /// the text content. ``ABCTunebook/migrated()`` collapses these fields to
-    /// ``remark(_:)`` when upgrading to ABC 2.1.
-    case legacy(Character, ABCText)
 
     /// A lyrics field (`W:`).
     case lyrics(ABCText)
@@ -131,10 +135,11 @@ extension ABCField {
              .book,
              .composer,
              .discography,
+             .elemskip,
              .fileURL,
              .group,
              .history,
-             .legacy,
+             .information,
              .macro,
              .meter,
              .notes,
@@ -156,9 +161,10 @@ extension ABCField {
     public var isValidInTuneBody: Bool {
         switch self {
         case .alignedLyrics,
+             .elemskip,
+             .information,
              .instruction,
              .key,
-             .legacy,
              .lyrics,
              .macro,
              .meter,
@@ -186,11 +192,12 @@ extension ABCField {
              .book,
              .composer,
              .discography,
+             .elemskip,
              .fileURL,
              .group,
              .history,
+             .information,
              .key,
-             .legacy,
              .lyrics,
              .macro,
              .meter,

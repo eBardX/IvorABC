@@ -354,6 +354,7 @@ extension ABCParser {
         return .empty
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private func _parseFieldLine(_ input: Substring,
                                  _ version: ABCVersion,
                                  _ context: inout ABCParseContext,
@@ -377,11 +378,21 @@ extension ABCParser {
         // E: (elemskip) is a 1.6-only field with no 2.x equivalent.
         // I: is free-text "information" in 1.6; in 2.x it is an instruction.
         //
-        if isVersion16,
-           letter == "E" || letter == "I" {
-            let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
+        if isVersion16 {
+            if letter == "E" {
+                let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
 
-            return try .field(.legacy(letter, parseText(tidyInput)))
+                guard let elemskip = parseElemskip(tidyInput)
+                else { throw Error.invalidField(false, tidyInput) }
+
+                return .field(.elemskip(elemskip))
+            }
+
+            if letter == "I" {
+                let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
+
+                return try .field(.information(parseText(tidyInput)))
+            }
         }
 
         if letter == "I" {
