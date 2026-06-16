@@ -45,7 +45,7 @@ extension ABCFieldTests {
                                        .source(""),
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll")))]
+                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll")))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -87,7 +87,7 @@ extension ABCFieldTests {
                                        .tempo(makeTempo([])),
                                        .title(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll"))),
+                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {
@@ -129,7 +129,7 @@ extension ABCFieldTests {
                                        .title(""),
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol("~", makeDecoration("roll"))),
+                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {

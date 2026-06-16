@@ -530,6 +530,10 @@ internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
     return (String(restLetter), duration)
 }
 
+internal func parseShorthand(_ tidyInput: Substring) -> ABCShorthand? {
+    shorthands[tidyInput]
+}
+
 internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
     var elements: [ABCSymbolLine.Element] = []
     var input = tidyInput
@@ -552,8 +556,8 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             guard let closeIdx = rest.firstIndex(of: "!"),
                   !rest[..<closeIdx].isEmpty,
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) }),
-                  let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
-                                                 dialect: .bang)
+                  let name = ABCDecoration.Name(stringValue: String(rest[..<closeIdx])),
+                  let decoration = ABCDecoration(name: name, dialect: .bang)
             else { return nil }
 
             elements.append(.decoration(decoration))
@@ -566,8 +570,8 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             guard let closeIdx = rest.firstIndex(of: "+"),
                   !rest[..<closeIdx].isEmpty,
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) }),
-                  let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
-                                                 dialect: .plus)
+                  let name = ABCDecoration.Name(stringValue: String(rest[..<closeIdx])),
+                  let decoration = ABCDecoration(name: name, dialect: .plus)
             else { return nil }
 
             elements.append(.decoration(decoration))
@@ -729,7 +733,8 @@ internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
 }
 
 internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
-    guard let symbol = tidyInput.first
+    guard let first = tidyInput.first,
+          let shorthand = parseShorthand(Substring(String(first)))
     else { return nil }
 
     let rest = trimPrefix(tidyInput.dropFirst())
@@ -742,22 +747,27 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard !raw.isEmpty
     else { return nil }
 
-    let decoration: ABCDecoration? = if raw.count >= 2, raw.first == "!", raw.last == "!" {
-        ABCDecoration(name: String(raw.dropFirst().dropLast()),
-                      dialect: .bang)
+    let definition: ABCUserSymbol.Definition? = if raw.first == "\"" {
+        parseAnnotation(Substring(raw)).map { .annotation($0) }
+    } else if raw.count >= 2, raw.first == "!", raw.last == "!" {
+        ABCDecoration.Name(stringValue: String(raw.dropFirst().dropLast()))
+            .flatMap { ABCDecoration(name: $0, dialect: .bang) }
+            .map { .decoration($0) }
     } else if raw.count >= 2, raw.first == "+", raw.last == "+" {
-        ABCDecoration(name: String(raw.dropFirst().dropLast()),
-                      dialect: .plus)
+        ABCDecoration.Name(stringValue: String(raw.dropFirst().dropLast()))
+            .flatMap { ABCDecoration(name: $0, dialect: .plus) }
+            .map { .decoration($0) }
     } else {
-        ABCDecoration(name: raw,
-                      dialect: .bang)
+        ABCDecoration.Name(stringValue: raw)
+            .flatMap { ABCDecoration(name: $0, dialect: .bang) }
+            .map { .decoration($0) }
     }
 
-    guard let decoration
+    guard let definition
     else { return nil }
 
-    return ABCUserSymbol(symbol: symbol,
-                         decoration: decoration)
+    return ABCUserSymbol(shorthand: shorthand,
+                         definition: definition)
 }
 
 internal func parseVariantEnding(_ tidyInput: Substring) -> ABCVariantEnding? {
@@ -867,24 +877,24 @@ private let octaveCS: Set<Character>      = [",", "'"]
 private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
 
-private let annotationPositions: [String: ABCAnnotation.Position] = ["^": .above,
-                                                                     "@": .auto,
-                                                                     "_": .below,
-                                                                     "<": .left,
-                                                                     ">": .right]
+private let annotationPositions: [Substring: ABCAnnotation.Position] = ["^": .above,
+                                                                        "@": .auto,
+                                                                        "_": .below,
+                                                                        "<": .left,
+                                                                        ">": .right]
 
-private let keySignatureModes: [String: ABCKeySignature.Mode] = ["": .major,
-                                                                 "aeo": .aeolian,
-                                                                 "dor": .dorian,
-                                                                 "exp": .explicit,
-                                                                 "ion": .ionian,
-                                                                 "loc": .locrian,
-                                                                 "lyd": .lydian,
-                                                                 "m": .minor,
-                                                                 "maj": .major,
-                                                                 "min": .minor,
-                                                                 "mix": .mixolydian,
-                                                                 "phr": .phrygian]
+private let keySignatureModes: [Substring: ABCKeySignature.Mode] = ["": .major,
+                                                                    "aeo": .aeolian,
+                                                                    "dor": .dorian,
+                                                                    "exp": .explicit,
+                                                                    "ion": .ionian,
+                                                                    "loc": .locrian,
+                                                                    "lyd": .lydian,
+                                                                    "m": .minor,
+                                                                    "maj": .major,
+                                                                    "min": .minor,
+                                                                    "mix": .mixolydian,
+                                                                    "phr": .phrygian]
 
 private let pitchAccidentals: [Substring: ABCPitch.Accidental] = ["_": .flat,
                                                                   "__": .doubleFlat,
@@ -929,13 +939,45 @@ private let keySignatureTonics: [Substring: ABCKeySignature.Tonic] = ["A": .a,
                                                                       "G#": .gSharp,
                                                                       "Gb": .gFlat]
 
+private let shorthands: [Substring: ABCShorthand] = [".": .dot,
+                                                     "~": .tilde,
+                                                     "h": .hLower,
+                                                     "H": .hUpper,
+                                                     "i": .iLower,
+                                                     "I": .iUpper,
+                                                     "j": .jLower,
+                                                     "J": .jUpper,
+                                                     "k": .kLower,
+                                                     "K": .kUpper,
+                                                     "l": .lLower,
+                                                     "L": .lUpper,
+                                                     "m": .mLower,
+                                                     "M": .mUpper,
+                                                     "n": .nLower,
+                                                     "N": .nUpper,
+                                                     "o": .oLower,
+                                                     "O": .oUpper,
+                                                     "p": .pLower,
+                                                     "P": .pUpper,
+                                                     "q": .qLower,
+                                                     "Q": .qUpper,
+                                                     "r": .rLower,
+                                                     "R": .rUpper,
+                                                     "s": .sLower,
+                                                     "S": .sUpper,
+                                                     "t": .tLower,
+                                                     "T": .tUpper,
+                                                     "u": .uLower,
+                                                     "U": .uUpper,
+                                                     "v": .vLower,
+                                                     "V": .vUpper,
+                                                     "w": .wLower,
+                                                     "W": .wUpper]
+
 // MARK: Private Functions
 
 private func _parseAnnotationPosition(_ tidyInput: Substring) -> ABCAnnotation.Position? {
-    guard let position = annotationPositions[String(tidyInput)]
-    else { return nil }
-
-    return position
+    annotationPositions[tidyInput]
 }
 
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
@@ -1123,7 +1165,7 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
     let mode: ABCKeySignature.Mode
 
     if !rest.isEmpty {
-        guard let tmpMode = keySignatureModes[rest.prefix(3).lowercased()]
+        guard let tmpMode = keySignatureModes[Substring(rest.prefix(3).lowercased())]
         else { return nil }
 
         mode = tmpMode

@@ -70,10 +70,12 @@ private func _checkField(_ field: ABCField,
                          _ issues: inout [ABCValidationIssue]) {
     switch field {
     case let .userSymbol(userSymbol):
-        _checkDecoration(userSymbol.decoration,
-                         tuneIndex: tuneIndex,
-                         state,
-                         &issues)
+        if case let .decoration(decoration) = userSymbol.definition {
+            _checkDecoration(decoration,
+                             tuneIndex: tuneIndex,
+                             state,
+                             &issues)
+        }
 
     case let .symbolLine(symbolLine):
         for element in symbolLine.elements {
@@ -165,7 +167,7 @@ private func _updateState(_ state: inout _ValidationState,
         state.definedMacros.append(macro)
 
     case let .userSymbol(userSymbol):
-        state.definedUserSymbols.insert(userSymbol.symbol)
+        state.definedUserSymbols.insert(userSymbol.shorthand)
 
     default:
         break
@@ -177,5 +179,5 @@ private func _updateState(_ state: inout _ValidationState,
 private struct _ValidationState {
     var activeDialect: ABCDecoration.Dialect = .bang
     var definedMacros: [ABCMacro] = []
-    var definedUserSymbols: Set<Character> = []
+    var definedUserSymbols: Set<ABCShorthand> = []
 }

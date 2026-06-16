@@ -9,7 +9,7 @@ internal struct ABCParseContext {
         self.decorationDialect = .bang
         self.isCompoundMeter = false
         self.macros = [:]
-        self.userSymbolDecorations = [:]
+        self.userSymbolDefinitions = [:]
     }
 
     // MARK: Internal Instance Properties
@@ -18,7 +18,7 @@ internal struct ABCParseContext {
     internal var decorationDialect: ABCDecoration.Dialect
     internal var isCompoundMeter: Bool
     internal var macros: [String: ABCMacro]
-    internal var userSymbolDecorations: [Character: String]
+    internal var userSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 
     internal var baseDuration: ABCDuration {
         durationFromUnitNoteLength ?? durationFromMeter ?? Self.durationEighths
@@ -71,7 +71,7 @@ extension ABCParseContext {
             durationFromUnitNoteLength = duration
 
         case let .userSymbol(userSymbol):
-            userSymbolDecorations[userSymbol.symbol] = userSymbol.decoration.name
+            userSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
 
         default:
             break

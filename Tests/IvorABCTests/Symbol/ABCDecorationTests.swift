@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCDecorationTests {
 }
@@ -34,7 +35,7 @@ extension ABCDecorationTests {
     }
 
     @Test
-    func init_withEmptyNameReturnsNil() {
-        #expect(ABCDecoration(name: "") == nil)
+    func name_withEmptyStringReturnsNil() {
+        #expect(ABCDecoration.Name(stringValue: "") == nil)
     }
 }

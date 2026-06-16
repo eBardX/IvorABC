@@ -11,15 +11,16 @@ public struct ABCDecoration {
 
     // MARK: Public Initializers
 
-    /// Creates a new decoration, or `nil` if `name` is empty.
+    /// Creates a new decoration, or `nil` if the combination of `name` and
+    /// `dialect` fails forthcoming validation.
     ///
-    /// - Parameter name:    The decoration name (without delimiters), e.g. `"roll"`.
-    ///                      Must not be empty.
+    /// - Parameter name:    The decoration name (without delimiters), e.g.
+    ///                      `ABCDecoration.Name("roll")`.
     /// - Parameter dialect: The delimiter dialect in effect; defaults to
     ///                      ``Dialect/bang`` (ABC 2.1 standard).
-    public init?(name: String,
+    public init?(name: Name,
                  dialect: Dialect = .bang) {
-        guard !name.isEmpty
+        guard Self._isValid(name, dialect)
         else { return nil }
 
         self.dialect = dialect
@@ -34,7 +35,7 @@ public struct ABCDecoration {
     public let dialect: Dialect
 
     /// The decoration name, without delimiters.
-    public let name: String             // ABCDecoration.Name (StringRepresentable) ???
+    public let name: Name
 }
 
 // MARK: -
@@ -56,6 +57,14 @@ extension ABCDecoration {
                                                              "T",
                                                              "u",
                                                              "v"]
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ name: Name,
+                                 _ dialect: Dialect) -> Bool {
+        // `!+!` is ok, `+++` is not
+        dialect == .bang || !name.stringValue.contains("+")
+    }
 }
 
 // MARK: - Equatable

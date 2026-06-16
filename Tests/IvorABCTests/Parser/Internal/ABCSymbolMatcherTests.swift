@@ -128,7 +128,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_shorthand_userDefinedSymbol_stillEmitsShorthand() throws {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .userSymbol(makeUserSymbol("W", makeDecoration("trill"))))
+        ctx.update(with: .userSymbol(makeUserSymbol(.wUpper, makeDecoration("trill"))))
 
         let symbols = try matchSymbols("W", context: &ctx)
 

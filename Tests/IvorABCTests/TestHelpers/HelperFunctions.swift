@@ -314,7 +314,7 @@ func makeChord(_ notes: [ABCNote],
 
 func makeDecoration(_ name: String,
                     _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
-    ABCDecoration(name: name,
+    ABCDecoration(name: ABCDecoration.Name(name),
                   dialect: dialect)!    // swiftlint:disable:this force_unwrapping
 }
 
@@ -457,10 +457,15 @@ func makeTuplet(_ noteCount: UInt,
               affectedCount: affectedCount)!    // swiftlint:disable:this force_unwrapping
 }
 
-func makeUserSymbol(_ symbol: Character,
+func makeUserSymbol(_ shorthand: ABCShorthand,
+                    _ definition: ABCUserSymbol.Definition) -> ABCUserSymbol {
+    ABCUserSymbol(shorthand: shorthand,
+                  definition: definition)!    // swiftlint:disable:this force_unwrapping
+}
+
+func makeUserSymbol(_ shorthand: ABCShorthand,
                     _ decoration: ABCDecoration) -> ABCUserSymbol {
-    ABCUserSymbol(symbol: symbol,
-                  decoration: decoration)
+    makeUserSymbol(shorthand, .decoration(decoration))
 }
 
 func makeVariantEnding(_ endings: [ClosedRange<UInt>]) -> ABCVariantEnding {

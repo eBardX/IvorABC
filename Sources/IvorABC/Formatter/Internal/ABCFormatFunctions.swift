@@ -96,7 +96,7 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("L", "\(duration.numerator)/\(duration.denominator)")
 
     case let .userSymbol(userSymbol):
-        return ("U", "\(userSymbol.symbol)=\(_formatDecoration(userSymbol.decoration))")
+        return ("U", _formatUserSymbol(userSymbol))
 
     case let .voice(voice):
         guard !voice.id.isEmpty
@@ -736,6 +736,22 @@ private func _formatTuplet(_ tuplet: ABCTuplet) -> String {
             result += ":"
             result += "\(rCount)"
         }
+    }
+
+    return result
+}
+
+private func _formatUserSymbol(_ userSymbol: ABCUserSymbol) -> String {
+    var result = _formatShorthand(userSymbol.shorthand)
+
+    result += "="
+
+    switch userSymbol.definition {
+    case let .annotation(annotation):
+        result += _formatAnnotation(annotation)
+
+    case let .decoration(decoration):
+        result += _formatDecoration(decoration)
     }
 
     return result

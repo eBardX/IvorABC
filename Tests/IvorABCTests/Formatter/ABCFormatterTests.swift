@@ -428,7 +428,7 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_emitsUField() throws {
         let book = ABCTunebook(version: makeVersion(2, 1),
-                               headers: [.field(.userSymbol(makeUserSymbol("~", makeDecoration("roll"))))],
+                               headers: [.field(.userSymbol(makeUserSymbol(.tilde, makeDecoration("roll"))))],
                                tunes: [])
 
         #expect(try format(book).contains("U:~=!roll!\n"))

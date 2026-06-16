@@ -88,7 +88,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsTitle(parseField("T:My Tune"), "My Tune")
         try expectFieldIsTranscription(parseField("Z:John Doe"), "John Doe")
         try expectFieldIsUnitNoteLength(parseField("L:1/8"))
-        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), makeUserSymbol("~", makeDecoration("roll")))
+        try expectFieldIsUserSymbol(parseField("U:~=!roll!"), makeUserSymbol(.tilde, makeDecoration("roll")))
         try expectFieldIsVoice(parseField("V:1"))
     }
 
@@ -407,11 +407,13 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseUserSymbol_success() {
-        #expect(parseUserSymbol("T=!trill!") == makeUserSymbol("T", makeDecoration("trill")))
-        #expect(parseUserSymbol("T = !trill!") == makeUserSymbol("T", makeDecoration("trill")))
-        #expect(parseUserSymbol("~=!roll!") == makeUserSymbol("~", makeDecoration("roll")))
-        #expect(parseUserSymbol("~ = !roll!") == makeUserSymbol("~", makeDecoration("roll")))
-        #expect(parseUserSymbol("H=!fermata!") == makeUserSymbol("H", makeDecoration("fermata")))
+        #expect(parseUserSymbol("T=!trill!") == makeUserSymbol(.tUpper, makeDecoration("trill")))
+        #expect(parseUserSymbol("T = !trill!") == makeUserSymbol(.tUpper, makeDecoration("trill")))
+        #expect(parseUserSymbol("~=!roll!") == makeUserSymbol(.tilde, makeDecoration("roll")))
+        #expect(parseUserSymbol("~ = !roll!") == makeUserSymbol(.tilde, makeDecoration("roll")))
+        #expect(parseUserSymbol("H=!fermata!") == makeUserSymbol(.hUpper, makeDecoration("fermata")))
+        #expect(parseUserSymbol("H=\"^fermata\"") == makeUserSymbol(.hUpper, .annotation(ABCAnnotation(position: .above, text: "fermata"))))
+        #expect(parseUserSymbol("T = \"_col legno\"") == makeUserSymbol(.tUpper, .annotation(ABCAnnotation(position: .below, text: "col legno"))))
     }
 
     @Test

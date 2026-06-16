@@ -46,43 +46,6 @@ extension ABCSymbolMatcher {
         return symbols
     }
 
-    // MARK: Private Type Properties
-
-    private static let shorthands: [String: ABCShorthand] = [".": .dot,
-                                                             "~": .tilde,
-                                                             "h": .hLower,
-                                                             "H": .hUpper,
-                                                             "i": .iLower,
-                                                             "I": .iUpper,
-                                                             "j": .jLower,
-                                                             "J": .jUpper,
-                                                             "k": .kLower,
-                                                             "K": .kUpper,
-                                                             "l": .lLower,
-                                                             "L": .lUpper,
-                                                             "m": .mLower,
-                                                             "M": .mUpper,
-                                                             "n": .nLower,
-                                                             "N": .nUpper,
-                                                             "o": .oLower,
-                                                             "O": .oUpper,
-                                                             "p": .pLower,
-                                                             "P": .pUpper,
-                                                             "q": .qLower,
-                                                             "Q": .qUpper,
-                                                             "r": .rLower,
-                                                             "R": .rUpper,
-                                                             "s": .sLower,
-                                                             "S": .sUpper,
-                                                             "t": .tLower,
-                                                             "T": .tUpper,
-                                                             "u": .uLower,
-                                                             "U": .uUpper,
-                                                             "v": .vLower,
-                                                             "V": .vUpper,
-                                                             "w": .wLower,
-                                                             "W": .wUpper]
-
     // MARK: Private Type Methods
 
     private func _expandMacroReplacement(_ replacement: String,
@@ -208,8 +171,8 @@ extension ABCSymbolMatcher {
 
         let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
 
-        guard let decoration = ABCDecoration(name: String(value.dropFirst().dropLast()),
-                                             dialect: dialect)
+        guard let name = ABCDecoration.Name(stringValue: String(value.dropFirst().dropLast())),
+              let decoration = ABCDecoration(name: name, dialect: dialect)
         else { throw ABCParser.Error.invalidSymbols(value) }
 
         return .decoration(decoration)
@@ -367,7 +330,7 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.shorthand)
         let value = token.value
 
-        guard let shorthand = Self.shorthands[String(value)]
+        guard let shorthand = parseShorthand(value)
         else { throw ABCParser.Error.invalidSymbols(value) }
 
         return .shorthand(shorthand)

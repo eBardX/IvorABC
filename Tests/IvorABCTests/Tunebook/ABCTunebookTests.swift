@@ -157,7 +157,7 @@ extension ABCTunebookTests {
     func validate_plusDecorationInUserSymbol_withoutDirective_returnsError() {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
-                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", .plus))))])])
+                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol(.tUpper, makeDecoration("trill", .plus))))])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
     }
@@ -196,7 +196,7 @@ extension ABCTunebookTests {
     @Test
     func validate_plusDecorationInFileHeader_withoutDirective_returnsError() {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
-                                   headers: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", .plus))))],
+                                   headers: [.field(.userSymbol(makeUserSymbol(.tUpper, makeDecoration("trill", .plus))))],
                                    tunes: [])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: nil)])

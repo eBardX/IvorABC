@@ -6,7 +6,6 @@
 /// body. The character `.` has a fixed meaning; the character `~ and`the letters `H`–`W`
 /// and `h`–`w` acquire their meanings through the active `U:` field definitions.
 public enum ABCShorthand {
-
     /// The shorthand character `.`.
     case dot
 

@@ -2,10 +2,12 @@
 
 /// An ABC user symbol mapping (`U:`).
 ///
-/// Maps a single character to a decoration, for example:
+/// Maps a shorthand character to a decoration or annotation, for example:
+///
 /// ```
 /// U: ~ = !roll!
 /// U: T = !trill!
+/// U: H = "^fermata"
 /// ```
 public struct ABCUserSymbol {
 
@@ -13,21 +15,31 @@ public struct ABCUserSymbol {
 
     /// Creates a new user symbol mapping.
     ///
-    /// - Parameter symbol:     The character being mapped.
-    /// - Parameter decoration: The decoration the symbol maps to.
-    public init(symbol: Character,
-                decoration: ABCDecoration) {
-        self.decoration = decoration
-        self.symbol = symbol            // validate ???
+    /// - Parameter shorthand:   The shorthand character being mapped.
+    /// - Parameter definition:  The decoration or annotation the shorthand maps to.
+    public init?(shorthand: ABCShorthand,
+                 definition: Definition) {
+        guard Self._isValid(shorthand, definition)
+        else { return nil }
+
+        self.definition = definition
+        self.shorthand = shorthand
     }
 
     // MARK: Public Instance Properties
 
-    /// The decoration this symbol maps to.
-    public let decoration: ABCDecoration
+    /// What this shorthand maps to.
+    public let definition: Definition
 
-    /// The character being mapped.
-    public let symbol: Character
+    /// The shorthand character being mapped.
+    public let shorthand: ABCShorthand
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ shorthand: ABCShorthand,
+                                 _ definition: Definition) -> Bool {
+        shorthand != .dot   // not allowed to redefine `.`
+    }
 }
 
 // MARK: - Equatable
