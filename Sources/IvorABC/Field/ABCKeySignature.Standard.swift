@@ -10,9 +10,7 @@ extension ABCKeySignature {
         /// Creates a new standard key signature specification, or returns `nil`
         /// if `tonic` and `mode` do not form a recognized key signature.
         ///
-        /// `.explicit` mode is always accepted regardless of tonic. Alias modes
-        /// `.aeolian` and `.ionian` are validated as `.minor` and `.major`,
-        /// respectively.
+        /// `.explicit` mode is always accepted regardless of tonic.
         ///
         /// - Parameter tonic:              The tonic note of the key signature.
         /// - Parameter mode:               The mode of the key signature.
@@ -22,10 +20,12 @@ extension ABCKeySignature {
         ///                                 Defaults to `nil`.
         public init?(tonic: Tonic,
                      mode: Mode,
-                     extraAccidentals: [Accidental] = [],
+                     extraAccidentals: [ExtraAccidental] = [],
                      clef: Clef? = nil) {
             // guard Self._isValid(tonic, mode)
             // else { return nil }
+
+            // No extra accidental should have accidental == .omitted
 
             let emode = Mode.effectiveMode(for: mode)
 
@@ -40,12 +40,6 @@ extension ABCKeySignature {
 
         // MARK: Internal Type Properties
 
-        /// The number of sharps (positive) or flats (negative) for each
-        /// recognized tonic/mode combination.
-        ///
-        /// Only the seven canonical modes are present as keys. Alias modes
-        /// `.aeolian` and `.ionian` are not listed; callers should map them to
-        /// `.minor` and `.major` before lookup.
         internal static let accidentalCounts: [Tonic: [Mode: Int]] =
             [.a: [.dorian: 1, .locrian: -2, .lydian: 4, .major: 3, .minor: 0, .mixolydian: 2, .phrygian: -1],
              .aFlat: [.dorian: -6, .lydian: -3, .major: -4, .minor: -7, .mixolydian: -5],
@@ -76,7 +70,7 @@ extension ABCKeySignature {
 
         /// Extra accidentals overlaid on the key signature beyond those
         /// implied by the tonic and mode (e.g., `K:D Phr ^f`).
-        public let extraAccidentals: [Accidental]
+        public let extraAccidentals: [ExtraAccidental]
 
         /// The mode of the key signature.
         public let mode: Mode

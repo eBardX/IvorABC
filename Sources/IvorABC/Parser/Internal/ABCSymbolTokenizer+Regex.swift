@@ -82,7 +82,6 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexDecoration = Regex {
         ChoiceOf {
-            decorationShorthandCC
             Regex {
                 "!"
                 OneOrMore {
@@ -110,11 +109,11 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexNote = Regex {
         ZeroOrMore {
-            accidentalCC
+            pitchAccidentalCC
         }
         pitchLetterCC
         ZeroOrMore {
-            octaveCC
+            pitchOctaveCC
         }
         Optionally {
             duration
@@ -129,6 +128,10 @@ extension ABCSymbolTokenizer {
         Optionally {
             duration
         }
+    }
+
+    internal nonisolated(unsafe) static let regexShorthand = Regex {
+        shorthandCC
     }
 
     internal nonisolated(unsafe) static let regexSpacer = Regex {
@@ -236,7 +239,6 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private static let accidentalCC           = CharacterClass(.anyOf("=^_"))
     private static let alphaNumericCC         = digitCC.union(letterCC)
     private static let annotationCC           = CharacterClass(.anyOf("_@^<>"))
     private static let chordAccidentalCC      = CharacterClass(.anyOf("b#"))
@@ -244,16 +246,17 @@ extension ABCSymbolTokenizer {
     private static let chordTypeLetterCC      = alphaNumericCC.union(.anyOf("+"))
     private static let decorationLegacyNameCC = alphaNumericCC.union(.anyOf(".()<>"))
     private static let decorationNameCC       = alphaNumericCC.union(.anyOf(".()+<>"))
-    private static let decorationShorthandCC  = CharacterClass(.anyOf(".~"),
-                                                               "H"..."W",
-                                                               "h"..."w")
     private static let digitCC                = CharacterClass("0"..."9")
     private static let letterCC               = CharacterClass("A"..."Z",
                                                                "a"..."z")
-    private static let octaveCC               = CharacterClass(.anyOf("',"))
+    private static let pitchAccidentalCC      = CharacterClass(.anyOf("=^_"))
     private static let pitchLetterCC          = CharacterClass("A"..."G",
                                                                "a"..."g")
+    private static let pitchOctaveCC          = CharacterClass(.anyOf("',"))
     private static let repeatDigitCC          = CharacterClass("1"..."9")
     private static let restCC                 = CharacterClass(.anyOf("XZxz"))
-    private static let tupletDigitCC          = CharacterClass("2"..."9")
+    private static let shorthandCC            = CharacterClass(.anyOf(".~"),
+                                                               "H"..."W",
+                                                               "h"..."w")
+    private static let tupletDigitCC          = CharacterClass("2"..."9")   // swiftlint:disable:this operator_usage_whitespace
 }

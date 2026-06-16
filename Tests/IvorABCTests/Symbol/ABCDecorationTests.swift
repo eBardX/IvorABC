@@ -11,8 +11,8 @@ struct ABCDecorationTests {
 extension ABCDecorationTests {
     @Test
     func equality() {
-        let a = makeDecoration("roll", "~")
-        let b = makeDecoration("roll", "~")
+        let a = makeDecoration("roll")
+        let b = makeDecoration("roll")
 
         #expect(a == b)
     }
@@ -26,29 +26,11 @@ extension ABCDecorationTests {
     }
 
     @Test
-    func inequality_differentShorthand() {
-        let a = makeDecoration("staccato", ".")
-        let b = makeDecoration("staccato")
-
-        #expect(a != b)
-    }
-
-    @Test
-    func init_storesProperties_withShorthand() {
-        let decoration = makeDecoration("roll", "~")
+    func init_storesProperties() {
+        let decoration = makeDecoration("roll")
 
         #expect(decoration.dialect == .bang)
         #expect(decoration.name == "roll")
-        #expect(decoration.shorthand == "~")
-    }
-
-    @Test
-    func init_storesProperties_withoutShorthand() {
-        let decoration = makeDecoration("trill")
-
-        #expect(decoration.dialect == .bang)
-        #expect(decoration.name == "trill")
-        #expect(decoration.shorthand == nil)
     }
 
     @Test

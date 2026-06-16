@@ -44,7 +44,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_decoration() {
-        #expect(ABCSymbol.decoration(makeDecoration("p", nil, .bang)) == .decoration(makeDecoration("p", nil, .bang)))
+        #expect(ABCSymbol.decoration(makeDecoration("p", .bang)) == .decoration(makeDecoration("p", .bang)))
     }
 
     @Test

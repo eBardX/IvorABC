@@ -57,17 +57,10 @@ private func _checkDecoration(_ decoration: ABCDecoration,
                               tuneIndex: Int?,
                               _ state: _ValidationState,
                               _ issues: inout [ABCValidationIssue]) {
-    if let shorthand = decoration.shorthand {
-        if !ABCDecoration.builtinShorthands.contains(shorthand),
-           !state.definedUserSymbols.contains(shorthand) {
-            issues.append(.undefinedUserSymbol(tuneIndex: tuneIndex))
-        }
-    } else {
-        if decoration.dialect == .plus, state.activeDialect == .bang {
-            issues.append(.plusDialectDecorationWithoutDirective(tuneIndex: tuneIndex))
-        } else if decoration.dialect == .bang, state.activeDialect == .plus {
-            issues.append(.bangDialectDecorationInPlusMode(tuneIndex: tuneIndex))
-        }
+    if decoration.dialect == .plus, state.activeDialect == .bang {
+        issues.append(.plusDialectDecorationWithoutDirective(tuneIndex: tuneIndex))
+    } else if decoration.dialect == .bang, state.activeDialect == .plus {
+        issues.append(.bangDialectDecorationInPlusMode(tuneIndex: tuneIndex))
     }
 }
 

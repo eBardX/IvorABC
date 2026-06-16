@@ -111,35 +111,35 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_decoration() throws {
+    func matchSymbols_shorthand_tilde() throws {
         let symbols = try matchSymbols("~")
 
-        #expect(symbols == [.decoration(makeDecoration("roll", "~", .bang))])
+        #expect(symbols == [.shorthand(.tilde)])
     }
 
     @Test
-    func matchSymbols_decoration_legacyPlusSyntax() throws {
-        let symbols = try matchSymbols("+trill+")
+    func matchSymbols_shorthand_upperW() throws {
+        let symbols = try matchSymbols("W")
 
-        #expect(symbols == [.decoration(makeDecoration("trill", nil, .plus))])
+        #expect(symbols == [.shorthand(.wUpper)])
     }
 
     @Test
-    func matchSymbols_decoration_undefinedUserSymbol_throws() {
-        #expect(throws: (any Error).self) {
-            try matchSymbols("W")
-        }
-    }
-
-    @Test
-    func matchSymbols_decoration_userDefinedSymbol() throws {
+    func matchSymbols_shorthand_userDefinedSymbol_stillEmitsShorthand() throws {
         var ctx = ABCParseContext()
 
         ctx.update(with: .userSymbol(makeUserSymbol("W", makeDecoration("trill"))))
 
         let symbols = try matchSymbols("W", context: &ctx)
 
-        #expect(symbols == [.decoration(makeDecoration("trill", "W", .bang))])
+        #expect(symbols == [.shorthand(.wUpper)])
+    }
+
+    @Test
+    func matchSymbols_decoration_legacyPlusSyntax() throws {
+        let symbols = try matchSymbols("+trill+")
+
+        #expect(symbols == [.decoration(makeDecoration("trill", .plus))])
     }
 
     @Test
@@ -243,21 +243,21 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_macroCall_noMacrosFallsThroughToDecoration() throws {
+    func matchSymbols_macroCall_noMacrosFallsThroughToShorthand() throws {
         let symbols = try matchSymbols("~")
 
-        #expect(symbols == [.decoration(makeDecoration("roll", "~", .bang))])
+        #expect(symbols == [.shorthand(.tilde)])
     }
 
     @Test
-    func matchSymbols_macroCall_noMatchFallsThroughToDecoration() throws {
+    func matchSymbols_macroCall_noMatchFallsThroughToShorthand() throws {
         var ctx = ABCParseContext()
 
         ctx.update(with: .macro(makeMacro("~A", "!trill!A")))
 
         let symbols = try matchSymbols("~", context: &ctx)
 
-        #expect(symbols == [.decoration(makeDecoration("roll", "~", .bang))])
+        #expect(symbols == [.shorthand(.tilde)])
     }
 
     @Test
@@ -302,7 +302,7 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try matchSymbols("~G", context: &ctx)
 
-        let expansion: [ABCSymbol] = [.decoration(makeDecoration("trill", nil, .bang)),
+        let expansion: [ABCSymbol] = [.decoration(makeDecoration("trill", .bang)),
                                       .note(makeNote(makePitch(.g, .omitted, 4),
                                                      makeDuration(1, 8),
                                                      false))]

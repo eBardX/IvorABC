@@ -964,7 +964,7 @@ extension ABCFormatterTests {
 
     @Test
     func symbolLine_skip_emitsStar() throws {
-        let sl = makeSymbolLine([.skip, .decoration(makeDecoration("trill", nil, .bang)), .skip])
+        let sl = makeSymbolLine([.skip, .decoration(makeDecoration("trill", .bang)), .skip])
         let book = ABCTunebook(version: makeVersion(2, 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),

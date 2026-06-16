@@ -52,6 +52,7 @@ extension ABCSymbolTokenizer {
                                                             Rule(regexInlineField, .inlineField),
                                                             Rule(regexNote, .note),
                                                             Rule(regexRest, .rest),
+                                                            Rule(regexShorthand, .shorthand),
                                                             Rule(regexSpacer, .spacer),
                                                             Rule(regexTuplet, .tuplet),
                                                             Rule(regexVariantEnding, .variantEnding),
@@ -91,6 +92,7 @@ extension Tokenizer.Token.Kind {
     internal static let note               = Self("note")
     internal static let overlay            = Self("overlay")
     internal static let rest               = Self("rest")
+    internal static let shorthand          = Self("shorthand")
     internal static let slurBegin          = Self("slurBegin")
     internal static let slurEnd            = Self("slurEnd")
     internal static let spacer             = Self("spacer")

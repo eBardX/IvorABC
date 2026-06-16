@@ -25,9 +25,9 @@ extension ABCKeySignature {
 
     // MARK: Public Nested Types
 
-    /// A type alias for ``ABCPitch`` used to represent accidentals in a key
-    /// signature.
-    public typealias Accidental = ABCPitch
+    /// A type alias for ``ABCPitch`` used to represent extra accidentals in a
+    /// key signature.
+    public typealias ExtraAccidental = ABCPitch
 
     // MARK: Public Instance Properties
 
@@ -40,8 +40,8 @@ extension ABCKeySignature {
     public var accidentals: [ABCPitch.Letter: ABCPitch.Accidental] {
         var result = baseAccidentals
 
-        if case let .standard(std) = self {
-            for pitch in std.extraAccidentals where pitch.accidental != .omitted {
+        if case let .standard(standard) = self {
+            for pitch in standard.extraAccidentals where pitch.accidental != .omitted {
                 result[pitch.letter] = pitch.accidental
             }
         }

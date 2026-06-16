@@ -121,7 +121,7 @@ extension ABCTunebookTests {
 
     @Test
     func validate_plusDecorationInBody_withoutDirective_returnsError() {
-        let tunebook = minimalTunebook(symbols: [.decoration(makeDecoration("trill", nil, .plus))])
+        let tunebook = minimalTunebook(symbols: [.decoration(makeDecoration("trill", .plus))])
         let issues = tunebook.validate()
 
         #expect(issues == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
@@ -135,7 +135,7 @@ extension ABCTunebookTests {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.instruction(directive)),
-                                                             .symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
+                                                             .symbols([.decoration(makeDecoration("trill", .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
@@ -146,7 +146,7 @@ extension ABCTunebookTests {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.instruction(directive)),
-                                                             .symbols([.decoration(makeDecoration("trill", nil, .bang))])])])
+                                                             .symbols([.decoration(makeDecoration("trill", .bang))])])])
         let issues = tunebook.validate()
 
         #expect(issues == [.bangDialectDecorationInPlusMode(tuneIndex: 0)])
@@ -154,25 +154,17 @@ extension ABCTunebookTests {
     }
 
     @Test
-    func validate_shorthandDecoration_returnsNoIssues() {
-        let shorthand = makeDecoration("roll", "~", .plus)
-        let tunebook = minimalTunebook(symbols: [.decoration(shorthand)])
-
-        #expect(tunebook.validate().isEmpty)
-    }
-
-    @Test
     func validate_plusDecorationInUserSymbol_withoutDirective_returnsError() {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
-                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", nil, .plus))))])])
+                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", .plus))))])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 0)])
     }
 
     @Test
     func validate_plusDecorationInSymbolLine_withoutDirective_returnsError() {
-        let symbolLine = makeSymbolLine([.decoration(makeDecoration("trill", nil, .plus))])
+        let symbolLine = makeSymbolLine([.decoration(makeDecoration("trill", .plus))])
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.field(.symbolLine(symbolLine))])])
@@ -185,7 +177,7 @@ extension ABCTunebookTests {
         let directive = makeDirective("decoration", "+")
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [.directive(directive)],
-                                   tunes: [ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
+                                   tunes: [ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
@@ -196,7 +188,7 @@ extension ABCTunebookTests {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: [.symbols([.inlineField(.instruction(directive)),
-                                                                       .decoration(makeDecoration("trill", nil, .plus))])])])
+                                                                       .decoration(makeDecoration("trill", .plus))])])])
 
         #expect(tunebook.validate().isEmpty)
     }
@@ -204,7 +196,7 @@ extension ABCTunebookTests {
     @Test
     func validate_plusDecorationInFileHeader_withoutDirective_returnsError() {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
-                                   headers: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", nil, .plus))))],
+                                   headers: [.field(.userSymbol(makeUserSymbol("T", makeDecoration("trill", .plus))))],
                                    tunes: [])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: nil)])
@@ -215,39 +207,9 @@ extension ABCTunebookTests {
         let tunebook = ABCTunebook(version: makeVersion(2, 1),
                                    headers: [],
                                    tunes: [ABCTune(entries: []),
-                                           ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", nil, .plus))])])])
+                                           ABCTune(entries: [.symbols([.decoration(makeDecoration("trill", .plus))])])])
 
         #expect(tunebook.validate() == [.plusDialectDecorationWithoutDirective(tuneIndex: 1)])
-    }
-
-    @Test
-    func validate_undefinedUserSymbol_returnsError() {
-        let custom = makeDecoration("trill", "W")
-        let tunebook = minimalTunebook(symbols: [.decoration(custom)])
-        let issues = tunebook.validate()
-
-        #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
-        #expect(issues[0].severity == .error)
-        #expect(!issues[0].message.isEmpty)
-    }
-
-    @Test
-    func validate_definedUserSymbol_returnsNoIssues() {
-        let custom = makeDecoration("trill", "W")
-        let tunebook = ABCTunebook(version: makeVersion(2, 1),
-                                   headers: [],
-                                   tunes: [ABCTune(entries: [.field(.userSymbol(makeUserSymbol("W", makeDecoration("trill")))),
-                                                             .symbols([.decoration(custom)])])])
-
-        #expect(tunebook.validate().isEmpty)
-    }
-
-    @Test
-    func validate_builtinShorthand_returnsNoIssues() {
-        let tilde = makeDecoration("roll", "~")
-        let tunebook = minimalTunebook(symbols: [.decoration(tilde)])
-
-        #expect(tunebook.validate().isEmpty)
     }
 
     @Test

@@ -35,13 +35,13 @@ extension ABCParserStrictnessTests {
 
     @Test
     func parseWithDiagnostics_freeText_emitsUnrecognizedLineDiagnostic() throws {
-        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text.\n\nX:2\nT:Another\nK:G\nGABc|\n"
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(diagnostics.contains(.unrecognizedLine("This is free text.")))
+        #expect(diagnostics.contains(.unrecognizedLine("This is free text?")))
     }
 
     @Test
@@ -131,7 +131,7 @@ extension ABCParserStrictnessTests {
 
     @Test
     func parse_freeTextBetweenTunes_lenient_skipsLineAndParsesAllTunes() throws {
-        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text.\n\nX:2\nT:Another\nK:G\nGABc|\n"
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
@@ -142,7 +142,7 @@ extension ABCParserStrictnessTests {
 
     @Test
     func parse_freeTextBetweenTunes_strict_throws() {
-        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text.\n\nX:2\nT:Another\nK:G\nGABc|\n"
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 

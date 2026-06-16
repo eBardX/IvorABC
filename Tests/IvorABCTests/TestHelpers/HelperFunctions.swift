@@ -313,10 +313,8 @@ func makeChord(_ notes: [ABCNote],
 }
 
 func makeDecoration(_ name: String,
-                    _ shorthand: Character? = nil,
                     _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
     ABCDecoration(name: name,
-                  shorthand: shorthand,
                   dialect: dialect)!    // swiftlint:disable:this force_unwrapping
 }
 
@@ -352,7 +350,7 @@ func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
 
 func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                       _ mode: ABCKeySignature.Mode,
-                      _ extraAccidentals: [ABCKeySignature.Accidental]) -> ABCKeySignature {
+                      _ extraAccidentals: [ABCKeySignature.ExtraAccidental]) -> ABCKeySignature {
     .standard(ABCKeySignature.Standard(tonic: tonic,
                                        mode: mode,
                                        extraAccidentals: extraAccidentals)!)    // swiftlint:disable:this force_unwrapping

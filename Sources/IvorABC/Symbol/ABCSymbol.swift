@@ -59,6 +59,8 @@ public enum ABCSymbol {
     /// A rest.
     case rest(ABCRest)
 
+    case shorthand(ABCShorthand)
+
     /// A slur marker.
     ///
     /// The string is `(` for a slur begin or `)` for a slur end.

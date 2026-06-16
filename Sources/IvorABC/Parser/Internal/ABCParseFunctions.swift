@@ -7,7 +7,7 @@ private import XestiTools
 // MARK: Internal Types
 
 internal typealias ParseNoteResult = (pitch: ParsePitchResult, duration: ABCDuration?, isTied: Bool)
-internal typealias ParsePitchResult = (letter: ABCPitch.Letter, accidental: ABCPitch.Accidental?, octave: ABCPitch.Octave)
+internal typealias ParsePitchResult = (letter: ABCPitch.Letter, accidental: ABCPitch.Accidental, octave: ABCPitch.Octave)
 internal typealias ParseRestResult = (kind: String, duration: ABCDuration?)
 internal typealias ParseTupletResult = (pcount: UInt, qcount: UInt?, rcount: UInt?)
 
@@ -327,20 +327,20 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
     guard let (tonic, mode) = _parseKeySignatureTonicMode(trimSuffix(result.head))
     else { return nil }
 
-    let accidentals: [ABCKeySignature.Accidental]
+    let extraAccidentals: [ABCKeySignature.ExtraAccidental]
 
     if let tail = result.tail {
-        guard let acc = _parseKeySignatureExtraAccidentals(trimPrefix(tail))
+        guard let xacc = _parseKeySignatureExtraAccidentals(trimPrefix(tail))
         else { return nil }
 
-        accidentals = acc
+        extraAccidentals = xacc
     } else {
-        accidentals = []
+        extraAccidentals = []
     }
 
     guard let standard = ABCKeySignature.Standard(tonic: tonic,
                                                   mode: mode,
-                                                  extraAccidentals: accidentals,
+                                                  extraAccidentals: extraAccidentals,
                                                   clef: clef)
     else { return nil }
 
@@ -463,7 +463,7 @@ internal func parsePitch(_ tidyInput: Substring) -> ParsePitchResult? {
           let plResult = pitchLetters[plLetter]
     else { return nil }
 
-    let accidental: ABCPitch.Accidental?
+    let accidental: ABCPitch.Accidental
 
     if !result2.head.isEmpty {
         guard let acc = pitchAccidentals[result2.head]
@@ -471,7 +471,7 @@ internal func parsePitch(_ tidyInput: Substring) -> ParsePitchResult? {
 
         accidental = acc
     } else {
-        accidental = nil
+        accidental = .omitted
     }
 
     var octave = plResult.octave
@@ -553,7 +553,6 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   !rest[..<closeIdx].isEmpty,
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) }),
                   let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
-                                                 shorthand: nil,
                                                  dialect: .bang)
             else { return nil }
 
@@ -568,7 +567,6 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   !rest[..<closeIdx].isEmpty,
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) }),
                   let decoration = ABCDecoration(name: String(rest[..<closeIdx]),
-                                                 shorthand: nil,
                                                  dialect: .plus)
             else { return nil }
 
@@ -1070,23 +1068,24 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySign
     return ABCKeySignature.Clef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
 }
 
-private func _parseKeySignatureExtraAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.Accidental]? {
-    var accidentals: [ABCKeySignature.Accidental] = []
+private func _parseKeySignatureExtraAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.ExtraAccidental]? {
+    var extraAccidentals: [ABCKeySignature.ExtraAccidental] = []
 
     var chunker = tidyInput.split { $0.isABCWhitespace }.makeIterator()
 
     while let chunk = chunker.next() {
-        guard let result = parsePitch(chunk)
+        guard let result = parsePitch(chunk),
+              result.accidental != .omitted
         else { return nil }
 
-        let accidental = ABCPitch(letter: result.letter,
-                                  accidental: result.accidental ?? .natural,
-                                  octave: result.octave)
+        let extraAccidental = ABCPitch(letter: result.letter,
+                                       accidental: result.accidental,
+                                       octave: result.octave)
 
-        accidentals.append(accidental)
+        extraAccidentals.append(extraAccidental)
     }
 
-    return accidentals
+    return extraAccidentals
 }
 
 private func _parseKeySignatureSpecial(_ tidyInput: Substring) -> ABCKeySignature? {

@@ -48,17 +48,40 @@ extension ABCSymbolMatcher {
 
     // MARK: Private Type Properties
 
-    private static let builtinShorthandDecorations: [Character: String] = [".": "staccato",
-                                                                           "~": "roll",
-                                                                           "H": "fermata",
-                                                                           "L": "accent",
-                                                                           "M": "lowermordent",
-                                                                           "O": "coda",
-                                                                           "P": "uppermordent",
-                                                                           "S": "segno",
-                                                                           "T": "trill",
-                                                                           "u": "upbow",
-                                                                           "v": "downbow"]
+    private static let shorthands: [String: ABCShorthand] = [".": .dot,
+                                                             "~": .tilde,
+                                                             "h": .hLower,
+                                                             "H": .hUpper,
+                                                             "i": .iLower,
+                                                             "I": .iUpper,
+                                                             "j": .jLower,
+                                                             "J": .jUpper,
+                                                             "k": .kLower,
+                                                             "K": .kUpper,
+                                                             "l": .lLower,
+                                                             "L": .lUpper,
+                                                             "m": .mLower,
+                                                             "M": .mUpper,
+                                                             "n": .nLower,
+                                                             "N": .nUpper,
+                                                             "o": .oLower,
+                                                             "O": .oUpper,
+                                                             "p": .pLower,
+                                                             "P": .pUpper,
+                                                             "q": .qLower,
+                                                             "Q": .qUpper,
+                                                             "r": .rLower,
+                                                             "R": .rUpper,
+                                                             "s": .sLower,
+                                                             "S": .sUpper,
+                                                             "t": .tLower,
+                                                             "T": .tUpper,
+                                                             "u": .uLower,
+                                                             "U": .uUpper,
+                                                             "v": .vLower,
+                                                             "V": .vUpper,
+                                                             "w": .wLower,
+                                                             "W": .wUpper]
 
     // MARK: Private Type Methods
 
@@ -85,7 +108,7 @@ extension ABCSymbolMatcher {
 
     private func _makePitch(_ result: ParsePitchResult) -> ABCPitch {
         ABCPitch(letter: result.letter,
-                 accidental: result.accidental ?? .omitted,
+                 accidental: result.accidental,
                  octave: result.octave)
     }
 
@@ -177,17 +200,6 @@ extension ABCSymbolMatcher {
         let token = try tokenMatcher.readMustMatch(.decoration)
         let value = token.value
 
-        if value.count == 1,
-           let letter = value.first {
-            guard let name = context.userSymbolDecorations[letter] ?? Self.builtinShorthandDecorations[letter],
-                  let decoration = ABCDecoration(name: name,
-                                                 shorthand: letter,
-                                                 dialect: context.decorationDialect)
-            else { throw ABCParser.Error.invalidSymbols(value) }
-
-            return .decoration(decoration)
-        }
-
         // In + dialect mode, !...! decorations are an error per spec §12.1.2.
         if context.decorationDialect == .plus,
            value.first == "!" {
@@ -197,7 +209,6 @@ extension ABCSymbolMatcher {
         let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
 
         guard let decoration = ABCDecoration(name: String(value.dropFirst().dropLast()),
-                                             shorthand: nil,
                                              dialect: dialect)
         else { throw ABCParser.Error.invalidSymbols(value) }
 
@@ -253,7 +264,7 @@ extension ABCSymbolMatcher {
         else { return nil }
 
         let savedMatcher = tokenMatcher
-        let decorToken = try tokenMatcher.readMustMatch(.decoration)
+        let decorToken = try tokenMatcher.readMustMatch(.shorthand)
         let decorValue = String(decorToken.value)
         let afterDecorMatcher = tokenMatcher
 
@@ -352,6 +363,16 @@ extension ABCSymbolMatcher {
         return .rest(rest)
     }
 
+    private mutating func _matchShorthand() throws -> ABCSymbol? {
+        let token = try tokenMatcher.readMustMatch(.shorthand)
+        let value = token.value
+
+        guard let shorthand = Self.shorthands[String(value)]
+        else { throw ABCParser.Error.invalidSymbols(value) }
+
+        return .shorthand(shorthand)
+    }
+
     private mutating func _matchSlur() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch([.slurBegin, .slurEnd])
 
@@ -392,7 +413,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.decoration) {
-            return try _matchMacroCall(&context) ?? _matchDecoration(&context)
+            return try _matchDecoration(&context)
         }
 
         if tokenMatcher.nextMatches(.graceNotesBegin) {
@@ -413,6 +434,10 @@ extension ABCSymbolMatcher {
 
         if tokenMatcher.nextMatches(.rest) {
             return try _matchRest(&context)
+        }
+
+        if tokenMatcher.nextMatches(.shorthand) {
+            return try _matchMacroCall(&context) ?? _matchShorthand()
         }
 
         if tokenMatcher.nextMatches([.slurBegin, .slurEnd]) {

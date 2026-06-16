@@ -17,7 +17,7 @@ public struct ABCUserSymbol {
     /// - Parameter decoration: The decoration the symbol maps to.
     public init(symbol: Character,
                 decoration: ABCDecoration) {
-        self.decoration = decoration    // decoration should have no shorthand ???
+        self.decoration = decoration
         self.symbol = symbol            // validate ???
     }
 

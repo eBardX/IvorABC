@@ -96,7 +96,7 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
         return ("L", "\(duration.numerator)/\(duration.denominator)")
 
     case let .userSymbol(userSymbol):
-        return ("U", "\(userSymbol.symbol)=\(_formatDecoration(userSymbol.decoration, false))")
+        return ("U", "\(userSymbol.symbol)=\(_formatDecoration(userSymbol.decoration))")
 
     case let .voice(voice):
         guard !voice.id.isEmpty
@@ -163,7 +163,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return "\"\(text)\""
 
     case let .decoration(decoration):
-        return _formatDecoration(decoration, true)
+        return _formatDecoration(decoration)
 
     case let .graceNotes(graceNotes):
         return try _formatGraceNotes(graceNotes,
@@ -201,6 +201,9 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
             return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
         }
+
+    case let .shorthand(shorthand):
+        return _formatShorthand(shorthand)
 
     case let .slur(text):
         guard text == "(" || text == ")"
@@ -285,6 +288,41 @@ private let pitchLetters: [ABCPitch.Letter: (upper: String, lower: String)] = [.
                                                                                .e: ("E", "e"),
                                                                                .f: ("F", "f"),
                                                                                .g: ("G", "g")]
+
+private let shorthands: [ABCShorthand: String] = [.dot: ".",
+                                                  .hLower: "h",
+                                                  .hUpper: "H",
+                                                  .iLower: "i",
+                                                  .iUpper: "I",
+                                                  .jLower: "j",
+                                                  .jUpper: "J",
+                                                  .kLower: "k",
+                                                  .kUpper: "K",
+                                                  .lLower: "l",
+                                                  .lUpper: "L",
+                                                  .mLower: "m",
+                                                  .mUpper: "M",
+                                                  .nLower: "n",
+                                                  .nUpper: "N",
+                                                  .oLower: "o",
+                                                  .oUpper: "O",
+                                                  .pLower: "p",
+                                                  .pUpper: "P",
+                                                  .qLower: "q",
+                                                  .qUpper: "Q",
+                                                  .rLower: "r",
+                                                  .rUpper: "R",
+                                                  .sLower: "s",
+                                                  .sUpper: "S",
+                                                  .tilde: "~",
+                                                  .tLower: "t",
+                                                  .tUpper: "T",
+                                                  .uLower: "u",
+                                                  .uUpper: "U",
+                                                  .vLower: "v",
+                                                  .vUpper: "V",
+                                                  .wLower: "w",
+                                                  .wUpper: "W"]
 
 // MARK: Private Functions
 
@@ -416,12 +454,8 @@ private func _formatChord(_ chord: ABCChord,
     return result
 }
 
-private func _formatDecoration(_ decoration: ABCDecoration,
-                               _ shorthandAllowed: Bool) -> String {
-    if shorthandAllowed,
-       let shorthand = decoration.shorthand {
-        String(shorthand)
-    } else if decoration.dialect == .plus {
+private func _formatDecoration(_ decoration: ABCDecoration) -> String {
+    if decoration.dialect == .plus {
         "+\(decoration.name)+"
     } else {
         "!\(decoration.name)!"
@@ -622,6 +656,10 @@ private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
     }
 }
 
+private func _formatShorthand(_ shorthand: ABCShorthand) -> String {
+    shorthands[shorthand] ?? ""
+}
+
 private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
     symbolLine.elements.map { token in
         switch token {
@@ -632,7 +670,7 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
             "\"\(text)\""
 
         case let .decoration(decoration):
-            _formatDecoration(decoration, true)
+            _formatDecoration(decoration)
 
         case .skip:
             "*"

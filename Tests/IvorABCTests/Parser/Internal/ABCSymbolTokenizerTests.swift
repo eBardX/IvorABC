@@ -151,17 +151,17 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
-    func tokenize_decoration_shorthand() throws {
+    func tokenize_shorthand() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("~")
 
         #expect(tokens.count == 1)
-        #expect(tokens[0].kind == .decoration)
+        #expect(tokens[0].kind == .shorthand)
     }
 
     @Test
-    func tokenize_decoration_shorthand_fullRedefinableRange() throws {
+    func tokenize_shorthand_fullRedefinableRange() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
         let letters = "HIJKLMNOPQRSTUVWhijklmnopqrstuvw"
 
@@ -169,7 +169,7 @@ extension ABCSymbolTokenizerTests {
             let tokens = try tokenizer.tokenize(String(letter))
 
             #expect(tokens.count == 1, "Expected 1 token for '\(letter)'")
-            #expect(tokens[0].kind == .decoration, "Expected .decoration for '\(letter)'")
+            #expect(tokens[0].kind == .shorthand, "Expected .shorthand for '\(letter)'")
         }
     }
 
