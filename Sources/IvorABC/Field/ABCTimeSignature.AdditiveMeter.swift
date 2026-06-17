@@ -23,13 +23,7 @@ extension ABCTimeSignature {
         ///                          power of 2 in the range 1...64.
         public init?(numerators: [UInt],
                      denominator: UInt) {
-            // guard Self._isValid(numerators, denominator)
-            // else { return nil }
-
-            guard !numerators.isEmpty,
-                  numerators.allSatisfy({ $0 > 0 }),
-                  (1...64).contains(denominator),
-                  denominator.isPowerOf2
+            guard Self._isValid(numerators, denominator)
             else { return nil }
 
             self.numerators = numerators
@@ -43,6 +37,21 @@ extension ABCTimeSignature {
 
         /// The numerator groups of this meter.
         public let numerators: [UInt]
+    }
+}
+
+// MARK: -
+
+extension ABCTimeSignature.AdditiveMeter {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ numerators: [UInt],
+                                 _ denominator: UInt) -> Bool {
+        !numerators.isEmpty
+        && numerators.allSatisfy { $0 > 0 }
+        && (1...64).contains(denominator)
+        && denominator.isPowerOf2
     }
 }
 

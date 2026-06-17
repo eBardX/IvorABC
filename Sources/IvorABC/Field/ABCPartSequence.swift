@@ -47,12 +47,17 @@ public struct ABCPartSequence {
 
     // MARK: Public Initializers
 
-    /// Creates a new part sequence with the given items.
+    /// Creates a new part sequence with the given items, or `nil` if `items` is
+    /// empty.
     ///
-    /// - Parameter items: The top-level items in the sequence.
-    public init(items: [Item]) {
+    /// - Parameter items: The top-level items in the sequence. Must be
+    ///                    non-empty.
+    public init?(items: [Item]) {
+        guard !items.isEmpty
+        else { return nil }
+
         self.expansion = Self._expand(items)
-        self.items = items                      // validate ???
+        self.items = items
     }
 
     // MARK: Public Instance Properties
@@ -68,7 +73,6 @@ public struct ABCPartSequence {
     /// | `ABABCDCD`  | `"ABABCDCD"`     |
     /// | `A2B(CD)3`  | `"AABCDCDCD"`   |
     /// | `A`         | `"A"`            |
-    /// | *(empty)*   | `""`             |
     ///
     /// A repeat count of zero silently contributes nothing to the expansion
     /// (e.g. `A0` → `""`). The ABC standard does not define this case; treat

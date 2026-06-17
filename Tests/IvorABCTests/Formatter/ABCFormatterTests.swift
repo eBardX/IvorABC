@@ -66,7 +66,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_continuation_emitsHyphen() throws {
-        let lyrics = makeAlignedLyrics([.text("hel"), .hyphen, .text("lo")])
+        let lyrics = makeAlignedLyrics([.syllable("hel"), .continuation, .syllable("lo")])
         let book = ABCTunebook(version: makeVersion(2, 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),
@@ -78,7 +78,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_hold_emitsUnderscore() throws {
-        let lyrics = makeAlignedLyrics([.text("long"), .hold])
+        let lyrics = makeAlignedLyrics([.syllable("long"), .hold])
         let book = ABCTunebook(version: makeVersion(2, 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),
@@ -89,8 +89,32 @@ extension ABCFormatterTests {
     }
 
     @Test
+    func alignedLyrics_syllableWithHyphen_escapesHyphen() throws {
+        let lyrics = makeAlignedLyrics([.syllable("foo-bar")])
+        let book = ABCTunebook(version: makeVersion(2, 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),
+                                                         .field(.key(makeKeySignature(.c, .major))),
+                                                         .field(.alignedLyrics(lyrics))])])
+
+        #expect(try format(book).contains("w:foo\\-bar\n"))
+    }
+
+    @Test
+    func alignedLyrics_syllableWithInternalSpace_emitsTilde() throws {
+        let lyrics = makeAlignedLyrics([.syllable("how sweet")])
+        let book = ABCTunebook(version: makeVersion(2, 1),
+                               headers: [],
+                               tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),
+                                                         .field(.key(makeKeySignature(.c, .major))),
+                                                         .field(.alignedLyrics(lyrics))])])
+
+        #expect(try format(book).contains("w:how~sweet\n"))
+    }
+
+    @Test
     func alignedLyrics_syllableWithPercent_escapesPercentSign() throws {
-        let lyrics = makeAlignedLyrics([.text("100%"), .text("done")])
+        let lyrics = makeAlignedLyrics([.syllable("100%"), .syllable("done")])
         let book = ABCTunebook(version: makeVersion(2, 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),
@@ -102,7 +126,7 @@ extension ABCFormatterTests {
 
     @Test
     func alignedLyrics_syllables_emitsSpaceSeparated() throws {
-        let lyrics = makeAlignedLyrics([.text("hel"), .text("lo")])
+        let lyrics = makeAlignedLyrics([.syllable("hel"), .syllable("lo")])
         let book = ABCTunebook(version: makeVersion(2, 1),
                                headers: [],
                                tunes: [ABCTune(entries: [.field(.refNumber(makeRefNumber(1))),

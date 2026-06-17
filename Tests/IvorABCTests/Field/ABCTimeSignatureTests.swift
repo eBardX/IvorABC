@@ -32,6 +32,30 @@ extension ABCTimeSignatureTests {
     }
 
     @Test
+    func isCompound_true() {
+        #expect(makeTimeSignature(6, 8).isCompound)
+        #expect(makeTimeSignature(9, 8).isCompound)
+        #expect(makeTimeSignature(12, 8).isCompound)
+        #expect(makeTimeSignature(6, 4).isCompound)
+    }
+
+    @Test
+    func isCompound_false_simpleStandard() {
+        #expect(!makeTimeSignature(2, 4).isCompound)
+        #expect(!makeTimeSignature(3, 4).isCompound)  // 3 is not > 3
+        #expect(!makeTimeSignature(4, 4).isCompound)
+        #expect(!makeTimeSignature(2, 2).isCompound)
+    }
+
+    @Test
+    func isCompound_false_nonStandard() {
+        #expect(!ABCTimeSignature.common.isCompound)
+        #expect(!ABCTimeSignature.cut.isCompound)
+        #expect(!ABCTimeSignature.empty.isCompound)
+        #expect(!makeTimeSignature([2, 3], 8).isCompound)
+    }
+
+    @Test
     func inequality() throws {
         let meter = try #require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4))
 

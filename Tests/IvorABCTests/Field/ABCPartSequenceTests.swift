@@ -18,11 +18,6 @@ extension ABCPartSequenceTests {
     }
 
     @Test
-    func expansion_empty() {
-        #expect(makePartSequence([]).expansion.isEmpty)
-    }
-
-    @Test
     func expansion_group() {
         #expect(makePartSequence([makePart("A"), makePartGroup([makePart("C"), makePart("D")], 3)]).expansion == "ACDCDCD")
     }
@@ -99,11 +94,6 @@ extension ABCPartSequenceTests {
     }
 
     @Test
-    func items_empty() {
-        #expect(makePartSequence([]).items.isEmpty)
-    }
-
-    @Test
     func items_mixed() {
         let items: [ABCPartSequence.Item] = [makePart("A"), makePartGroup([makePart("B"), makePart("C")], 2)]
         let ps = makePartSequence(items)
@@ -112,8 +102,8 @@ extension ABCPartSequenceTests {
     }
 
     @Test
-    func parsePartSequence_empty() {
-        #expect(IvorABC.parsePartSequence("") == makePartSequence([]))
+    func parsePartSequence_failure_empty() {
+        #expect(IvorABC.parsePartSequence("") == nil)
     }
 
     @Test

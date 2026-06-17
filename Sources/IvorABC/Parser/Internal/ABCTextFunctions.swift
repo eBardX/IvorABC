@@ -1,5 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
+// swiftlint:disable file_length
+
 // MARK: Internal Functions
 
 internal func escape(_ input: String) -> String {
@@ -65,6 +67,170 @@ internal func unescape(_ input: String) -> String {
     }
 
     return String(result)
+}
+
+// MARK: Internal Functions (Lyrics)
+
+/// Decodes a backslash escape sequence within an aligned lyrics line.
+///
+/// The caller has already consumed the leading `\`. On return, `input` is
+/// advanced past all characters that were part of the escape sequence.
+/// Returns the decoded string to append to the current syllable.
+internal func decodeBackslashInLyrics(_ input: inout Substring) -> String {
+    guard let next = input.first
+    else { return "" }
+
+    // \uXXXX — Unicode codepoint (4 hex digits; takes priority over \uc breve)
+    if next == "u" {
+        let hexSlice = input.dropFirst().prefix(4)
+
+        if hexSlice.count == 4 {
+            let hex = String(hexSlice)
+
+            if hex.allSatisfy(\.isHexDigit),
+               let codepoint = UInt32(hex, radix: 16),
+               let scalar = Unicode.Scalar(codepoint) {
+                input = input.dropFirst(5)
+
+                return String(Character(scalar))
+            }
+        }
+    }
+
+    // Two-character TeX-style escape: \Xc
+    if let next2 = input.dropFirst().first {
+        let key = String([next, next2])
+
+        if let ch = _texEscapeMap[key] {
+            input = input.dropFirst(2)
+
+            return String(ch)
+        }
+    }
+
+    // One-character escape: \X
+    input = input.dropFirst()
+
+    if let ch = _texSingleMap[String(next)] {
+        return String(ch)
+    }
+
+    // Unrecognized — pass through the character after the backslash
+    return String(next)
+}
+
+/// Decodes an HTML entity within an aligned lyrics line.
+///
+/// The caller has already consumed the leading `&`. On return, `input` is
+/// advanced past all characters that were part of the entity (including the
+/// closing `;`). Returns the decoded string, or `"&"` if the entity is
+/// unrecognized or malformed.
+internal func decodeHTMLEntityInLyrics(_ input: inout Substring) -> String {
+    var scan = input
+    var count = 0
+
+    while let ch = scan.first, ch != ";", count <= 20 {
+        scan = scan.dropFirst()
+        count += 1
+    }
+
+    let body = String(input.prefix(count))
+
+    guard scan.first == ";", !body.isEmpty
+    else { return "&" }
+
+    // Numeric entity: &#ddd; or &#xhhhh;
+    if body.hasPrefix("#") {
+        let value = body.dropFirst()
+
+        if value.hasPrefix("x") || value.hasPrefix("X") {
+            let hex = String(value.dropFirst())
+
+            if !hex.isEmpty,
+               hex.allSatisfy(\.isHexDigit),
+               let cp = UInt32(hex, radix: 16),
+               let scalar = Unicode.Scalar(cp) {
+                input = scan.dropFirst()
+
+                return String(Character(scalar))
+            }
+        } else if !value.isEmpty,
+                  value.allSatisfy(\.isNumber),
+                  let cp = UInt32(value),
+                  let scalar = Unicode.Scalar(cp) {
+            input = scan.dropFirst()
+
+            return String(Character(scalar))
+        }
+    }
+
+    // Named entity
+    if let ch = _htmlEntityMap[body] {
+        input = scan.dropFirst()
+
+        return String(ch)
+    }
+
+    return "&"
+}
+
+/// Encodes syllable display text for output in an ABC `w:` field.
+///
+/// Characters that are structural in ABC lyrics source are escaped so the
+/// result is safe to emit verbatim. Specifically:
+/// - space → `~`
+/// - `-` → `\-`
+/// - `~` → `\~`
+/// - `_`, `*`, `|` → `\_`, `\*`, `\|`
+/// - `\` → `\\`
+/// - `%` → `\%`
+/// - `&` → `\&`
+/// - Non-ABC-visible characters → `\uXXXX`
+internal func escapeLyricsSyllable(_ input: String) -> String {
+    guard !input.isEmpty
+    else { return input }
+
+    var result = ""
+
+    for ch in input {
+        switch ch {
+        case " ":
+            result += "~"
+
+        case "-":
+            result += "\\-"
+
+        case "~":
+            result += "\\~"
+
+        case "_":
+            result += "\\_"
+
+        case "*":
+            result += "\\*"
+
+        case "|":
+            result += "\\|"
+
+        case "\\":
+            result += "\\\\"
+
+        case "%":
+            result += "\\%"
+
+        case "&":
+            result += "\\&"
+
+        default:
+            if ch.isABCVisible {
+                result.append(ch)
+            } else {
+                result += _unicodeEscape(ch)
+            }
+        }
+    }
+
+    return result
 }
 
 // MARK: Private Functions

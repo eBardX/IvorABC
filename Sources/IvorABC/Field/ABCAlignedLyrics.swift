@@ -12,7 +12,7 @@ public struct ABCAlignedLyrics {
     ///
     /// - Parameter segments: The lyric tokens.
     public init(segments: [Segment]) {
-        self.segments = segments    // validate segments?
+        self.segments = segments
     }
 
     // MARK: Public Instance Properties

@@ -395,7 +395,7 @@ func makePartGroup(_ items: [ABCPartSequence.Item],
 }
 
 func makePartSequence(_ items: [ABCPartSequence.Item]) -> ABCPartSequence {
-    ABCPartSequence(items: items)
+    ABCPartSequence(items: items)!  // swiftlint:disable:this force_unwrapping
 }
 
 func makePitch(_ letter: ABCPitch.Letter,

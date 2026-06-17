@@ -32,7 +32,7 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
         guard !currentText.isEmpty
         else { return }
 
-        segments.append(.text(currentText))
+        segments.append(.syllable(ABCAlignedLyrics.Segment.Syllable(currentText)))
 
         currentText = ""
     }
@@ -42,25 +42,25 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
 
         switch char {
         case "\\":
-            if let next = input.first {
+            if input.first == "-" {
                 input = input.dropFirst()
-
-                if next == "-" {
-                    appendSegment(.escapedHyphen)
-                } else {
-                    currentText.append(next)
-                }
+                currentText.append("-")
+            } else {
+                currentText += decodeBackslashInLyrics(&input)
             }
+
+        case "&":
+            currentText += decodeHTMLEntityInLyrics(&input)
 
         case " ",
              "\t":
             flushText()
 
         case "-":
-            appendSegment(.hyphen)
+            appendSegment(.continuation)
 
         case "~":
-            appendSegment(.tilde)
+            currentText.append(" ")
 
         case "_":
             appendSegment(.hold)
@@ -267,7 +267,7 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return try .lyrics(parseText(vtext))
 
     case "w" where !isInline:
-        return .alignedLyrics(parseAlignedLyrics(Substring(unescape(String(vtext)))))
+        return .alignedLyrics(parseAlignedLyrics(vtext))
 
     case "X" where !isInline:
         guard let rn = parseRefNumber(vtext)
@@ -443,6 +443,9 @@ internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
 }
 
 internal func parsePartSequence(_ tidyInput: Substring) -> ABCPartSequence? {
+    guard !tidyInput.isEmpty
+    else { return nil }
+
     var input = tidyInput
 
     guard let items = _parsePartItems(&input,

@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCParseFunctionsTests {
 }
@@ -40,11 +41,11 @@ extension ABCParseFunctionsTests {
     @Test
     func parseField_alignedLyrics_decodesTextEscapes() throws {
         try expectFieldIsAlignedLyrics(parseField("w:f\\'o"),
-                                       makeAlignedLyrics([.text("fó")]))
+                                       makeAlignedLyrics([.syllable("fó")]))
         try expectFieldIsAlignedLyrics(parseField("w:foo\\%bar"),
-                                       makeAlignedLyrics([.text("foo%bar")]))
+                                       makeAlignedLyrics([.syllable("foo%bar")]))
         try expectFieldIsAlignedLyrics(parseField("w:A-m\\\"a-zing"),
-                                       makeAlignedLyrics([.text("A"), .hyphen, .text("mä"), .hyphen, .text("zing")]))
+                                       makeAlignedLyrics([.syllable("A"), .continuation, .syllable("mä"), .continuation, .syllable("zing")]))
     }
 
     @Test
@@ -60,7 +61,7 @@ extension ABCParseFunctionsTests {
     @Test
     func parseField_success() throws {
         try expectFieldIsAlignedLyrics(parseField("w:la la la"),
-                                       makeAlignedLyrics([.text("la"), .text("la"), .text("la")]))
+                                       makeAlignedLyrics([.syllable("la"), .syllable("la"), .syllable("la")]))
         try expectFieldIsArea(parseField("A:London"), "London")
         try expectFieldIsBook(parseField("B:My Fakebook"), "My Fakebook")
         try expectFieldIsComposer(parseField("C:J.S. Bach"), "J.S. Bach")

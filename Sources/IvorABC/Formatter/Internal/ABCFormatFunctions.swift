@@ -374,8 +374,8 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
 
             prevIsConnector = false
 
-        case .escapedHyphen:
-            result.append("\\-")
+        case .continuation:
+            result.append("-")
 
             prevIsConnector = true
 
@@ -388,11 +388,6 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
 
             prevIsConnector = false
 
-        case .hyphen:
-            result.append("-")
-
-            prevIsConnector = true
-
         case .skip:
             if needsSpace {
                 result.append(" ")
@@ -402,19 +397,14 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
 
             prevIsConnector = false
 
-        case let .text(string):
+        case let .syllable(syllable):
             if needsSpace {
                 result.append(" ")
             }
 
-            result.append(escape(string))
+            result.append(escapeLyricsSyllable(syllable.stringValue))
 
             prevIsConnector = false
-
-        case .tilde:
-            result.append("~")
-
-            prevIsConnector = true
         }
     }
 

@@ -21,12 +21,7 @@ extension ABCTimeSignature {
         ///                          power of 2 in the range 1...64.
         public init?(numerator: UInt,
                      denominator: UInt) {
-            // guard Self._isValid(numerator, denominator)
-            // else { return nil }
-
-            guard numerator > 0,
-                  (1...64).contains(denominator),
-                  denominator.isPowerOf2
+            guard Self._isValid(numerator, denominator)
             else { return nil }
 
             self.numerator = numerator
@@ -40,6 +35,20 @@ extension ABCTimeSignature {
 
         /// The numerator of this meter.
         public let numerator: UInt
+    }
+}
+
+// MARK: -
+
+extension ABCTimeSignature.StandardMeter {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ numerator: UInt,
+                                 _ denominator: UInt) -> Bool {
+        numerator > 0
+        && (1...64).contains(denominator)
+        && denominator.isPowerOf2
     }
 }
 

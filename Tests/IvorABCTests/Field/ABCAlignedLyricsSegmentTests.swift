@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCAlignedLyricsSegmentTests {
 }
@@ -12,12 +13,10 @@ extension ABCAlignedLyricsSegmentTests {
     @Test
     func allCasesAreDistinct() {
         let allCases: [ABCAlignedLyrics.Segment] = [.barAlign,
-                                                    .escapedHyphen,
+                                                    .continuation,
                                                     .hold,
-                                                    .hyphen,
                                                     .skip,
-                                                    .text("a"),
-                                                    .tilde]
+                                                    .syllable("a")]
 
         for i in allCases.indices {
             for j in allCases.indices where i != j {
@@ -29,16 +28,14 @@ extension ABCAlignedLyricsSegmentTests {
     @Test
     func equality() {
         #expect(ABCAlignedLyrics.Segment.barAlign == .barAlign)
-        #expect(ABCAlignedLyrics.Segment.escapedHyphen == .escapedHyphen)
+        #expect(ABCAlignedLyrics.Segment.continuation == .continuation)
         #expect(ABCAlignedLyrics.Segment.hold == .hold)
-        #expect(ABCAlignedLyrics.Segment.hyphen == .hyphen)
         #expect(ABCAlignedLyrics.Segment.skip == .skip)
-        #expect(ABCAlignedLyrics.Segment.text("grace") == .text("grace"))
-        #expect(ABCAlignedLyrics.Segment.tilde == .tilde)
+        #expect(ABCAlignedLyrics.Segment.syllable("grace") == .syllable("grace"))
     }
 
     @Test
     func inequality_differentAssociatedValues() {
-        #expect(ABCAlignedLyrics.Segment.text("A") != .text("B"))
+        #expect(ABCAlignedLyrics.Segment.syllable("A") != .syllable("B"))
     }
 }
