@@ -298,9 +298,9 @@ func makeAlignedLyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAligne
     ABCAlignedLyrics(segments: segments)
 }
 
-func makeAnnotation(_ position: ABCAnnotation.Position,
+func makeAnnotation(_ placement: ABCAnnotation.Placement,
                     _ text: String) -> ABCAnnotation {
-    ABCAnnotation(position: position,
+    ABCAnnotation(placement: placement,
                   text: text)
 }
 

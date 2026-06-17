@@ -413,8 +413,8 @@ extension ABCParseFunctionsTests {
         #expect(parseUserSymbol("~=!roll!") == makeUserSymbol(.tilde, makeDecoration("roll")))
         #expect(parseUserSymbol("~ = !roll!") == makeUserSymbol(.tilde, makeDecoration("roll")))
         #expect(parseUserSymbol("H=!fermata!") == makeUserSymbol(.hUpper, makeDecoration("fermata")))
-        #expect(parseUserSymbol("H=\"^fermata\"") == makeUserSymbol(.hUpper, .annotation(ABCAnnotation(position: .above, text: "fermata"))))
-        #expect(parseUserSymbol("T = \"_col legno\"") == makeUserSymbol(.tUpper, .annotation(ABCAnnotation(position: .below, text: "col legno"))))
+        #expect(parseUserSymbol("H=\"^fermata\"") == makeUserSymbol(.hUpper, .annotation(makeAnnotation(.above, "fermata"))))
+        #expect(parseUserSymbol("T = \"_col legno\"") == makeUserSymbol(.tUpper, .annotation(makeAnnotation(.below, "col legno"))))
     }
 
     @Test

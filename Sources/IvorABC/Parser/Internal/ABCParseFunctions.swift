@@ -89,10 +89,10 @@ internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
     let content = tidyInput.dropFirst().dropLast()
 
     guard !tidyInput.isEmpty,
-          let position = _parseAnnotationPosition(content[...content.startIndex])
+          let placement = _parseAnnotationPlacement(content[...content.startIndex])
     else { return nil }
 
-    return ABCAnnotation(position: position,
+    return ABCAnnotation(placement: placement,
                          text: String(content.dropFirst()))
 }
 
@@ -879,11 +879,11 @@ private let octaveCS: Set<Character>      = [",", "'"]
 private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
 
-private let annotationPositions: [Substring: ABCAnnotation.Position] = ["^": .above,
-                                                                        "@": .auto,
-                                                                        "_": .below,
-                                                                        "<": .left,
-                                                                        ">": .right]
+private let annotationPlacements: [Substring: ABCAnnotation.Placement] = ["^": .above,
+                                                                          "@": .auto,
+                                                                          "_": .below,
+                                                                          "<": .left,
+                                                                          ">": .right]
 
 private let keySignatureModes: [Substring: ABCKeySignature.Mode] = ["": .major,
                                                                     "aeo": .aeolian,
@@ -978,8 +978,8 @@ private let shorthands: [Substring: ABCShorthand] = [".": .dot,
 
 // MARK: Private Functions
 
-private func _parseAnnotationPosition(_ tidyInput: Substring) -> ABCAnnotation.Position? {
-    annotationPositions[tidyInput]
+private func _parseAnnotationPlacement(_ tidyInput: Substring) -> ABCAnnotation.Placement? {
+    annotationPlacements[tidyInput]
 }
 
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {

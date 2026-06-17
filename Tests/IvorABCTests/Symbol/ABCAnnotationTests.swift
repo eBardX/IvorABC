@@ -18,7 +18,7 @@ extension ABCAnnotationTests {
     }
 
     @Test
-    func inequality_differentPosition() {
+    func inequality_differentPlacement() {
         let a = makeAnnotation(.above, "Hello")
         let b = makeAnnotation(.below, "Hello")
 
@@ -37,7 +37,7 @@ extension ABCAnnotationTests {
     func init_storesProperties() {
         let annotation = makeAnnotation(.right, "sfz")
 
-        #expect(annotation.position == .right)
+        #expect(annotation.placement == .right)
         #expect(annotation.text == "sfz")
     }
 }

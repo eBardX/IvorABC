@@ -79,8 +79,8 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidTimeSignature() throws {
-        let ts = try ABCTimeSignature.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4)))
+    func message_invalidTimeSignature() {
+        let ts = makeTimeSignature(3, 4)
         let error = ABCFormatter.Error.invalidTimeSignature(ts)
 
         #expect(error.message.contains("structurally invalid"))

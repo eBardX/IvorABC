@@ -94,10 +94,10 @@ extension ABCParseContextTests {
     }
 
     @Test
-    func update_meter_threeSixteenthTime_baseDurationSixteenths() throws {
+    func update_meter_threeSixteenthTime_baseDurationSixteenths() {
         var ctx = ABCParseContext()
 
-        try ctx.update(with: .meter(.standard(#require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 16)))))
+        ctx.update(with: .meter(makeTimeSignature(3, 16)))
 
         #expect(ctx.baseDuration == makeDuration(1, 16))
     }

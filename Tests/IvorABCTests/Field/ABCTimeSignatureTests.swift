@@ -25,10 +25,11 @@ extension ABCTimeSignatureTests {
     }
 
     @Test
-    func equality_standard() throws {
-        let meter = try #require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4))
+    func equality_standard() {
+        let a = makeTimeSignature(3, 4)
+        let b = makeTimeSignature(3, 4)
 
-        #expect(ABCTimeSignature.standard(meter) == .standard(meter))
+        #expect(a == b)
     }
 
     @Test
@@ -56,12 +57,10 @@ extension ABCTimeSignatureTests {
     }
 
     @Test
-    func inequality() throws {
-        let meter = try #require(ABCTimeSignature.StandardMeter(numerator: 3, denominator: 4))
-
+    func inequality() {
         #expect(ABCTimeSignature.common != .cut)
         #expect(ABCTimeSignature.common != .empty)
-        #expect(ABCTimeSignature.common != .standard(meter))
-        #expect(ABCTimeSignature.standard(meter) != makeTimeSignature(4, 4))
+        #expect(ABCTimeSignature.common != makeTimeSignature(3, 4))
+        #expect(makeTimeSignature(3, 4) != makeTimeSignature(4, 4))
     }
 }

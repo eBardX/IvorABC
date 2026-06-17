@@ -5,23 +5,23 @@ public struct ABCAnnotation {
 
     // MARK: Public Instance Properties
 
-    /// The position of the annotation relative to the staff.
-    public let position: Position
+    /// The placement of the annotation relative to the staff.
+    public let placement: Placement
 
-    /// The annotation text, without the surrounding quotes or positioning prefix.
+    /// The annotation text, without the surrounding quotes or placement prefix.
     public let text: String
 
     // MARK: Public Initializers
 
     /// Creates a new annotation.
     ///
-    /// - Parameter position: The position of the annotation relative to the
-    ///                       staff.
-    /// - Parameter text:     The annotation text, without the surrounding quotes
-    ///                       or positioning prefix.
-    public init(position: Position,
+    /// - Parameter placement: The placement of the annotation relative to the
+    ///                        staff.
+    /// - Parameter text:      The annotation text, without the surrounding quotes
+    ///                        or placement prefix.
+    public init(placement: Placement,
                 text: String) {
-        self.position = position    // rename to `positioning` ???
+        self.placement = placement
         self.text = text            // validate ???
     }
 }

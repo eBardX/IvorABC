@@ -201,11 +201,11 @@ internal func formatSymbol(_ symbol: ABCSymbol,
 
 // MARK: Private Constants
 
-private let annotationPositions: [ABCAnnotation.Position: String] = [.above: "^",
-                                                                     .auto: "@",
-                                                                     .below: "_",
-                                                                     .left: "<",
-                                                                     .right: ">"]
+private let annotationPlacements: [ABCAnnotation.Placement: String] = [.above: "^",
+                                                                       .auto: "@",
+                                                                       .below: "_",
+                                                                       .left: "<",
+                                                                       .right: ">"]
 
 private let keySignatureModes: [ABCKeySignature.Mode: String] = [.aeolian: "aeolian",
                                                                  .dorian: "dorian",
@@ -379,7 +379,7 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
 private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     var result = "\""
 
-    result += annotationPositions[annotation.position] ?? ""
+    result += annotationPlacements[annotation.placement] ?? ""
     result += annotation.text
 
     result += "\""

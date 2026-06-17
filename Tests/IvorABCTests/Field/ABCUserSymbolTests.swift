@@ -23,7 +23,7 @@ extension ABCUserSymbolTests {
 
     @Test
     func target_annotation_isStored() {
-        let annotation = ABCAnnotation(position: .above, text: "fermata")
+        let annotation = makeAnnotation(.above, "fermata")
         let uds = makeUserSymbol(.hUpper, .annotation(annotation))
 
         guard case let .annotation(stored) = uds.definition
