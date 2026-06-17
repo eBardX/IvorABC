@@ -100,7 +100,7 @@ extension ABCParserTests {
 
     @Test
     func parse_beginEndBlock_beginValueStored() throws {
-        let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\n"
+        let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\n\nX:1\nT:Test\nK:C\n|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
@@ -119,7 +119,7 @@ extension ABCParserTests {
 
     @Test
     func parse_beginEndBlock_beginWithInlineComment() throws {
-        let input = "%abc-2.1\n%%begintext%this is a comment\nLine one\n%%endtext\n"
+        let input = "%abc-2.1\n%%begintext%this is a comment\nLine one\n%%endtext\n\nX:1\nT:Test\nK:C\n|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
@@ -138,7 +138,7 @@ extension ABCParserTests {
 
     @Test
     func parse_beginEndBlock_contentStoredAsLines() throws {
-        let input = "%abc-2.1\n%%begintext\nLine one\nLine two\n%%endtext\n"
+        let input = "%abc-2.1\n%%begintext\nLine one\nLine two\n%%endtext\n\nX:1\nT:Test\nK:C\n|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
@@ -157,7 +157,7 @@ extension ABCParserTests {
 
     @Test
     func parse_beginEndBlock_endWithInlineComment() throws {
-        let input = "%abc-2.1\n%%begintext\nLine one\n%%endtext%this is a comment\n"
+        let input = "%abc-2.1\n%%begintext\nLine one\n%%endtext%this is a comment\n\nX:1\nT:Test\nK:C\n|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
@@ -229,17 +229,14 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_emptyTunebook() throws {
+    func parse_emptyTunebook_throws() {
         let input = "%abc-2.1\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        let tunebook = try parser.parse(data)
-
-        #expect(tunebook.version.major == 2)
-        #expect(tunebook.version.minor == 1)
-        #expect(tunebook.headers.isEmpty)
-        #expect(tunebook.tunes.isEmpty)
+        #expect(throws: ABCParser.Error.self) {
+            try parser.parse(data)
+        }
     }
 
     @Test

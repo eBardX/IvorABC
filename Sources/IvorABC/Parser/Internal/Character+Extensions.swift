@@ -23,14 +23,7 @@ extension Character {
     }
 
     internal var isABCDirectiveNameTail: Bool {
-        switch self {
-        case "-",
-             ":":
-             true
-
-        default:
-             isABCAlphanumeric
-        }
+        self == "-" || isABCAlphanumeric
     }
 
     internal var isABCHexDigit: Bool {

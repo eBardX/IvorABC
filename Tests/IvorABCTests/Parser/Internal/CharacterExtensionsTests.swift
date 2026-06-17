@@ -58,6 +58,7 @@ extension CharacterExtensionsTests {
     @Test
     func isABCDirectiveNameTail_false() {
         #expect(!Character("!").isABCDirectiveNameTail)
+        #expect(!Character(":").isABCDirectiveNameTail)
         #expect(!Character(" ").isABCDirectiveNameTail)
     }
 
@@ -66,7 +67,6 @@ extension CharacterExtensionsTests {
         #expect(Character("a").isABCDirectiveNameTail)
         #expect(Character("0").isABCDirectiveNameTail)
         #expect(Character("-").isABCDirectiveNameTail)
-        #expect(Character(":").isABCDirectiveNameTail)
     }
 
     @Test

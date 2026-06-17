@@ -163,7 +163,7 @@ func expectFieldIsParts(_ field: ABCField,
 
 func expectFieldIsRefNumber(_ field: ABCField,
                             sourceLocation: SourceLocation = #_sourceLocation) {
-    if case .refNumber = field { } else {
+    if case .referenceNumber = field { } else {
         Issue.record("Expected .refNumber", sourceLocation: sourceLocation)
     }
 }
@@ -323,7 +323,7 @@ func makeDirective(_ name: String,
                    _ content: [String]? = nil) -> ABCDirective {
     ABCDirective(name: name,
                  value: value,
-                 content: content)
+                 content: content)!  // swiftlint:disable:this force_unwrapping
 }
 
 func makeDuration(_ numerator: UInt,
@@ -406,8 +406,8 @@ func makePitch(_ letter: ABCPitch.Letter,
              octave: octave)
 }
 
-func makeRefNumber(_ uintValue: UInt) -> ABCRefNumber {
-    ABCRefNumber(uintValue: uintValue)
+func makeReferenceNumber(_ uintValue: UInt) -> ABCReferenceNumber {
+    ABCReferenceNumber(uintValue)
 }
 
 func makeSymbolLine(_ elements: [ABCSymbolLine.Element]) -> ABCSymbolLine {
@@ -447,6 +447,38 @@ func makeTimeSignature(_ numerators: [UInt],
                        _ denominator: UInt) -> ABCTimeSignature {
     .complex(ABCTimeSignature.AdditiveMeter(numerators: numerators,
                                             denominator: denominator)!) // swiftlint:disable:this force_unwrapping
+}
+
+func makeTune(_ entries: [ABCEntry]) -> ABCTune {
+    ABCTune(entries: entries)!  // swiftlint:disable:this force_unwrapping
+}
+
+func makeTunebook(_ headers: [ABCHeader],
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: makeVersion(2, 1),
+                headers: headers,
+                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+}
+
+func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: makeVersion(2, 1),
+                headers: [],
+                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+}
+
+func makeTunebook(_ version: ABCVersion,
+                  _ headers: [ABCHeader],
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: version,
+                headers: headers,
+                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+}
+
+func makeTunebook(_ version: ABCVersion,
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: version,
+                headers: [],
+                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
 }
 
 func makeTuplet(_ noteCount: UInt,
@@ -511,28 +543,22 @@ func format(_ tunebook: ABCTunebook) throws -> String {
 
 func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major)!),    // swiftlint:disable:this force_unwrapping
                      symbols: [ABCSymbol] = []) -> ABCTunebook {
-    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                headers: [],
-                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                          .field(.title("Test")),
-                                          .field(.key(key)),
-                                          .symbols(symbols)])])
+    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
+                            .field(.title("Test")),
+                            .field(.key(key)),
+                            .symbols(symbols)])])
 }
 
 func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
-    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                headers: [],
-                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                          .field(.unitNoteLength(makeDuration(1, 4))),
-                                          .field(.key(makeKeySignature(.c, .major))),
-                                          .symbols(symbols)])])
+    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
+                            .field(.unitNoteLength(makeDuration(1, 4))),
+                            .field(.key(makeKeySignature(.c, .major))),
+                            .symbols(symbols)])])
 }
 
 func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
-    ABCTunebook(version: ABCVersion(major: 2, minor: 1),
-                headers: [],
-                tunes: [ABCTune(entries: [.field(.refNumber(ABCRefNumber(uintValue: 1))),
-                                          .field(.tempo(tempo)),
-                                          .field(.key(makeKeySignature(.c, .major))),
-                                          .symbols([])])])
+    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
+                            .field(.tempo(tempo)),
+                            .field(.key(makeKeySignature(.c, .major))),
+                            .symbols([])])])
 }

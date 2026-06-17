@@ -2,6 +2,8 @@
 
 internal import Foundation
 
+private import XestiTools
+
 extension ABCFormatter {
 
     // MARK: Internal Nested Types
@@ -41,7 +43,7 @@ extension ABCFormatter.Writer {
 
         try _writeFileHeaders()
 
-        let autoRefs = _computeAutoRefNumbers()
+        let autoRefs = _computeAutoReferenceNumbers()
 
         for (index, tune) in tunebook.tunes.enumerated() {
             if index > 0 {
@@ -59,36 +61,40 @@ extension ABCFormatter.Writer {
 
     // MARK: Private Instance Methods
 
-    private func _computeAutoRefNumbers() -> [Int: ABCRefNumber] {
+    private func _computeAutoReferenceNumbers() -> [Int: ABCReferenceNumber] {
         var usedNumbers = Set<UInt>()
 
         for tune in tunebook.tunes {
             for entry in tune.entries {
-                if case let .field(.refNumber(rn)) = entry {
+                if case let .field(.referenceNumber(rn)) = entry {
                     usedNumbers.insert(rn.uintValue)
                 }
             }
         }
 
-        var result: [Int: ABCRefNumber] = [:]
+        var result: [Int: ABCReferenceNumber] = [:]
         var nextCandidate: UInt = 1
 
         for (index, tune) in tunebook.tunes.enumerated() {
             let hasRefNumber = tune.entries.contains {
-                if case .field(.refNumber) = $0 {
+                if case .field(.referenceNumber) = $0 {
                     return true
                 }
+
                 return false
             }
 
-            guard !hasRefNumber else { continue }
+            guard !hasRefNumber
+            else { continue }
 
             while usedNumbers.contains(nextCandidate) {
                 nextCandidate += 1
             }
 
-            result[index] = ABCRefNumber(uintValue: nextCandidate)
+            result[index] = ABCReferenceNumber(nextCandidate)
+
             usedNumbers.insert(nextCandidate)
+
             nextCandidate += 1
         }
 
@@ -142,7 +148,7 @@ extension ABCFormatter.Writer {
     }
 
     private mutating func _writeField(_ field: ABCField) throws {
-        let (letter, value) = try formatFieldContent(field)
+        let (letter, value) = try formatField(field)
 
         buffer.append(letter)
         buffer.append(":")
@@ -201,12 +207,12 @@ extension ABCFormatter.Writer {
     }
 
     private mutating func _writeTune(_ tune: ABCTune,
-                                     _ autoRefNumber: ABCRefNumber?) throws {
+                                     _ autoRefNumber: ABCReferenceNumber?) throws {
         var seenRefNumber = false
         var seenKey = false
 
         if let rn = autoRefNumber {
-            try _writeField(.refNumber(rn))
+            try _writeField(.referenceNumber(rn))
 
             seenRefNumber = true
         }
@@ -216,22 +222,22 @@ extension ABCFormatter.Writer {
             case .directive:
                 break
 
-            case let .field(f):
+            case let .field(field):
                 if !seenRefNumber {
-                    guard case .refNumber = f
+                    guard case .referenceNumber = field
                     else { throw ABCFormatter.Error.missingReferenceNumber }
 
                     seenRefNumber = true
                 } else if !seenKey {
-                    guard f.isValidInTuneHeader
-                    else { throw ABCFormatter.Error.misplacedTuneField(f) }
+                    guard field.isValidInTuneHeader
+                    else { throw ABCFormatter.Error.misplacedTuneField(field) }
 
-                    if case .key = f {
+                    if case .key = field {
                         seenKey = true
                     }
                 } else {
-                    guard f.isValidInTuneBody
-                    else { throw ABCFormatter.Error.misplacedTuneField(f) }
+                    guard field.isValidInTuneBody
+                    else { throw ABCFormatter.Error.misplacedTuneField(field) }
                 }
 
             case .symbols:

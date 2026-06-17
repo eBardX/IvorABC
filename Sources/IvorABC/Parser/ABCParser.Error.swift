@@ -91,6 +91,9 @@ extension ABCParser {
         /// instead and reported as ``ABCParser/Diagnostic/missingFileID``.
         case missingFileID
 
+        /// The input contains no tunes.
+        case missingTunes
+
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
 
@@ -185,6 +188,9 @@ extension ABCParser.Error: EnhancedError {
 
         case .missingFileID:
             "Missing required file ID"
+
+        case .missingTunes:
+            "ABC file contains no tunes"
 
         case let .unmatchedBeginDirective(name):
             "'%%begin\(name)' has no matching '%%end\(name)'"

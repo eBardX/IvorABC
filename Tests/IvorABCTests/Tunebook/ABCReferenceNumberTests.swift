@@ -2,29 +2,30 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
-struct ABCRefNumberTests {
+struct ABCReferenceNumberTests {
 }
 
 // MARK: -
 
-extension ABCRefNumberTests {
+extension ABCReferenceNumberTests {
     @Test
     func equality() {
-        let a = makeRefNumber(42)
-        let b = makeRefNumber(42)
+        let a = makeReferenceNumber(42)
+        let b = makeReferenceNumber(42)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        #expect(ABCRefNumber(uintValue: 1) != makeRefNumber(2))
+        #expect(ABCReferenceNumber(1) != makeReferenceNumber(2))
     }
 
     @Test
     func init_storesValue() {
-        let refNumber = makeRefNumber(7)
+        let refNumber = makeReferenceNumber(7)
 
         #expect(refNumber.uintValue == 7)
     }

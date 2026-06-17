@@ -270,10 +270,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .alignedLyrics(parseAlignedLyrics(vtext))
 
     case "X" where !isInline:
-        guard let rn = parseRefNumber(vtext)
+        guard let rn = parseReferenceNumber(vtext)
         else { throw ABCParser.Error.invalidRefNumber(vtext) }
 
-        return .refNumber(rn)
+        return .referenceNumber(rn)
 
     case "Z" where !isInline:
         return try .transcription(parseText(vtext))
@@ -495,12 +495,11 @@ internal func parsePitch(_ tidyInput: Substring) -> ParsePitchResult? {
     return (plResult.letter, accidental, octave)
 }
 
-internal func parseRefNumber(_ tidyInput: Substring) -> ABCRefNumber? {
-    guard let uintValue = UInt(tidyInput),
-          uintValue > 0
+internal func parseReferenceNumber(_ tidyInput: Substring) -> ABCReferenceNumber? {
+    guard let uintValue = UInt(tidyInput)
     else { return nil }
 
-    return ABCRefNumber(uintValue: uintValue)
+    return ABCReferenceNumber(uintValue: uintValue)
 }
 
 internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
@@ -1063,7 +1062,7 @@ private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
     let value = String(trimPrefix(result.tail ?? ""))
 
     return ABCDirective(name: name,
-                        value: value)
+                        value: value)!  // swiftlint:disable:this force_unwrapping
 }
 
 private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySignature.Clef? {

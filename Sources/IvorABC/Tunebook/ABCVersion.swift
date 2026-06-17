@@ -26,8 +26,8 @@ public struct ABCVersion {
     /// - Parameter minor: The minor version number.
     public init(major: UInt,
                 minor: UInt) {
-        self.major = major  // validate ???
-        self.minor = minor  // validate ???
+        self.major = major
+        self.minor = minor
     }
 
     // MARK: Public Instance Properties
@@ -37,6 +37,15 @@ public struct ABCVersion {
 
     /// The minor version number.
     public let minor: UInt
+}
+
+// MARK: - Comparable
+
+extension ABCVersion: Comparable {
+    public static func < (lhs: Self,
+                          rhs: Self) -> Bool {
+        (lhs.major, lhs.minor) < (rhs.major, rhs.minor)
+    }
 }
 
 // MARK: - Equatable

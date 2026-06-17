@@ -2,19 +2,27 @@
 
 internal import XestiTools
 
-/// An ABC tunebook.
+/// An ABC file containing one or more tunes.
+///
+/// In the ABC 2.1 specification, a file with a single tune is an *abc file*;
+/// a file with two or more tunes is called an *abc tunebook*. This type
+/// represents either form.
 public struct ABCTunebook {
 
     // MARK: Public Initializers
 
-    /// Creates a new tunebook with the provided version, headers, and tunes.
+    /// Creates a new ABC file with the provided version, headers, and tunes,
+    /// or returns `nil` if `tunes` is empty.
     ///
-    /// - Parameter version: The ABC version of the tunebook.
+    /// - Parameter version: The ABC version of the file.
     /// - Parameter headers: The file-level header entries.
-    /// - Parameter tunes:   The tunes contained in the tunebook.
-    public init(version: ABCVersion,
-                headers: [ABCHeader],
-                tunes: [ABCTune]) {
+    /// - Parameter tunes:   The tunes contained in the file.
+    public init?(version: ABCVersion,
+                 headers: [ABCHeader],
+                 tunes: [ABCTune]) {
+        guard Self._isValid(version, headers, tunes)
+        else { return nil }
+
         self.headers = headers
         self.tunes = tunes
         self.version = version
@@ -53,8 +61,16 @@ extension ABCTunebook {
     /// - Returns: A new ``ABCTunebook`` whose ``version`` is ``ABCVersion/current``.
     public func migrated() -> ABCTunebook {
         ABCTunebook(version: ABCVersion.current,
-                    headers: headers.map(_migrateHeader),
-                    tunes: tunes.map(_migrateTune))
+                    headers: headers.map { _migrateHeader($0) },
+                    tunes: tunes.map { _migrateTune($0) })!  // swiftlint:disable:this force_unwrapping
+    }
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ version: ABCVersion,
+                                 _ headers: [ABCHeader],
+                                 _ tunes: [ABCTune]) -> Bool {
+        !tunes.isEmpty
     }
 }
 
@@ -73,15 +89,15 @@ extension ABCTunebook: Sendable {
 private func _migrateField(_ field: ABCField) -> ABCField {
     switch field {
     case let .elemskip(elemskip):
-        let s = switch elemskip {
-        case let .integer(n):
-            String(n)
+        let stringValue = switch elemskip {
+        case let .integer(value):
+            String(value)
 
-        case let .decimal(d):
-            String(d)
+        case let .decimal(value):
+            String(value)
         }
 
-        return .remark(ABCText(s))
+        return .remark(ABCText(stringValue))
 
     case let .information(text):
         return .remark(text)
@@ -90,7 +106,8 @@ private func _migrateField(_ field: ABCField) -> ABCField {
         break
     }
 
-    if case let .tempo(tempo) = field, tempo.legacyBeatMultiple != nil {
+    if case let .tempo(tempo) = field,
+       tempo.legacyBeatMultiple != nil {
         return .tempo(ABCTempo(durations: tempo.durations,
                                rate: tempo.rate,
                                text: tempo.text))
@@ -101,10 +118,10 @@ private func _migrateField(_ field: ABCField) -> ABCField {
 
 private func _migrateSymbol(_ symbol: ABCSymbol) -> ABCSymbol {
     if case let .inlineField(field) = symbol {
-        return .inlineField(_migrateField(field))
+        .inlineField(_migrateField(field))
+    } else {
+        symbol
     }
-
-    return symbol
 }
 
 private func _migrateEntry(_ entry: ABCEntry) -> ABCEntry {
@@ -113,7 +130,7 @@ private func _migrateEntry(_ entry: ABCEntry) -> ABCEntry {
         .field(_migrateField(field))
 
     case let .symbols(symbols):
-        .symbols(symbols.map(_migrateSymbol))
+        .symbols(symbols.map { _migrateSymbol($0) })
 
     default:
         entry
@@ -129,5 +146,5 @@ private func _migrateHeader(_ header: ABCHeader) -> ABCHeader {
 }
 
 private func _migrateTune(_ tune: ABCTune) -> ABCTune {
-    ABCTune(entries: tune.entries.map(_migrateEntry))
+    ABCTune(entries: tune.entries.map { _migrateEntry($0) })!   // swiftlint:disable:this force_unwrapping
 }

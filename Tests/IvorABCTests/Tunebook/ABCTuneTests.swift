@@ -13,16 +13,16 @@ extension ABCTuneTests {
     @Test
     func equality() {
         let entries: [ABCEntry] = [.field(.title("My Tune"))]
-        let a = ABCTune(entries: entries)
-        let b = ABCTune(entries: entries)
+        let a = makeTune(entries)
+        let b = makeTune(entries)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let a = ABCTune(entries: [.field(.title("Tune A"))])
-        let b = ABCTune(entries: [.field(.title("Tune B"))])
+        let a = makeTune([.field(.title("Tune A"))])
+        let b = makeTune([.field(.title("Tune B"))])
 
         #expect(a != b)
     }
@@ -31,7 +31,7 @@ extension ABCTuneTests {
     func init_storesEntries() {
         let entries: [ABCEntry] = [.field(.title("Test")),
                                    .field(.composer("J.S. Bach"))]
-        let tune = ABCTune(entries: entries)
+        let tune = makeTune(entries)
 
         #expect(tune.entries == entries)
         #expect(tune.entries.count == 2)

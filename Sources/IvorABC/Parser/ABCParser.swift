@@ -151,9 +151,12 @@ extension ABCParser {
         let headers = _processHeaderLines(&lineReader)
         let tunes = try _makeTunes(&lineReader, &diagnostics)
 
-        return ABCTunebook(version: version,
-                           headers: headers,
-                           tunes: tunes)
+        guard let tunebook = ABCTunebook(version: version,
+                                         headers: headers,
+                                         tunes: tunes)
+        else { throw ABCParser.Error.missingTunes }
+
+        return tunebook
     }
 
     private func _makeTunes(_ reader: inout SequenceReader<[Line]>,
@@ -280,7 +283,7 @@ extension ABCParser {
 
                 restLines.append(.directive(ABCDirective(name: name,
                                                          value: beginValue,
-                                                         content: contentLines)))
+                                                         content: contentLines)!))  // swiftlint:disable:this force_unwrapping
                 continue
             }
 
@@ -331,7 +334,7 @@ extension ABCParser {
         let value = String(trimPrefix(result.tail ?? ""))
 
         return ABCDirective(name: name,
-                            value: value)
+                            value: value)!  // swiftlint:disable:this force_unwrapping
     }
 
     private func _parseDirectiveLine(_ input: Substring) throws -> Line? {
@@ -459,7 +462,7 @@ extension ABCParser {
 
         let value = String(trimPrefix(result.tail ?? ""))
 
-        return .directive(ABCDirective(name: name, value: value))
+        return .directive(ABCDirective(name: name, value: value)!)  // swiftlint:disable:this force_unwrapping
     }
 
     private func _parseFileID(_ tidyInput: Substring) throws -> ABCFileID {

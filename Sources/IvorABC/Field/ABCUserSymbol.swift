@@ -9,11 +9,14 @@
 /// U: T = !trill!
 /// U: H = "^fermata"
 /// ```
+///
+/// The `.` shorthand cannot be redefined.
 public struct ABCUserSymbol {
 
     // MARK: Public Initializers
 
-    /// Creates a new user symbol mapping.
+    /// Creates a new user symbol mapping, or `nil` if `shorthand` is `.` (which cannot
+    /// be redefined).
     ///
     /// - Parameter shorthand:   The shorthand character being mapped.
     /// - Parameter definition:  The decoration or annotation the shorthand maps to.

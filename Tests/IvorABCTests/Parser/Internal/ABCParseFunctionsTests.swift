@@ -229,15 +229,15 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseRefNumber_failure() {
-        #expect(parseRefNumber("") == nil)
-        #expect(parseRefNumber("0") == nil)
+        #expect(parseReferenceNumber("") == nil)
+        #expect(parseReferenceNumber("0") == nil)
     }
 
     @Test
     func parseRefNumber_success() {
-        #expect(parseRefNumber("1") == makeRefNumber(1))
-        #expect(parseRefNumber("007") == makeRefNumber(7))
-        #expect(parseRefNumber("5836472") == makeRefNumber(5_836_472))
+        #expect(parseReferenceNumber("1") == makeReferenceNumber(1))
+        #expect(parseReferenceNumber("007") == makeReferenceNumber(7))
+        #expect(parseReferenceNumber("5836472") == makeReferenceNumber(5_836_472))
     }
 
     @Test

@@ -16,7 +16,7 @@ extension ABCFieldTests {
                                          .key(.empty),
                                          .lyrics(""),
                                          .parts(makePartSequence([makePart("A")])),
-                                         .refNumber(makeRefNumber(1)),
+                                         .referenceNumber(makeReferenceNumber(1)),
                                          .symbolLine(makeSymbolLine([])),
                                          .tempo(makeTempo([])),
                                          .title(""),
@@ -62,7 +62,7 @@ extension ABCFieldTests {
                                          .group(""),
                                          .history(""),
                                          .origin(""),
-                                         .refNumber(makeRefNumber(1)),
+                                         .referenceNumber(makeReferenceNumber(1)),
                                          .source(""),
                                          .transcription("")]
 
@@ -121,7 +121,7 @@ extension ABCFieldTests {
                                        .notes(""),
                                        .origin(""),
                                        .parts(makePartSequence([makePart("A")])),
-                                       .refNumber(makeRefNumber(1)),
+                                       .referenceNumber(makeReferenceNumber(1)),
                                        .remark(""),
                                        .rhythm(""),
                                        .source(""),

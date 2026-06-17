@@ -48,4 +48,24 @@ extension ABCDirectiveTests {
         #expect(directive.name == "text")
         #expect(directive.value == "justify")
     }
+
+    @Test
+    func init_nilForEmptyName() {
+        #expect(ABCDirective(name: "", value: "") == nil)
+    }
+
+    @Test
+    func init_nilForNameStartingWithDigit() {
+        #expect(ABCDirective(name: "1abc", value: "") == nil)
+    }
+
+    @Test
+    func init_nilForNameStartingWithHyphen() {
+        #expect(ABCDirective(name: "-abc", value: "") == nil)
+    }
+
+    @Test
+    func init_nilForNameWithInvalidCharacter() {
+        #expect(ABCDirective(name: "page_width", value: "") == nil)
+    }
 }

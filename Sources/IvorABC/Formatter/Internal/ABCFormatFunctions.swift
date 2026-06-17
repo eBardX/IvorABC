@@ -8,11 +8,7 @@ private import XestiTools
 
 // MARK: Internal Functions
 
-internal func formatAccidental(_ accidental: ABCPitch.Accidental) -> String {
-    pitchAccidentals[accidental]?.note ?? ""
-}
-
-internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
+internal func formatField(_ field: ABCField) throws -> (String, String) {
     switch field {
     case let .alignedLyrics(alignedLyrics):
         return ("w", _formatAlignedLyrics(alignedLyrics))
@@ -68,8 +64,8 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
     case let .parts(partSequence):
         return ("P", _formatPartSequence(partSequence))
 
-    case let .refNumber(refNumber):
-        return ("X", "\(refNumber.uintValue)")
+    case let .referenceNumber(referenceNumber):
+        return ("X", "\(referenceNumber.uintValue)")
 
     case let .remark(text):
         return ("r", _formatText(text))
@@ -104,25 +100,6 @@ internal func formatFieldContent(_ field: ABCField) throws -> (String, String) {
 
         return ("V", _formatVoice(voice))
     }
-}
-
-internal func formatNote(_ note: ABCNote,
-                         _ unitNoteLength: ABCDuration?,
-                         _ meter: ABCTimeSignature?) -> String {
-    var result = formatAccidental(note.pitch.accidental)
-
-    result += _formatPitchLetterOctave(note.pitch.letter,
-                                       note.pitch.octave)
-
-    result += _formatDuration(note.duration,
-                              unitNoteLength,
-                              meter)
-
-    if note.isTied {
-        result += "-"
-    }
-
-    return result
 }
 
 internal func formatSymbol(_ symbol: ABCSymbol,
@@ -171,7 +148,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
                                      meter)
 
     case let .inlineField(field):
-        let (letter, value) = try formatFieldContent(field)
+        let (letter, value) = try formatField(field)
 
         return "[\(letter):\(value)]"
 
@@ -179,9 +156,9 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         return macroCall.trigger
 
     case let .note(note):
-        return formatNote(note,
-                          unitNoteLength,
-                          meter)
+        return _formatNote(note,
+                           unitNoteLength,
+                           meter)
 
     case .overlay:
         return "&"
@@ -220,18 +197,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .variantEnding(variantEnding):
         return _formatVariantEnding(variantEnding)
     }
-}
-
-internal func log2Integer(_ inValue: UInt) -> Int {
-    var value = inValue
-    var result = 0
-
-    while value > 1 {
-        value >>= 1
-        result += 1
-    }
-
-    return result
 }
 
 // MARK: Private Constants
@@ -430,7 +395,7 @@ private func _formatChord(_ chord: ABCChord,
 
     var result = "["
 
-    result += chord.notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+    result += chord.notes.map { _formatNote($0, unitNoteLength, meter) }.joined()
 
     result += "]"
 
@@ -480,7 +445,7 @@ private func _formatDuration(_ duration: ABCDuration,
     if rn == 1 {
         if rd.isPowerOf2 {
             return String(repeating: "/",
-                          count: log2Integer(rd))
+                          count: _uintLog2(rd))
         } else {
             return "/\(rd)"
         }
@@ -511,7 +476,7 @@ private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
         result += "/"
     }
 
-    result += graceNotes.notes.map { formatNote($0, unitNoteLength, meter) }.joined()
+    result += graceNotes.notes.map { _formatNote($0, unitNoteLength, meter) }.joined()
 
     result += "}"
 
@@ -614,6 +579,25 @@ private func _formatMacro(_ macro: ABCMacro) -> String {
     "\(macro.trigger)=\(macro.replacement)"
 }
 
+private func _formatNote(_ note: ABCNote,
+                         _ unitNoteLength: ABCDuration?,
+                         _ meter: ABCTimeSignature?) -> String {
+    var result = _formatPitchAccidental(note.pitch.accidental)
+
+    result += _formatPitchLetterOctave(note.pitch.letter,
+                                       note.pitch.octave)
+
+    result += _formatDuration(note.duration,
+                              unitNoteLength,
+                              meter)
+
+    if note.isTied {
+        result += "-"
+    }
+
+    return result
+}
+
 private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
     items.map { item in
         switch item {
@@ -630,6 +614,10 @@ private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
 
 private func _formatPartSequence(_ partSequence: ABCPartSequence) -> String {
     _formatPartItems(partSequence.items)
+}
+
+private func _formatPitchAccidental(_ accidental: ABCPitch.Accidental) -> String {
+    pitchAccidentals[accidental]?.note ?? ""
 }
 
 private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
@@ -774,4 +762,16 @@ private func _formatVoice(_ voice: ABCVoice) -> String {
     }
 
     return parts.joined(separator: " ")
+}
+
+private func _uintLog2(_ uintValue: UInt) -> Int {
+    var value = uintValue
+    var result = 0
+
+    while value > 1 {
+        value >>= 1
+        result += 1
+    }
+
+    return result
 }

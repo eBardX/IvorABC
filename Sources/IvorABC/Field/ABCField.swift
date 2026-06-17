@@ -88,7 +88,7 @@ public enum ABCField {
     case parts(ABCPartSequence)
 
     /// A reference number field (`X:`).
-    case refNumber(ABCRefNumber)
+    case referenceNumber(ABCReferenceNumber)
 
     /// A remark field (`r:`).
     case remark(ABCText)
@@ -204,7 +204,7 @@ extension ABCField {
              .notes,
              .origin,
              .parts,
-             .refNumber,
+             .referenceNumber,
              .remark,
              .rhythm,
              .source,

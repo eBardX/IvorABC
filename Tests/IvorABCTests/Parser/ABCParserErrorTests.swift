@@ -173,6 +173,13 @@ extension ABCParserErrorTests {
     }
 
     @Test
+    func message_missingTunes() {
+        let error = ABCParser.Error.missingTunes
+
+        #expect(error.message.contains("tunes"))
+    }
+
+    @Test
     func message_unmatchedBeginDirective() {
         let error = ABCParser.Error.unmatchedBeginDirective("text")
 
