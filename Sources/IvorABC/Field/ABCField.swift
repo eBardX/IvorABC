@@ -22,7 +22,7 @@ public enum ABCField {
     /// This is a 1.6-only field with no ABC 2.x equivalent. It was
     /// specific to `abc2mtex` and controlled the `\elemskip` TeX dimension —
     /// the horizontal spacing between notes on a staff. Modern tools ignore
-    /// it. ``ABCTunebook/migrated()`` collapses it to ``remark(_:)`` when
+    /// it. ``ABCTunebook/migrate()`` collapses it to ``remark(_:)`` when
     /// upgrading to ABC 2.1.
     case elemskip(ABCElemskip)
 
@@ -39,7 +39,7 @@ public enum ABCField {
     ///
     /// In ABC 1.6, `I:` carried free-text information. ABC 2.x repurposed
     /// `I:` as an inline instruction/directive; the 2.x form is represented
-    /// by ``instruction(_:)``. ``ABCTunebook/migrated()`` collapses this
+    /// by ``instruction(_:)``. ``ABCTunebook/migrate()`` collapses this
     /// case to ``remark(_:)`` when upgrading to ABC 2.1.
     case information(ABCText)
 

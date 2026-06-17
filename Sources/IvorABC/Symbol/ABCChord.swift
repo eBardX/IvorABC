@@ -14,10 +14,7 @@ public struct ABCChord {
     public init?(notes: [ABCNote],
                  duration: ABCDuration,
                  isTied: Bool) {
-        // guard Self._isValid(notes, duration, isTied)
-        // else { return nil }
-
-        guard !notes.isEmpty
+        guard Self._isValid(notes, duration, isTied)
         else { return nil }
 
         self.duration = duration
@@ -35,6 +32,19 @@ public struct ABCChord {
 
     /// The notes in this chord.
     public let notes: [ABCNote]
+}
+
+// MARK: -
+
+extension ABCChord {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ notes: [ABCNote],
+                                 _ duration: ABCDuration,
+                                 _ isTied: Bool) -> Bool {
+        !notes.isEmpty
+    }
 }
 
 // MARK: - Equatable

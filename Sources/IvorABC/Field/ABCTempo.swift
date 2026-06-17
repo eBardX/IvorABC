@@ -21,7 +21,7 @@ public struct ABCTempo {
     /// - Parameter legacyBeatMultiple: The `n` from an ABC 1.6 `Q:Cn=rate`
     ///                                 form (1 for bare `Q:C=rate`), or `nil`
     ///                                 if this tempo was not parsed from a 1.6
-    ///                                 C-form. ``ABCTunebook/migrated()`` clears
+    ///                                 C-form. ``ABCTunebook/migrate()`` clears
     ///                                 this to `nil` when upgrading to ABC 2.1.
     public init(durations: [ABCDuration],
                 rate: UInt?,

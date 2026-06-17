@@ -42,22 +42,6 @@ public struct ABCDecoration {
 
 extension ABCDecoration {
 
-    // MARK: Internal Type Properties
-
-    // The shorthand characters that are pre-defined by the ABC specification
-    // and do not require a `U:` field definition.
-    internal static let builtinShorthands: Set<Character> = [".",
-                                                             "~",
-                                                             "H",
-                                                             "L",
-                                                             "M",
-                                                             "O",
-                                                             "P",
-                                                             "S",
-                                                             "T",
-                                                             "u",
-                                                             "v"]
-
     // MARK: Private Type Methods
 
     private static func _isValid(_ name: Name,

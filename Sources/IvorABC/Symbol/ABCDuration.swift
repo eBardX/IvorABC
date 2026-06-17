@@ -16,12 +16,7 @@ public struct ABCDuration {
     ///                          greater than zero.
     public init?(numerator: UInt,
                  denominator: UInt = 1) {
-        // guard Self._isValid(numerator, denominator)
-        // else { return nil }
-
-        guard numerator > 0,
-              (1...512).contains(denominator),
-              denominator.isPowerOf2
+        guard Self._isValid(numerator, denominator)
         else { return nil }
 
         var num = numerator
@@ -47,6 +42,20 @@ public struct ABCDuration {
 
     /// The numerator of this duration.
     public let numerator: UInt
+}
+
+// MARK: -
+
+extension ABCDuration {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ numerator: UInt,
+                                 _ denominator: UInt) -> Bool {
+        numerator > 0
+        && (1...512).contains(denominator)
+        && denominator.isPowerOf2
+    }
 }
 
 // MARK: - Equatable
