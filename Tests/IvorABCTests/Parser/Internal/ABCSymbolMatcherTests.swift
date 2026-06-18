@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCSymbolMatcherTests {
 }
@@ -13,7 +14,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_barRepeat() throws {
         let symbols = try matchSymbols("|")
 
-        #expect(symbols == [.barRepeat("|")])
+        #expect(symbols == [.barRepeat(ABCBarRepeat(mark: "|"))])
     }
 
     @Test

@@ -96,6 +96,43 @@ internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
                          text: String(content.dropFirst()))
 }
 
+internal func parseBarRepeat(_ tidyInput: Substring) -> ABCBarRepeat? {
+    var rest = tidyInput
+
+    let isEditorial = rest.hasPrefix(".")
+
+    if isEditorial {
+        rest = rest.dropFirst()
+    }
+
+    let markStrings = [":||:", ":|:", "[|]", "::", ":|", "[|", "|:", "|]", "||", "|"]
+
+    guard let markString = markStrings.first(where: { rest.hasPrefix($0) }),
+          let mark = ABCBarRepeat.Mark(stringValue: String(markString))
+    else { return nil }
+
+    rest = rest.dropFirst(markString.count)
+
+    var endings: [ClosedRange<UInt>] = []
+
+    for part in rest.split(separator: ",") {
+        if let dashIdx = part.firstIndex(of: "-") {
+            guard let lo = UInt(part[..<dashIdx]),
+                  let hi = UInt(part[part.index(after: dashIdx)...])
+            else { return nil }
+
+            endings.append(lo...hi)
+        } else {
+            guard let n = UInt(part)
+            else { return nil }
+
+            endings.append(n...n)
+        }
+    }
+
+    return ABCBarRepeat(isEditorial: isEditorial, mark: mark, endings: endings)
+}
+
 internal func parseBrokenRhythm(_ tidyInput: Substring) -> ABCBrokenRhythm? {
     brokenRhythms[tidyInput]
 }
@@ -1396,7 +1433,8 @@ private func _consumePositiveUInt(_ input: Substring,
         return (d, input)
     }
 
-    guard let value = UInt(digits), value > 0
+    guard let value = UInt(digits),
+          value > 0
     else { return nil }
 
     return (value, rest)

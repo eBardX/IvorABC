@@ -8,10 +8,7 @@ public enum ABCSymbol {
     case annotation(ABCAnnotation)
 
     /// A bar repeat marker.
-    ///
-    /// The string is the verbatim ABC bar repeat notation, such as `|:`,
-    /// `:|`, `||`, or `|`.
-    case barRepeat(String)  // validate ???
+    case barRepeat(ABCBarRepeat)
 
     /// A beam-break marker.
     ///
@@ -63,7 +60,8 @@ public enum ABCSymbol {
 
     /// A typesetting spacer (`y`).
     ///
-    /// The associated `ABCDuration` value is the width of the spacer.
+    /// The associated `ABCDuration` value is the duration of the spacer. A duration
+    /// modifier on `y` is not part of the ABC 2.1 spec but is widely supported as an extension.
     case spacer(ABCDuration)
 
     /// A tuplet specification.

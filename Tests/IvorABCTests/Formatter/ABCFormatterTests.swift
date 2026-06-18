@@ -122,23 +122,9 @@ extension ABCFormatterTests {
     @Test
     func barRepeat_emitsVerbatim() throws {
         let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.barRepeat("|:"), .note(note)]))
+        let output = try format(minimalTunebook(symbols: [.barRepeat(ABCBarRepeat(mark: "|:")), .note(note)]))
 
         #expect(output.contains("|:"))
-    }
-
-    @Test
-    func barRepeat_emptyString_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBarRepeat("")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.barRepeat("")]))
-        }
-    }
-
-    @Test
-    func barRepeat_invalidCharacter_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBarRepeat("X")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.barRepeat("X")]))
-        }
     }
 
     @Test

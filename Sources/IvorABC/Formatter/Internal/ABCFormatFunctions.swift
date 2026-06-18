@@ -109,8 +109,8 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .annotation(annotation):
         _formatAnnotation(annotation)
 
-    case let .barRepeat(text):
-        try _formatBarRepeat(text)
+    case let .barRepeat(barRepeat):
+        _formatBarRepeat(barRepeat)
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
@@ -119,7 +119,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         _formatBrokenRhythm(brokenRhythm)
 
     case let .chord(chord):
-        try _formatChord(chord, unitNoteLength, meter)
+        _formatChord(chord, unitNoteLength, meter)
 
     case let .chordSymbol(text):
         _formatChordSymbol(text)
@@ -128,7 +128,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         _formatDecoration(decoration)
 
     case let .graceNotes(graceNotes):
-        try _formatGraceNotes(graceNotes, unitNoteLength, meter)
+        _formatGraceNotes(graceNotes, unitNoteLength, meter)
 
     case let .inlineField(field):
         try _formatInlineField(field)
@@ -365,14 +365,20 @@ private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     return result
 }
 
-private func _formatBarRepeat(_ text: String) throws -> String {
-    let validChars: Set<Character> = ["|", ":", "[", "]"]
+private func _formatBarRepeat(_ barRepeat: ABCBarRepeat) -> String {
+    var result = barRepeat.isEditorial ? "." : ""
 
-    guard !text.isEmpty,
-          text.allSatisfy({ validChars.contains($0) })
-    else { throw ABCFormatter.Error.invalidBarRepeat(text) }
+    result += barRepeat.mark.stringValue
 
-    return text
+    if !barRepeat.endings.isEmpty {
+        result += barRepeat.endings.map { range in
+            range.lowerBound == range.upperBound
+            ? "\(range.lowerBound)"
+            : "\(range.lowerBound)-\(range.upperBound)"
+        }.joined(separator: ",")
+    }
+
+    return result
 }
 
 private func _formatBrokenRhythm(_ brokenRhythm: ABCBrokenRhythm) -> String {
@@ -381,10 +387,7 @@ private func _formatBrokenRhythm(_ brokenRhythm: ABCBrokenRhythm) -> String {
 
 private func _formatChord(_ chord: ABCChord,
                           _ unitNoteLength: ABCDuration?,
-                          _ meter: ABCTimeSignature?) throws -> String {
-    guard !chord.notes.isEmpty
-    else { throw ABCFormatter.Error.emptyChord }
-
+                          _ meter: ABCTimeSignature?) -> String {
     var result = "["
 
     result += chord.notes.map { _formatNote($0, unitNoteLength, meter) }.joined()
@@ -462,10 +465,7 @@ private func _formatElemskip(_ elemskip: ABCElemskip) -> String {
 
 private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
                                _ unitNoteLength: ABCDuration?,
-                               _ meter: ABCTimeSignature?) throws -> String {
-    guard !graceNotes.notes.isEmpty
-    else { throw ABCFormatter.Error.emptyGraceNotes }
-
+                               _ meter: ABCTimeSignature?) -> String {
     var result = "{"
 
     if graceNotes.isSlashed {
