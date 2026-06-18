@@ -15,15 +15,13 @@ extension ABCAccidentalContextTests {
         let dur = makeDuration(1, 8)
 
         let sharp = makeNote(makePitch(.f, .sharp, 4),
-                             dur,
-                             false)
+                             dur)
 
         ctx.update(with: sharp)
         ctx.reset()
 
         let after = makeNote(makePitch(.f, .omitted, 4),
-                             dur,
-                             false)
+                             dur)
 
         #expect(ctx.resolveAccidental(for: after) == .natural)
     }
@@ -35,15 +33,13 @@ extension ABCAccidentalContextTests {
         let dur = makeDuration(1, 8)
 
         let cancel = makeNote(makePitch(.f, .natural, 4),
-                              dur,
-                              false)
+                              dur)
 
         ctx.update(with: cancel)
         ctx.reset()
 
         let after = makeNote(makePitch(.f, .omitted, 4),
-                             dur,
-                             false)
+                             dur)
 
         #expect(ctx.resolveAccidental(for: after) == .sharp)
     }
@@ -55,14 +51,12 @@ extension ABCAccidentalContextTests {
         let dur = makeDuration(1, 8)
 
         let cancel = makeNote(makePitch(.f, .natural, 4),
-                              dur,
-                              false)
+                              dur)
 
         ctx.update(with: cancel)
 
         let following = makeNote(makePitch(.f, .omitted, 4),
-                                 dur,
-                                 false)
+                                 dur)
 
         #expect(ctx.resolveAccidental(for: following) == .natural)
     }
@@ -74,22 +68,19 @@ extension ABCAccidentalContextTests {
 
         // First note: F♯ written
         let first = makeNote(makePitch(.f, .sharp, 4),
-                             dur,
-                             false)
+                             dur)
 
         ctx.update(with: first)
 
         // Second note: F in same octave, no written accidental — should inherit ♯
         let second = makeNote(makePitch(.f, .omitted, 4),
-                              dur,
-                              false)
+                              dur)
 
         #expect(ctx.resolveAccidental(for: second) == .sharp)
 
         // Third note: F in a different octave — accidental still propagates
         let third = makeNote(makePitch(.f, .omitted, 5),
-                             dur,
-                             false)
+                             dur)
 
         #expect(ctx.resolveAccidental(for: third) == .sharp)
     }
@@ -99,8 +90,7 @@ extension ABCAccidentalContextTests {
         // G major has F♯
         let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.f, .omitted, 4),
-                            makeDuration(1, 8),
-                            false)
+                            makeDuration(1, 8))
 
         #expect(ctx.resolveAccidental(for: note) == .sharp)
     }
@@ -110,8 +100,7 @@ extension ABCAccidentalContextTests {
         // G major has no accidental on C
         let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.c, .omitted, 4),
-                            makeDuration(1, 8),
-                            false)
+                            makeDuration(1, 8))
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
     }
@@ -121,8 +110,7 @@ extension ABCAccidentalContextTests {
         // G major has F♯, but written ♮ overrides it
         let ctx = ABCAccidentalContext(keySignature: makeKeySignature(.g, .major))
         let note = makeNote(makePitch(.f, .natural, 4),
-                            makeDuration(1, 8),
-                            false)
+                            makeDuration(1, 8))
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
     }
@@ -131,8 +119,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_noKey_noWrittenAccidental_returnsNatural() {
         let ctx = ABCAccidentalContext()
         let note = makeNote(makePitch(.f, .omitted, 4),
-                            makeDuration(1, 8),
-                            false)
+                            makeDuration(1, 8))
 
         #expect(ctx.resolveAccidental(for: note) == .natural)
     }
@@ -141,8 +128,7 @@ extension ABCAccidentalContextTests {
     func resolveAccidental_noKey_writtenSharp_returnsSharp() {
         let ctx = ABCAccidentalContext()
         let note = makeNote(makePitch(.f, .sharp, 4),
-                            makeDuration(1, 8),
-                            false)
+                            makeDuration(1, 8))
 
         #expect(ctx.resolveAccidental(for: note) == .sharp)
     }

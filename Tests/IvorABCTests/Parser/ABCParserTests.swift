@@ -600,14 +600,14 @@ extension ABCParserTests {
             return s
         }.first)
 
-        let slurs = symbols.compactMap { sym -> String? in
+        let slurs = symbols.compactMap { sym -> ABCSlur? in
             guard case let .slur(s) = sym
             else { return nil }
 
             return s
         }
 
-        #expect(slurs == ["(", "(", ")", ")"])
+        #expect(slurs == [.startRegular, .startRegular, .endRegular, .endRegular])
     }
 
     @Test
@@ -623,14 +623,47 @@ extension ABCParserTests {
             return s
         }.first)
 
-        let slurs = symbols.compactMap { sym -> String? in
+        let slurs = symbols.compactMap { sym -> ABCSlur? in
             guard case let .slur(s) = sym
             else { return nil }
 
             return s
         }
 
-        #expect(slurs == ["(", ")"])
+        #expect(slurs == [.startRegular, .endRegular])
+    }
+
+    @Test
+    func parse_slur_dottedAndRegular_mixedWithStaccatoAndTies() throws {
+        let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\n.C.(D.-E.) (F-G)|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+            guard case let .symbols(s) = entry
+            else { return nil }
+
+            return s
+        }.first)
+
+        let cNote = makeNote(makePitch(.c, .omitted, 4), makeDuration(1, 8))
+        let dNote = makeNote(makePitch(.d, .omitted, 4), makeDuration(1, 8), .dotted)
+        let eNote = makeNote(makePitch(.e, .omitted, 4), makeDuration(1, 8))
+        let fNote = makeNote(makePitch(.f, .omitted, 4), makeDuration(1, 8), .regular)
+        let gNote = makeNote(makePitch(.g, .omitted, 4), makeDuration(1, 8))
+
+        #expect(symbols == [.shorthand(.dot),
+                            .note(cNote),
+                            .slur(.startDotted),
+                            .note(dNote),
+                            .note(eNote),
+                            .slur(.endDotted),
+                            .beamBreak,
+                            .slur(.startRegular),
+                            .note(fNote),
+                            .note(gNote),
+                            .slur(.endRegular),
+                            .barRepeat("|")])
     }
 
     @Test

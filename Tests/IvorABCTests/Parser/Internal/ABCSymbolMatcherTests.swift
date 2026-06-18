@@ -21,12 +21,10 @@ extension ABCSymbolMatcherTests {
         let symbols = try matchSymbols("C D")
 
         #expect(symbols == [.note(makeNote(makePitch(.c, .omitted, 4),
-                                           makeDuration(1, 8),
-                                           false)),
+                                           makeDuration(1, 8))),
                             .beamBreak,
                             .note(makeNote(makePitch(.d, .omitted, 4),
-                                           makeDuration(1, 8),
-                                           false))])
+                                           makeDuration(1, 8)))])
     }
 
     @Test
@@ -54,13 +52,9 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord() throws {
         let symbols = try matchSymbols("[CE]")
 
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4),
-                                         makeDuration(1, 8),
-                                         false),
-                                makeNote(makePitch(.e, .omitted, 4),
-                                         makeDuration(1, 8),
-                                         false)]
-        let expected: [ABCSymbol] = [.chord(makeChord(notes, makeDuration(1, 8), false))]
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeDuration(1, 8)),
+                                makeNote(makePitch(.e, .omitted, 4), makeDuration(1, 8))]
+        let expected: [ABCSymbol] = [.chord(makeChord(notes, makeDuration(1, 8)))]
 
         #expect(symbols == expected)
     }
@@ -79,7 +73,7 @@ extension ABCSymbolMatcherTests {
         if case let .chord(chord) = try #require(symbols.first) {
             #expect(chord.notes.count == 3)
             #expect(chord.duration == makeDuration(1, 4))
-            #expect(!chord.isTied)
+            #expect(chord.tie == nil)
         } else {
             Issue.record("Expected .chord")
         }
@@ -92,7 +86,7 @@ extension ABCSymbolMatcherTests {
         if case let .chord(chord) = try #require(symbols.first) {
             #expect(chord.notes.count == 3)
             #expect(chord.duration == makeDuration(1, 16))
-            #expect(!chord.isTied)
+            #expect(chord.tie == nil)
         } else {
             Issue.record("Expected .chord")
         }
@@ -104,7 +98,7 @@ extension ABCSymbolMatcherTests {
 
         if case let .chord(chord) = try #require(symbols.first) {
             #expect(chord.notes.count == 3)
-            #expect(chord.isTied)
+            #expect(chord.tie == .regular)
         } else {
             Issue.record("Expected .chord")
         }
@@ -154,8 +148,7 @@ extension ABCSymbolMatcherTests {
         let symbols = try matchSymbols("{C}")
 
         let expected: [ABCSymbol] = [.graceNotes(makeGraceNotes([makeNote(makePitch(.c, .omitted, 4),
-                                                                          makeDuration(1, 8),
-                                                                          false)],
+                                                                          makeDuration(1, 8))],
                                                                 false))]
 
         #expect(symbols == expected)
@@ -281,9 +274,9 @@ extension ABCSymbolMatcherTests {
 
         let symbols = try matchSymbols("~G2", context: &ctx)
 
-        let graceA = makeNote(makePitch(.a, .omitted, 4), makeDuration(1, 8), false)
-        let graceF = makeNote(makePitch(.f, .omitted, 4), makeDuration(1, 8), false)
-        let noteG  = makeNote(makePitch(.g, .omitted, 4), makeDuration(1, 8), false)
+        let graceA = makeNote(makePitch(.a, .omitted, 4), makeDuration(1, 8))
+        let graceF = makeNote(makePitch(.f, .omitted, 4), makeDuration(1, 8))
+        let noteG  = makeNote(makePitch(.g, .omitted, 4), makeDuration(1, 8))
 
         let expansion: [ABCSymbol] = [.graceNotes(makeGraceNotes([graceA], false)),
                                       .note(noteG),
@@ -304,8 +297,7 @@ extension ABCSymbolMatcherTests {
 
         let expansion: [ABCSymbol] = [.decoration(makeDecoration("trill", .bang)),
                                       .note(makeNote(makePitch(.g, .omitted, 4),
-                                                     makeDuration(1, 8),
-                                                     false))]
+                                                     makeDuration(1, 8)))]
 
         #expect(symbols == [.macroCall(makeMacroCall("~G",
                                                      expansion))])
@@ -316,8 +308,7 @@ extension ABCSymbolMatcherTests {
         let symbols = try matchSymbols("C")
 
         let expected: [ABCSymbol] = [.note(makeNote(makePitch(.c, .omitted, 4),
-                                                    makeDuration(1, 8),
-                                                    false))]
+                                                    makeDuration(1, 8)))]
 
         #expect(symbols == expected)
     }
@@ -347,14 +338,28 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_slur() throws {
         let symbols = try matchSymbols("(")
 
-        #expect(symbols == [.slur("(")])
+        #expect(symbols == [.slur(.startRegular)])
     }
 
     @Test
     func matchSymbols_slur_close() throws {
         let symbols = try matchSymbols(")")
 
-        #expect(symbols == [.slur(")")])
+        #expect(symbols == [.slur(.endRegular)])
+    }
+
+    @Test
+    func matchSymbols_slur_dottedStart() throws {
+        let symbols = try matchSymbols(".(")
+
+        #expect(symbols == [.slur(.startDotted)])
+    }
+
+    @Test
+    func matchSymbols_slur_dottedEnd() throws {
+        let symbols = try matchSymbols(".)")
+
+        #expect(symbols == [.slur(.endDotted)])
     }
 
     @Test

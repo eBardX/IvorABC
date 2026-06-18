@@ -52,9 +52,13 @@ extension ABCSymbolTokenizer {
             Regex {
                 duration
                 Optionally {
-                    "-"
+                    ChoiceOf {
+                        ".-"
+                        "-"
+                    }
                 }
             }
+            ".-"
             "-"
         }
     }
@@ -119,7 +123,10 @@ extension ABCSymbolTokenizer {
             duration
         }
         Optionally {
-            "-"
+            ChoiceOf {
+                ".-"
+                "-"
+            }
         }
     }
 

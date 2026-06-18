@@ -107,95 +107,58 @@ internal func formatSymbol(_ symbol: ABCSymbol,
                            _ meter: ABCTimeSignature?) throws -> String {
     switch symbol {
     case let .annotation(annotation):
-        return _formatAnnotation(annotation)
+        _formatAnnotation(annotation)
 
     case let .barRepeat(text):
-        let validChars: Set<Character> = ["|", ":", "[", "]"]
-
-        guard !text.isEmpty,
-              text.allSatisfy({ validChars.contains($0) })
-        else { throw ABCFormatter.Error.invalidBarRepeat(text) }
-
-        return text
+        try _formatBarRepeat(text)
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
 
     case let .brokenRhythm(text):
-        guard !text.isEmpty,
-              text.count <= 3,
-              let first = text.first,
-              first == ">" || first == "<",
-              text.allSatisfy({ $0 == first })
-        else { throw ABCFormatter.Error.invalidBrokenRhythm(text) }
-
-        return text
+        try _formatBrokenRhythm(text)
 
     case let .chord(chord):
-        return try _formatChord(chord,
-                                unitNoteLength,
-                                meter)
+        try _formatChord(chord, unitNoteLength, meter)
 
     case let .chordSymbol(text):
-        return "\"\(text)\""
+        _formatChordSymbol(text)
 
     case let .decoration(decoration):
-        return _formatDecoration(decoration)
+        _formatDecoration(decoration)
 
     case let .graceNotes(graceNotes):
-        return try _formatGraceNotes(graceNotes,
-                                     unitNoteLength,
-                                     meter)
+        try _formatGraceNotes(graceNotes, unitNoteLength, meter)
 
     case let .inlineField(field):
-        let (letter, value) = try formatField(field)
-
-        return "[\(letter):\(value)]"
+        try _formatInlineField(field)
 
     case let .macroCall(macroCall):
-        return macroCall.trigger
+        macroCall.trigger
 
     case let .note(note):
-        return _formatNote(note,
-                           unitNoteLength,
-                           meter)
+        _formatNote(note, unitNoteLength, meter)
 
     case .overlay:
-        return "&"
+        "&"
 
     case let .rest(rest):
-        switch rest {
-        case let .multiMeasure(invisible, measureCount):
-            guard measureCount > 0
-            else { throw ABCFormatter.Error.invalidMultiMeasureRestCount }
-
-            let letter = invisible ? "X" : "Z"
-
-            return measureCount == 1 ? letter : "\(letter)\(measureCount)"
-
-        case let .regular(invisible, duration):
-            let letter = invisible ? "x" : "z"
-
-            return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
-        }
+        try _formatRest(rest, unitNoteLength, meter)
 
     case let .shorthand(shorthand):
-        return _formatShorthand(shorthand)
+        _formatShorthand(shorthand)
 
-    case let .slur(text):
-        guard text == "(" || text == ")"
-        else { throw ABCFormatter.Error.invalidSlur(text) }
-
-        return text
+    case let .slur(slur):
+        _formatSlur(slur)
 
     case let .spacer(duration):
-        return "y\(_formatDuration(duration, unitNoteLength, meter))"
+        "y\(_formatDuration(duration, unitNoteLength, meter))"
 
     case let .tuplet(tuplet):
-        return _formatTuplet(tuplet)
+        _formatTuplet(tuplet)
 
     case let .variantEnding(variantEnding):
-        return _formatVariantEnding(variantEnding)
+        _formatVariantEnding(variantEnding)
     }
 }
 
@@ -288,6 +251,14 @@ private let shorthands: [ABCShorthand: String] = [.dot: ".",
                                                   .vUpper: "V",
                                                   .wLower: "w",
                                                   .wUpper: "W"]
+
+private let slurs: [ABCSlur: String] = [.endDotted: ".)",
+                                        .endRegular: ")",
+                                        .startDotted: ".(",
+                                        .startRegular: "("]
+
+private let ties: [ABCTie: String] = [.dotted: ".-",
+                                      .regular: "-"]
 
 // MARK: Private Functions
 
@@ -387,6 +358,27 @@ private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     return result
 }
 
+private func _formatBarRepeat(_ text: String) throws -> String {
+    let validChars: Set<Character> = ["|", ":", "[", "]"]
+
+    guard !text.isEmpty,
+          text.allSatisfy({ validChars.contains($0) })
+    else { throw ABCFormatter.Error.invalidBarRepeat(text) }
+
+    return text
+}
+
+private func _formatBrokenRhythm(_ text: String) throws -> String {
+    guard !text.isEmpty,
+          text.count <= 3,
+          let first = text.first,
+          first == ">" || first == "<",
+          text.allSatisfy({ $0 == first })
+    else { throw ABCFormatter.Error.invalidBrokenRhythm(text) }
+
+    return text
+}
+
 private func _formatChord(_ chord: ABCChord,
                           _ unitNoteLength: ABCDuration?,
                           _ meter: ABCTimeSignature?) throws -> String {
@@ -402,11 +394,15 @@ private func _formatChord(_ chord: ABCChord,
     result += _formatDuration(chord.duration,
                               unitNoteLength,
                               meter)
-    if chord.isTied {
-        result += "-"
+    if let tie = chord.tie {
+        result += ties[tie] ?? ""
     }
 
     return result
+}
+
+private func _formatChordSymbol(_ text: String) -> String {
+    "\"\(text)\""
 }
 
 private func _formatDecoration(_ decoration: ABCDecoration) -> String {
@@ -481,6 +477,12 @@ private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
     result += "}"
 
     return result
+}
+
+private func _formatInlineField(_ field: ABCField) throws -> String {
+    let (letter, value) = try formatField(field)
+
+    return "[\(letter):\(value)]"
 }
 
 private func _formatInstructionDirective(_ directive: ABCDirective) -> String {
@@ -591,8 +593,8 @@ private func _formatNote(_ note: ABCNote,
                               unitNoteLength,
                               meter)
 
-    if note.isTied {
-        result += "-"
+    if let tie = note.tie {
+        result += ties[tie] ?? ""
     }
 
     return result
@@ -634,8 +636,31 @@ private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
     }
 }
 
+private func _formatRest(_ rest: ABCRest,
+                         _ unitNoteLength: ABCDuration?,
+                         _ meter: ABCTimeSignature?) throws -> String {
+    switch rest {
+    case let .multiMeasure(invisible, measureCount):
+        guard measureCount > 0
+        else { throw ABCFormatter.Error.invalidMultiMeasureRestCount }
+
+        let letter = invisible ? "X" : "Z"
+
+        return measureCount == 1 ? letter : "\(letter)\(measureCount)"
+
+    case let .regular(invisible, duration):
+        let letter = invisible ? "x" : "z"
+
+        return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
+    }
+}
+
 private func _formatShorthand(_ shorthand: ABCShorthand) -> String {
     shorthands[shorthand] ?? ""
+}
+
+private func _formatSlur(_ slur: ABCSlur) -> String {
+    slurs[slur] ?? ""
 }
 
 private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {

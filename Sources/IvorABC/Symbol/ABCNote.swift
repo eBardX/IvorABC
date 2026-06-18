@@ -5,17 +5,17 @@ public struct ABCNote {
 
     // MARK: Public Initializers
 
-    /// Creates a new note with the provided pitch, duration, and tie flag.
+    /// Creates a new note with the provided pitch, duration, and tie.
     ///
     /// - Parameter pitch:    The pitch of the note.
     /// - Parameter duration: The duration of the note.
-    /// - Parameter isTied:   Whether the note is tied to the next note.
+    /// - Parameter tie:      The tie to the next note, or `nil` if not tied.
     public init(pitch: ABCPitch,
                 duration: ABCDuration,
-                isTied: Bool) {
+                tie: ABCTie?) {
         self.duration = duration
-        self.isTied = isTied
         self.pitch = pitch
+        self.tie = tie
     }
 
     // MARK: Public Instance Properties
@@ -23,11 +23,11 @@ public struct ABCNote {
     /// The duration of this note.
     public let duration: ABCDuration
 
-    /// A Boolean value indicating whether this note is tied to the next note.
-    public let isTied: Bool
-
     /// The pitch of this note.
     public let pitch: ABCPitch
+
+    /// The tie to the next note, or `nil` if this note is not tied.
+    public let tie: ABCTie?
 }
 
 // MARK: - Equatable

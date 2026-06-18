@@ -62,9 +62,7 @@ public enum ABCSymbol {
     case shorthand(ABCShorthand)
 
     /// A slur marker.
-    ///
-    /// The string is `(` for a slur begin or `)` for a slur end.
-    case slur(String)   // validate ???
+    case slur(ABCSlur)
 
     /// A typesetting spacer (`y`).
     ///

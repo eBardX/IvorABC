@@ -112,25 +112,27 @@ extension ABCSymbolMatcher {
         try tokenMatcher.readMustMatch(.chordEnd)
 
         let duration: ABCDuration
-        let isTied: Bool
+        let tie: ABCTie?
 
         if let suffixToken = tokenMatcher.readIfMatches(.chordSuffix) {
             let value = suffixToken.value
+            let isDottedTie = value.hasSuffix(".-")
+            let isRegularTie = !isDottedTie && value.hasSuffix("-")
 
-            isTied = value.hasSuffix("-")
+            tie = isDottedTie ? .dotted : (isRegularTie ? .regular : nil)
 
-            let durationText = isTied ? value.dropLast() : value
+            let durationText = value.dropLast(isDottedTie ? 2 : (isRegularTie ? 1 : 0))
 
             duration = _makeDuration(durationText.isEmpty ? nil : parseDuration(durationText),
                                      &context)
         } else {
             duration = _makeDuration(nil, &context)
-            isTied = false
+            tie = nil
         }
 
         guard let chord = ABCChord(notes: chord,
                                    duration: duration,
-                                   isTied: isTied)
+                                   tie: tie)
         else { return nil }
 
         return .chord(chord)
@@ -148,7 +150,7 @@ extension ABCSymbolMatcher {
 
         return ABCNote(pitch: pitch,
                        duration: duration,
-                       isTied: result.isTied)
+                       tie: result.tie)
     }
 
     private mutating func _matchChordSymbol() throws -> ABCSymbol? {
@@ -190,7 +192,7 @@ extension ABCSymbolMatcher {
 
         return ABCNote(pitch: pitch,
                        duration: duration,
-                       isTied: result.isTied)
+                       tie: result.tie)
     }
 
     private mutating func _matchGraceNotes(_ context: inout ABCParseContext) throws -> ABCSymbol? {
@@ -293,7 +295,7 @@ extension ABCSymbolMatcher {
 
         let note = ABCNote(pitch: pitch,
                            duration: duration,
-                           isTied: result.isTied)
+                           tie: result.tie)
 
         return .note(note)
     }
@@ -337,9 +339,24 @@ extension ABCSymbolMatcher {
     }
 
     private mutating func _matchSlur() throws -> ABCSymbol? {
-        let token = try tokenMatcher.readMustMatch([.slurBegin, .slurEnd])
+        let token = try tokenMatcher.readMustMatch([.dottedSlurBegin,
+                                                    .dottedSlurEnd,
+                                                    .slurBegin,
+                                                    .slurEnd])
 
-        return .slur(String(token.value))
+        switch token.kind {
+        case .dottedSlurBegin:
+            return .slur(.startDotted)
+
+        case .dottedSlurEnd:
+            return .slur(.endDotted)
+
+        case .slurBegin:
+            return .slur(.startRegular)
+
+        default:
+            return .slur(.endRegular)
+        }
     }
 
     private mutating func _matchSpacer(_ context: inout ABCParseContext) throws -> ABCSymbol? {
@@ -403,7 +420,7 @@ extension ABCSymbolMatcher {
             return try _matchMacroCall(&context) ?? _matchShorthand()
         }
 
-        if tokenMatcher.nextMatches([.slurBegin, .slurEnd]) {
+        if tokenMatcher.nextMatches([.dottedSlurBegin, .dottedSlurEnd, .slurBegin, .slurEnd]) {
             return try _matchSlur()
         }
 

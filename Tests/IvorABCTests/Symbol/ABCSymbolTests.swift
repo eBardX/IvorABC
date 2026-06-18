@@ -31,10 +31,10 @@ extension ABCSymbolTests {
     func equality_chord() {
         let pitch = makePitch(.c, .omitted, 4)
         let duration = makeDuration(1, 4)
-        let note = makeNote(pitch, duration, false)
+        let note = makeNote(pitch, duration)
 
-        #expect(ABCSymbol.chord(makeChord([note], duration, false))
-                == .chord(makeChord([note], duration, false)))
+        #expect(ABCSymbol.chord(makeChord([note], duration))
+                == .chord(makeChord([note], duration)))
     }
 
     @Test
@@ -51,7 +51,7 @@ extension ABCSymbolTests {
     func equality_graceNotes() {
         let pitch = makePitch(.g, .omitted, 4)
         let duration = makeDuration(1, 8)
-        let note = makeNote(pitch, duration, false)
+        let note = makeNote(pitch, duration)
 
         #expect(ABCSymbol.graceNotes(makeGraceNotes([note], false))
                 == .graceNotes(makeGraceNotes([note], false)))
@@ -68,7 +68,7 @@ extension ABCSymbolTests {
     func equality_note() {
         let pitch = makePitch(.a, .omitted, 4)
         let duration = makeDuration(1, 4)
-        let note = makeNote(pitch, duration, false)
+        let note = makeNote(pitch, duration)
 
         #expect(ABCSymbol.note(note) == .note(note))
     }
@@ -83,7 +83,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_slur() {
-        #expect(ABCSymbol.slur("(") == .slur("("))
+        #expect(ABCSymbol.slur(.startRegular) == .slur(.startRegular))
     }
 
     @Test
@@ -109,7 +109,7 @@ extension ABCSymbolTests {
     func inequality() {
         #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .annotation(makeAnnotation(.below, "foo")))
         #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .chordSymbol("foo"))
-        #expect(ABCSymbol.overlay != .slur("("))
+        #expect(ABCSymbol.overlay != .slur(.startRegular))
         #expect(ABCSymbol.tuplet(makeTuplet(3, 2, 3))
                 != .tuplet(makeTuplet(3, 2, 4)))
     }
@@ -126,8 +126,7 @@ extension ABCSymbolTests {
     @Test
     func resolveBrokenRhythm_nonBrokenRhythm_returnsNil() {
         let note = ABCSymbol.note(makeNote(makePitch(.c, .natural, 4),
-                                           makeDuration(1, 4),
-                                           false))
+                                           makeDuration(1, 4)))
 
         #expect(note.resolveBrokenRhythm(left: makeDuration(1, 4), right: makeDuration(1, 4)) == nil)
     }

@@ -29,9 +29,6 @@ extension ABCFormatter {
         /// A multi-measure rest has a count of zero.
         case invalidMultiMeasureRestCount
 
-        /// A slur marker string is invalid.
-        case invalidSlur(String)
-
         /// A text value contains a newline character.
         case invalidTextValue(String)
 
@@ -101,9 +98,6 @@ extension ABCFormatter.Error: EnhancedError {
 
         case .invalidMultiMeasureRestCount:
             "Multi-measure rest has a count of zero"
-
-        case let .invalidSlur(s):
-            "Slur marker is invalid: \(s.isEmpty ? "(empty)" : s)"
 
         case let .invalidTextValue(value):
             "Text value contains invalid characters: \(value)"

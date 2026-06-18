@@ -299,6 +299,18 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
+    func tokenize_dottedSlurBeginEnd() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize(".(C.)")
+
+        #expect(tokens.count == 3)
+        #expect(tokens[0].kind == .dottedSlurBegin)
+        #expect(tokens[1].kind == .note)
+        #expect(tokens[2].kind == .dottedSlurEnd)
+    }
+
+    @Test
     func tokenize_spacer() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 

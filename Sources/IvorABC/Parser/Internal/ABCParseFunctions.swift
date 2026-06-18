@@ -6,7 +6,7 @@ private import XestiTools
 
 // MARK: Internal Types
 
-internal typealias ParseNoteResult = (pitch: ParsePitchResult, duration: ABCDuration?, isTied: Bool)
+internal typealias ParseNoteResult = (pitch: ParsePitchResult, duration: ABCDuration?, tie: ABCTie?)
 internal typealias ParsePitchResult = (letter: ABCPitch.Letter, accidental: ABCPitch.Accidental, octave: ABCPitch.Octave)
 internal typealias ParseRestResult = (kind: String, duration: ABCDuration?)
 internal typealias ParseTupletResult = (pcount: UInt, qcount: UInt?, rcount: UInt?)
@@ -420,8 +420,10 @@ internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
 }
 
 internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
-    let isTied = tidyInput.hasSuffix("-")
-    let input = isTied ? tidyInput.dropLast() : tidyInput
+    let isDottedTie = tidyInput.hasSuffix(".-")
+    let isRegularTie = !isDottedTie && tidyInput.hasSuffix("-")
+    let tie: ABCTie? = isDottedTie ? .dotted : (isRegularTie ? .regular : nil)
+    let input = tidyInput.dropLast(isDottedTie ? 2 : (isRegularTie ? 1 : 0))
 
     let result = input.splitBeforeFirst(durationCS)
 
@@ -439,7 +441,7 @@ internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
         duration = nil
     }
 
-    return (pitch, duration, isTied)
+    return (pitch, duration, tie)
 }
 
 internal func parsePartSequence(_ tidyInput: Substring) -> ABCPartSequence? {

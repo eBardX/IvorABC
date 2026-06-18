@@ -265,7 +265,7 @@ func expectFieldIsVoice(_ field: ABCField,
 func == (lhs: ParseNoteResult?,
          rhs: ParseNoteResult?) -> Bool {
     lhs?.duration == rhs?.duration
-    && lhs?.isTied == rhs?.isTied
+    && lhs?.tie == rhs?.tie
     && lhs?.pitch == rhs?.pitch
 }
 
@@ -306,10 +306,10 @@ func makeAnnotation(_ placement: ABCAnnotation.Placement,
 
 func makeChord(_ notes: [ABCNote],
                _ duration: ABCDuration,
-               _ isTied: Bool) -> ABCChord {
+               _ tie: ABCTie? = nil) -> ABCChord {
     ABCChord(notes: notes,
              duration: duration,
-             isTied: isTied)!   // swiftlint:disable:this force_unwrapping
+             tie: tie)!   // swiftlint:disable:this force_unwrapping
 }
 
 func makeDecoration(_ name: String,
@@ -378,10 +378,10 @@ func makeMacroCall(_ trigger: String,
 
 func makeNote(_ pitch: ABCPitch,
               _ duration: ABCDuration,
-              _ isTied: Bool) -> ABCNote {
+              _ tie: ABCTie? = nil) -> ABCNote {
     ABCNote(pitch: pitch,
             duration: duration,
-            isTied: isTied)
+            tie: tie)
 }
 
 func makePart(_ letter: Character,
