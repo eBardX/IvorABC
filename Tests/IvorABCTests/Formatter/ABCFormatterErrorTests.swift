@@ -53,13 +53,6 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidBrokenRhythm() {
-        let error = ABCFormatter.Error.invalidBrokenRhythm(">>>")
-
-        #expect(error.message.contains(">>>"))
-    }
-
-    @Test
     func message_invalidMultiMeasureRestCount() {
         #expect(ABCFormatter.Error.invalidMultiMeasureRestCount.message.contains("zero"))
     }

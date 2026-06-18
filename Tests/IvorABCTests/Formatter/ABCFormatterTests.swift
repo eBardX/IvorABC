@@ -145,7 +145,7 @@ extension ABCFormatterTests {
     func brokenRhythm_doubleRight_emitsVerbatim() throws {
         let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
         let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">>"), .note(d)]))
+        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.doubleDotted), .note(d)]))
 
         #expect(output.contains(">>"))
     }
@@ -154,46 +154,18 @@ extension ABCFormatterTests {
     func brokenRhythm_emitsVerbatim() throws {
         let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
         let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(">"), .note(d)]))
+        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.dotted), .note(d)]))
 
         #expect(output.contains(">"))
-    }
-
-    @Test
-    func brokenRhythm_emptyString_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBrokenRhythm("")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("")]))
-        }
-    }
-
-    @Test
-    func brokenRhythm_invalidCharacter_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBrokenRhythm("x")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("x")]))
-        }
     }
 
     @Test
     func brokenRhythm_left_emitsVerbatim() throws {
         let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
         let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm("<"), .note(d)]))
+        let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.reverseDotted), .note(d)]))
 
         #expect(output.contains("<"))
-    }
-
-    @Test
-    func brokenRhythm_mixedDirections_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBrokenRhythm("><")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm("><")]))
-        }
-    }
-
-    @Test
-    func brokenRhythm_tooLong_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidBrokenRhythm(">>>>")) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.brokenRhythm(">>>>")]))
-        }
     }
 
     @Test

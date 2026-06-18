@@ -31,21 +31,21 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_brokenRhythm() throws {
         let symbols = try matchSymbols(">")
 
-        #expect(symbols == [.brokenRhythm(">")])
+        #expect(symbols == [.brokenRhythm(.dotted)])
     }
 
     @Test
     func matchSymbols_brokenRhythm_doubleRight() throws {
         let symbols = try matchSymbols(">>")
 
-        #expect(symbols == [.brokenRhythm(">>")])
+        #expect(symbols == [.brokenRhythm(.doubleDotted)])
     }
 
     @Test
     func matchSymbols_brokenRhythm_left() throws {
         let symbols = try matchSymbols("<")
 
-        #expect(symbols == [.brokenRhythm("<")])
+        #expect(symbols == [.brokenRhythm(.reverseDotted)])
     }
 
     @Test

@@ -23,9 +23,6 @@ extension ABCFormatter {
         /// A bar repeat marker string is invalid.
         case invalidBarRepeat(String)
 
-        /// A broken rhythm marker string is invalid.
-        case invalidBrokenRhythm(String)
-
         /// A multi-measure rest has a count of zero.
         case invalidMultiMeasureRestCount
 
@@ -92,9 +89,6 @@ extension ABCFormatter.Error: EnhancedError {
 
         case let .invalidBarRepeat(s):
             "Bar repeat marker is invalid: \(s.isEmpty ? "(empty)" : s)"
-
-        case let .invalidBrokenRhythm(s):
-            "Broken rhythm marker is invalid: \(s.isEmpty ? "(empty)" : s)"
 
         case .invalidMultiMeasureRestCount:
             "Multi-measure rest has a count of zero"

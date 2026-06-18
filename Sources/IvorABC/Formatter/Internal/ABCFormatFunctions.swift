@@ -115,8 +115,8 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
 
-    case let .brokenRhythm(text):
-        try _formatBrokenRhythm(text)
+    case let .brokenRhythm(brokenRhythm):
+        _formatBrokenRhythm(brokenRhythm)
 
     case let .chord(chord):
         try _formatChord(chord, unitNoteLength, meter)
@@ -169,6 +169,13 @@ private let annotationPlacements: [ABCAnnotation.Placement: String] = [.above: "
                                                                        .below: "_",
                                                                        .left: "<",
                                                                        .right: ">"]
+
+private let brokenRhythms: [ABCBrokenRhythm: String] = [.dotted: ">",
+                                                        .doubleDotted: ">>",
+                                                        .reverseDotted: "<",
+                                                        .reverseDoubleDotted: "<<",
+                                                        .reverseTripleDotted: "<<<",
+                                                        .tripleDotted: ">>>"]
 
 private let keySignatureModes: [ABCKeySignature.Mode: String] = [.aeolian: "aeolian",
                                                                  .dorian: "dorian",
@@ -368,15 +375,8 @@ private func _formatBarRepeat(_ text: String) throws -> String {
     return text
 }
 
-private func _formatBrokenRhythm(_ text: String) throws -> String {
-    guard !text.isEmpty,
-          text.count <= 3,
-          let first = text.first,
-          first == ">" || first == "<",
-          text.allSatisfy({ $0 == first })
-    else { throw ABCFormatter.Error.invalidBrokenRhythm(text) }
-
-    return text
+private func _formatBrokenRhythm(_ brokenRhythm: ABCBrokenRhythm) -> String {
+    brokenRhythms[brokenRhythm] ?? ""
 }
 
 private func _formatChord(_ chord: ABCChord,

@@ -218,14 +218,14 @@ extension ABCParserTests {
             return s
         }.first)
 
-        let brokenRhythms = symbols.compactMap { sym -> String? in
-            guard case let .brokenRhythm(s) = sym
+        let brokenRhythms = symbols.compactMap { sym -> ABCBrokenRhythm? in
+            guard case let .brokenRhythm(br) = sym
             else { return nil }
 
-            return s
+            return br
         }
 
-        #expect(brokenRhythms == [">>"])
+        #expect(brokenRhythms == [.doubleDotted])
     }
 
     @Test

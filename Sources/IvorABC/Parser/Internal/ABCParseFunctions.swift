@@ -96,6 +96,10 @@ internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
                          text: String(content.dropFirst()))
 }
 
+internal func parseBrokenRhythm(_ tidyInput: Substring) -> ABCBrokenRhythm? {
+    brokenRhythms[tidyInput]
+}
+
 internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
     guard let head = tidyInput.first,
           head.isABCDirectiveNameHead,
@@ -886,6 +890,13 @@ private let annotationPlacements: [Substring: ABCAnnotation.Placement] = ["^": .
                                                                           "_": .below,
                                                                           "<": .left,
                                                                           ">": .right]
+
+private let brokenRhythms: [Substring: ABCBrokenRhythm] = ["<": .reverseDotted,
+                                                           "<<": .reverseDoubleDotted,
+                                                           "<<<": .reverseTripleDotted,
+                                                           ">": .dotted,
+                                                           ">>": .doubleDotted,
+                                                           ">>>": .tripleDotted]
 
 private let keySignatureModes: [Substring: ABCKeySignature.Mode] = ["": .major,
                                                                     "aeo": .aeolian,

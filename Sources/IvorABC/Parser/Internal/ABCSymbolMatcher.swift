@@ -97,7 +97,10 @@ extension ABCSymbolMatcher {
     private mutating func _matchBrokenRhythm() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.brokenRhythm)
 
-        return .brokenRhythm(String(token.value))
+        guard let brokenRhythm = parseBrokenRhythm(token.value)
+        else { throw ABCParser.Error.invalidSymbols(token.value) }
+
+        return .brokenRhythm(brokenRhythm)
     }
 
     private mutating func _matchChord(_ context: inout ABCParseContext) throws -> ABCSymbol? {

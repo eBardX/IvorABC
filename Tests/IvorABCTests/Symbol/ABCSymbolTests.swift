@@ -24,7 +24,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_brokenRhythm() {
-        #expect(ABCSymbol.brokenRhythm(">") == .brokenRhythm(">"))
+        #expect(ABCSymbol.brokenRhythm(.dotted) == .brokenRhythm(.dotted))
     }
 
     @Test
@@ -112,49 +112,5 @@ extension ABCSymbolTests {
         #expect(ABCSymbol.overlay != .slur(.startRegular))
         #expect(ABCSymbol.tuplet(makeTuplet(3, 2, 3))
                 != .tuplet(makeTuplet(3, 2, 4)))
-    }
-
-    @Test
-    func resolveBrokenRhythm_doubleRight_lengthensAndShortens() {
-        let result = ABCSymbol.brokenRhythm(">>").resolveBrokenRhythm(left: makeDuration(1, 4),
-                                                                      right: makeDuration(1, 4))
-
-        #expect(result?.left == makeDuration(7, 16))
-        #expect(result?.right == makeDuration(1, 16))
-    }
-
-    @Test
-    func resolveBrokenRhythm_nonBrokenRhythm_returnsNil() {
-        let note = ABCSymbol.note(makeNote(makePitch(.c, .natural, 4),
-                                           makeDuration(1, 4)))
-
-        #expect(note.resolveBrokenRhythm(left: makeDuration(1, 4), right: makeDuration(1, 4)) == nil)
-    }
-
-    @Test
-    func resolveBrokenRhythm_singleLeft_halvesAndDots() {
-        let result = ABCSymbol.brokenRhythm("<").resolveBrokenRhythm(left: makeDuration(1, 4),
-                                                                     right: makeDuration(1, 4))
-
-        #expect(result?.left == makeDuration(1, 8))
-        #expect(result?.right == makeDuration(3, 8))
-    }
-
-    @Test
-    func resolveBrokenRhythm_singleRight_dotsDurationAndHalvesNext() {
-        let result = ABCSymbol.brokenRhythm(">").resolveBrokenRhythm(left: makeDuration(1, 4),
-                                                                     right: makeDuration(1, 4))
-
-        #expect(result?.left == makeDuration(3, 8))
-        #expect(result?.right == makeDuration(1, 8))
-    }
-
-    @Test
-    func resolveBrokenRhythm_tripleRight_lengthensAndShortens() {
-        let result = ABCSymbol.brokenRhythm(">>>").resolveBrokenRhythm(left: makeDuration(1, 4),
-                                                                       right: makeDuration(1, 4))
-
-        #expect(result?.left == makeDuration(15, 32))
-        #expect(result?.right == makeDuration(1, 32))
     }
 }
