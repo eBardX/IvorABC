@@ -782,7 +782,7 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
 
     if !qresult.head.isEmpty {
         guard let qcnt = UInt(qresult.head),
-              (2...9).contains(qcnt)
+              qcnt > 0
         else { return nil }
 
         qcount = qcnt
@@ -795,7 +795,7 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     else { return (pcount, qcount, nil) }
 
     guard let rcount = UInt(qtail),
-          (2...9).contains(rcount)
+          rcount > 0
     else { return nil }
 
     return (pcount, qcount, rcount)

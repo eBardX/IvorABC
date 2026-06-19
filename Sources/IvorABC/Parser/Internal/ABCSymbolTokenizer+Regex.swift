@@ -150,11 +150,11 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexTuplet = Regex {
         "("
-        tupletDigitCC
+        tupletDigit2To9CC
         Repeat(...2) {
             ":"
             Optionally {
-                tupletDigitCC
+                tupletDigit1To9CC
             }
         }
     }
@@ -265,5 +265,6 @@ extension ABCSymbolTokenizer {
     private static let shorthandCC              = CharacterClass(.anyOf(".~"),
                                                                  "H"..."W",
                                                                  "h"..."w")
-    private static let tupletDigitCC            = CharacterClass("2"..."9")   // swiftlint:disable:this operator_usage_whitespace
+    private static let tupletDigit1To9CC        = CharacterClass("1"..."9")
+    private static let tupletDigit2To9CC        = CharacterClass("2"..."9")
 }

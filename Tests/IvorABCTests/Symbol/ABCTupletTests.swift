@@ -40,6 +40,46 @@ extension ABCTupletTests {
     }
 
     @Test
+    func init_withNoteCount1_simpleForm_returnsNil() {
+        #expect(ABCTuplet(noteCount: 1) == nil)
+    }
+
+    @Test
+    func init_withNoteCount2_simpleForm_isNotNil() {
+        #expect(ABCTuplet(noteCount: 2) != nil)
+    }
+
+    @Test
+    func init_withNoteCount9_simpleForm_isNotNil() {
+        #expect(ABCTuplet(noteCount: 9) != nil)
+    }
+
+    @Test
+    func init_withNoteCount10_simpleForm_returnsNil() {
+        #expect(ABCTuplet(noteCount: 10) == nil)
+    }
+
+    @Test
+    func init_withNoteCount10_extendedForm_returnsNil() {
+        #expect(ABCTuplet(noteCount: 10, beatCount: 6, affectedCount: 10) == nil)
+    }
+
+    @Test
+    func init_withNoteCount1_extendedForm_returnsNil() {
+        #expect(ABCTuplet(noteCount: 1, beatCount: 2, affectedCount: 1) == nil)
+    }
+
+    @Test
+    func init_withZeroBeatCount_returnsNil() {
+        #expect(ABCTuplet(noteCount: 3, beatCount: 0) == nil)
+    }
+
+    @Test
+    func init_withZeroAffectedCount_returnsNil() {
+        #expect(ABCTuplet(noteCount: 3, affectedCount: 0) == nil)
+    }
+
+    @Test
     func resolve_customValues_notOverridden() {
         let tuplet = makeTuplet(5, 7, 8)
         let result = tuplet.resolve()

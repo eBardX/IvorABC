@@ -5,10 +5,14 @@ public struct ABCTuplet {
 
     // MARK: Public Initializers
 
-    /// Creates a new tuplet specification, or `nil` if `noteCount` is zero.
+    /// Creates a new tuplet specification, or `nil` if the arguments are
+    /// invalid.
+    ///
+    /// `noteCount` must be in the range 2–9, matching the values defined by
+    /// the ABC standard. When given explicitly, `beatCount` and
+    /// `affectedCount` must each be greater than zero.
     ///
     /// - Parameter noteCount:     The number of notes in the tuplet group.
-    ///                            Must be greater than zero.
     /// - Parameter beatCount:     The number of beats the group occupies, or
     ///                            `nil` when not explicitly written in the
     ///                            source.
@@ -18,15 +22,12 @@ public struct ABCTuplet {
     public init?(noteCount: UInt,
                  beatCount: UInt? = nil,
                  affectedCount: UInt? = nil) {
-        // guard Self._isValid(noteCount, beatCount, affectedCount)
-        // else { return nil }
-
-        guard noteCount > 0
+        guard Self._isValid(noteCount, beatCount, affectedCount)
         else { return nil }
 
-        self.affectedCount = affectedCount  // validate ???
-        self.beatCount = beatCount          // validate ???
-        self.noteCount = noteCount          // validate ???
+        self.affectedCount = affectedCount
+        self.beatCount = beatCount
+        self.noteCount = noteCount
     }
 
     // MARK: Public Instance Properties
@@ -86,6 +87,23 @@ extension ABCTuplet {
         default:
             isCompound ? 3 : 2
         }
+    }
+
+    private static func _isValid(_ noteCount: UInt,
+                                 _ beatCount: UInt?,
+                                 _ affectedCount: UInt?) -> Bool {
+        guard (2...9).contains(noteCount)
+        else { return false }
+
+        if let beatCount, beatCount == 0 {
+            return false
+        }
+
+        if let affectedCount, affectedCount == 0 {
+            return false
+        }
+
+        return true
     }
 }
 
