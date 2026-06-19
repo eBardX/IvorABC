@@ -10,9 +10,7 @@ extension ABCSymbolLine {
         case annotation(ABCAnnotation)
 
         /// A chord symbol to attach to the corresponding note.
-        ///
-        /// The string does not include the surrounding quotes.
-        case chordSymbol(String)    // validate ???
+        case chordSymbol(ABCChordSymbol)
 
         /// A decoration to apply to the corresponding note.
         case decoration(ABCDecoration)

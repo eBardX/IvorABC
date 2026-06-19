@@ -40,7 +40,9 @@ extension ABCSymbolTests {
 
     @Test
     func equality_chordSymbol() {
-        #expect(ABCSymbol.chordSymbol("Am") == .chordSymbol("Am"))
+        let cs = ABCChordSymbol(name: .init(root: .a, kind: "m"))
+
+        #expect(ABCSymbol.chordSymbol(cs) == .chordSymbol(cs))
     }
 
     @Test
@@ -109,7 +111,7 @@ extension ABCSymbolTests {
     @Test
     func inequality() {
         #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .annotation(makeAnnotation(.below, "foo")))
-        #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .chordSymbol("foo"))
+        #expect(ABCSymbol.annotation(makeAnnotation(.above, "foo")) != .chordSymbol(ABCChordSymbol(name: .init(root: .f))))
         #expect(ABCSymbol.overlay != .slur(.startRegular))
         #expect(ABCSymbol.tuplet(makeTuplet(3, 2, 3))
                 != .tuplet(makeTuplet(3, 2, 4)))

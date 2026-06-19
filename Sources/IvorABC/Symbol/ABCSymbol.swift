@@ -24,10 +24,7 @@ public enum ABCSymbol {
     case chord(ABCChord)
 
     /// A chord symbol.
-    ///
-    /// The string is the chord name without the surrounding quotes,
-    /// e.g. `Am` or `G7`.
-    case chordSymbol(String)    // validate ???
+    case chordSymbol(ABCChordSymbol)
 
     /// A decoration.
     case decoration(ABCDecoration)

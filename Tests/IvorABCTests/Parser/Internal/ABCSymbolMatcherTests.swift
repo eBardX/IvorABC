@@ -64,7 +64,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chordSymbol() throws {
         let symbols = try matchSymbols("\"Am\"")
 
-        #expect(symbols == [.chordSymbol("Am")])
+        #expect(symbols == [.chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m")))])
     }
 
     @Test

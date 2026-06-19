@@ -10,8 +10,8 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexAnnotation = Regex {
         "\""
-        annotationCC
-        annotationValue
+        annotationPlacementCC
+        annotationText
         "\""
     }
 
@@ -65,19 +65,19 @@ extension ABCSymbolTokenizer {
 
     internal nonisolated(unsafe) static let regexChordSymbol = Regex {
         "\""
-        chordPitch
+        chordSymbolPitchName
         ZeroOrMore {
-            chordTypeLetterCC
+            chordSymbolKindLetterCC
         }
         Optionally {
             "/"
-            chordPitch
+            chordSymbolPitchName
         }
         Optionally {
             "("
-            chordPitch
+            chordSymbolPitchName
             ZeroOrMore {
-                chordTypeLetterCC
+                chordSymbolKindLetterCC
             }
             ")"
         }
@@ -174,7 +174,7 @@ extension ABCSymbolTokenizer {
 
     // MARK: Private Type Properties
 
-    private nonisolated(unsafe) static let annotationValue = Regex {
+    private nonisolated(unsafe) static let annotationText = Regex {
         OneOrMore {
             ChoiceOf {
                 "\\\\"
@@ -186,10 +186,10 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private nonisolated(unsafe) static let chordPitch = Regex {
-        chordPitchLetterCC
+    private nonisolated(unsafe) static let chordSymbolPitchName = Regex {
+        chordSymbolPitchLetterCC
         Optionally {
-            chordAccidentalCC
+            chordSymbolAccidentalCC
         }
     }
 
@@ -246,24 +246,24 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private static let alphaNumericCC         = digitCC.union(letterCC)
-    private static let annotationCC           = CharacterClass(.anyOf("_@^<>"))
-    private static let chordAccidentalCC      = CharacterClass(.anyOf("b#"))
-    private static let chordPitchLetterCC     = CharacterClass("A"..."G")
-    private static let chordTypeLetterCC      = alphaNumericCC.union(.anyOf("+"))
-    private static let decorationLegacyNameCC = alphaNumericCC.union(.anyOf(".()<>"))
-    private static let decorationNameCC       = alphaNumericCC.union(.anyOf(".()+<>"))
-    private static let digitCC                = CharacterClass("0"..."9")
-    private static let letterCC               = CharacterClass("A"..."Z",
-                                                               "a"..."z")
-    private static let pitchAccidentalCC      = CharacterClass(.anyOf("=^_"))
-    private static let pitchLetterCC          = CharacterClass("A"..."G",
-                                                               "a"..."g")
-    private static let pitchOctaveCC          = CharacterClass(.anyOf("',"))
-    private static let repeatDigitCC          = CharacterClass("1"..."9")
-    private static let restCC                 = CharacterClass(.anyOf("XZxz"))
-    private static let shorthandCC            = CharacterClass(.anyOf(".~"),
-                                                               "H"..."W",
-                                                               "h"..."w")
-    private static let tupletDigitCC          = CharacterClass("2"..."9")   // swiftlint:disable:this operator_usage_whitespace
+    private static let alphaNumericCC           = digitCC.union(letterCC)
+    private static let annotationPlacementCC    = CharacterClass(.anyOf("_@^<>"))
+    private static let chordSymbolAccidentalCC  = CharacterClass(.anyOf("b#"))
+    private static let chordSymbolKindLetterCC  = alphaNumericCC.union(.anyOf("+"))
+    private static let chordSymbolPitchLetterCC = CharacterClass("A"..."G")
+    private static let decorationLegacyNameCC   = alphaNumericCC.union(.anyOf(".()<>"))
+    private static let decorationNameCC         = alphaNumericCC.union(.anyOf(".()+<>"))
+    private static let digitCC                  = CharacterClass("0"..."9")
+    private static let letterCC                 = CharacterClass("A"..."Z",
+                                                                 "a"..."z")
+    private static let pitchAccidentalCC        = CharacterClass(.anyOf("=^_"))
+    private static let pitchLetterCC            = CharacterClass("A"..."G",
+                                                                 "a"..."g")
+    private static let pitchOctaveCC            = CharacterClass(.anyOf("',"))
+    private static let repeatDigitCC            = CharacterClass("1"..."9")
+    private static let restCC                   = CharacterClass(.anyOf("XZxz"))
+    private static let shorthandCC              = CharacterClass(.anyOf(".~"),
+                                                                 "H"..."W",
+                                                                 "h"..."w")
+    private static let tupletDigitCC            = CharacterClass("2"..."9")   // swiftlint:disable:this operator_usage_whitespace
 }

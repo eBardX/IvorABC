@@ -45,9 +45,11 @@ extension ABCSymbolLineTests {
         let a = makeAnnotation(.above, "forte")
         let sl = makeSymbolLine([.decoration(makeDecoration("p", .bang)),
                                  .skip,
-                                 .chordSymbol("Am"),
+                                 .chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m"))),
                                  .annotation(a)])
 
-        #expect(sl.elements == [.decoration(makeDecoration("p", .bang)), .skip, .chordSymbol("Am"), .annotation(a)])
+        let cs = ABCChordSymbol(name: .init(root: .a, kind: "m"))
+
+        #expect(sl.elements == [.decoration(makeDecoration("p", .bang)), .skip, .chordSymbol(cs), .annotation(a)])
     }
 }

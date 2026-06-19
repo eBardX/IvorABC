@@ -21,7 +21,7 @@ public struct ABCPitch {
                 octave: Octave) {
         self.accidental = accidental
         self.letter = letter
-        self.octave = octave
+        self.octave = octave    // validate ???
     }
 
     // MARK: Public Instance Properties

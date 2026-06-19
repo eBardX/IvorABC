@@ -96,6 +96,41 @@ internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
                          text: String(content.dropFirst()))
 }
 
+internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
+    guard tidyInput.first == "\"",
+          tidyInput.last == "\""
+    else { return nil }
+
+    var rest = tidyInput.dropFirst().dropLast()
+
+    guard let root = _parsePitchName(&rest)
+    else { return nil }
+
+    let kind = _parseChordSymbolKind(&rest)
+
+    var bass: ABCPitchName?
+
+    if rest.first == "/" {
+        rest = rest.dropFirst()
+        bass = _parsePitchName(&rest)
+    }
+
+    var parenthesized: ABCChordSymbol.Name?
+
+    if rest.first == "(" {
+        rest = rest.dropFirst()
+
+        if let parenRoot = _parsePitchName(&rest) {
+            parenthesized = ABCChordSymbol.Name(root: parenRoot,
+                                                kind: _parseChordSymbolKind(&rest))
+        }
+    }
+
+    return ABCChordSymbol(name: ABCChordSymbol.Name(root: root, kind: kind),
+                          bass: bass,
+                          parenthesized: parenthesized)
+}
+
 internal func parseBarRepeat(_ tidyInput: Substring) -> ABCBarRepeat? {
     var rest = tidyInput
 
@@ -631,10 +666,8 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
 
             if let annotation = parseAnnotation(input[...closeIdx]) {
                 elements.append(.annotation(annotation))
-            } else {
-                let content = String(rest[..<closeIdx])
-
-                elements.append(.chordSymbol(content))
+            } else if let chordSymbol = parseChordSymbol(input[...closeIdx]) {
+                elements.append(.chordSymbol(chordSymbol))
             }
 
             input = rest[rest.index(after: closeIdx)...]
@@ -1028,8 +1061,60 @@ private let shorthands: [Substring: ABCShorthand] = [".": .dot,
 
 // MARK: Private Functions
 
+// Consumes a run of decimal digits and returns `(value, remainingInput)`.
+//
+// - If the input starts with no digits, returns `(defaultValue, input)` when
+//   `defaultValue` is non-nil, otherwise returns `nil`.
+// - Returns `nil` when the parsed integer is zero.
+private func _consumePositiveUInt(_ input: Substring,
+                                  defaultValue: UInt?) -> (UInt, Substring)? {
+    var digits = ""
+    var rest = input
+
+    while let ch = rest.first, ch.isNumber {
+        digits.append(ch)
+        rest = rest.dropFirst()
+    }
+
+    if digits.isEmpty {
+        guard let d = defaultValue
+        else { return nil }
+
+        return (d, input)
+    }
+
+    guard let value = UInt(digits),
+          value > 0
+    else { return nil }
+
+    return (value, rest)
+}
+
+// Consumes a leading `"text"` token and returns `(text, remainingInput)`, or
+// `nil` if the input does not start with a closing-quotable segment.
+private func _consumeTempoText(_ input: Substring) -> (String, Substring)? {
+    guard input.first == "\""
+    else { return nil }
+
+    guard let closeIdx = input.dropFirst().firstIndex(of: "\""),
+          let t = _parseTempoText(input[...closeIdx])
+    else { return nil }
+
+    let rest = trimPrefix(input[input.index(after: closeIdx)...])
+
+    return (t, rest)
+}
+
 private func _parseAnnotationPlacement(_ tidyInput: Substring) -> ABCAnnotation.Placement? {
     annotationPlacements[tidyInput]
+}
+
+private func _parseChordSymbolKind(_ input: inout Substring) -> String? {
+    let kind = input.prefix { $0 != "/" && $0 != "(" && $0 != ")" }
+
+    input = input.dropFirst(kind.count)
+
+    return kind.isEmpty ? nil : String(kind)
 }
 
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
@@ -1290,6 +1375,92 @@ private func _parsePartItems(_ input: inout Substring,
     }
 }
 
+private func _parsePitchName(_ input: inout Substring) -> ABCPitchName? {
+    guard let letter = input.first, ("A"..."G").contains(letter)
+    else { return nil }
+
+    input = input.dropFirst()
+
+    switch (letter, input.first) {
+    case ("A", "b"):
+        input = input.dropFirst()
+        return .aFlat
+
+    case ("A", "#"):
+        input = input.dropFirst()
+        return .aSharp
+
+    case ("A", _):
+        return .a
+
+    case ("B", "b"):
+        input = input.dropFirst()
+        return .bFlat
+
+    case ("B", "#"):
+        input = input.dropFirst()
+        return .bSharp
+
+    case ("B", _):
+        return .b
+
+    case ("C", "b"):
+        input = input.dropFirst()
+        return .cFlat
+
+    case ("C", "#"):
+        input = input.dropFirst()
+        return .cSharp
+
+    case ("C", _):
+        return .c
+
+    case ("D", "b"):
+        input = input.dropFirst()
+        return .dFlat
+
+    case ("D", "#"):
+        input = input.dropFirst()
+        return .dSharp
+
+    case ("D", _):
+        return .d
+
+    case ("E", "b"):
+        input = input.dropFirst()
+        return .eFlat
+
+    case ("E", "#"):
+        input = input.dropFirst()
+        return .eSharp
+
+    case ("E", _):
+        return .e
+
+    case ("F", "b"):
+        input = input.dropFirst()
+        return .fFlat
+
+    case ("F", "#"):
+        input = input.dropFirst()
+        return .fSharp
+
+    case ("F", _):
+        return .f
+
+    case ("G", "b"):
+        input = input.dropFirst()
+        return .gFlat
+
+    case ("G", "#"):
+        input = input.dropFirst()
+        return .gSharp
+
+    default:
+        return .g
+    }
+}
+
 private func _parseStandardMeter(_ tidyInput: Substring) -> ABCTimeSignature.StandardMeter? {
     let result = tidyInput.splitBeforeFirst("/")
 
@@ -1394,50 +1565,6 @@ private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring
     let value = trim(tail.dropFirst())
 
     return (name, value, isInline)
-}
-
-/// Consumes a leading `"text"` token and returns `(text, remainingInput)`, or
-/// `nil` if the input does not start with a closing-quotable segment.
-private func _consumeTempoText(_ input: Substring) -> (String, Substring)? {
-    guard input.first == "\""
-    else { return nil }
-
-    guard let closeIdx = input.dropFirst().firstIndex(of: "\""),
-          let t = _parseTempoText(input[...closeIdx])
-    else { return nil }
-
-    let rest = trimPrefix(input[input.index(after: closeIdx)...])
-
-    return (t, rest)
-}
-
-/// Consumes a run of decimal digits and returns `(value, remainingInput)`.
-///
-/// - If the input starts with no digits, returns `(defaultValue, input)` when
-///   `defaultValue` is non-nil, otherwise returns `nil`.
-/// - Returns `nil` when the parsed integer is zero.
-private func _consumePositiveUInt(_ input: Substring,
-                                  defaultValue: UInt?) -> (UInt, Substring)? {
-    var digits = ""
-    var rest = input
-
-    while let ch = rest.first, ch.isNumber {
-        digits.append(ch)
-        rest = rest.dropFirst()
-    }
-
-    if digits.isEmpty {
-        guard let d = defaultValue
-        else { return nil }
-
-        return (d, input)
-    }
-
-    guard let value = UInt(digits),
-          value > 0
-    else { return nil }
-
-    return (value, rest)
 }
 
 // swiftlint:enable file_length

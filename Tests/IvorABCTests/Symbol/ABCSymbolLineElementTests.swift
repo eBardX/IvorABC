@@ -12,7 +12,7 @@ extension ABCSymbolLineElementTests {
     @Test
     func allCasesAreDistinct() {
         let allCases: [ABCSymbolLine.Element] = [.annotation(makeAnnotation(.above, "forte")),
-                                                 .chordSymbol("Am"),
+                                                 .chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m"))),
                                                  .decoration(makeDecoration("p", .bang)),
                                                  .skip]
 
@@ -28,7 +28,9 @@ extension ABCSymbolLineElementTests {
         let a = makeAnnotation(.above, "forte")
 
         #expect(ABCSymbolLine.Element.annotation(a) == .annotation(a))
-        #expect(ABCSymbolLine.Element.chordSymbol("Am") == .chordSymbol("Am"))
+        let cs = ABCChordSymbol(name: .init(root: .a, kind: "m"))
+
+        #expect(ABCSymbolLine.Element.chordSymbol(cs) == .chordSymbol(cs))
         #expect(ABCSymbolLine.Element.decoration(makeDecoration("p", .bang)) == .decoration(makeDecoration("p", .bang)))
         #expect(ABCSymbolLine.Element.skip == .skip)
     }
@@ -39,7 +41,8 @@ extension ABCSymbolLineElementTests {
         let below = makeAnnotation(.below, "soft")
 
         #expect(ABCSymbolLine.Element.annotation(above) != .annotation(below))
-        #expect(ABCSymbolLine.Element.chordSymbol("Am") != .chordSymbol("G"))
+        #expect(ABCSymbolLine.Element.chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m")))
+                    != .chordSymbol(ABCChordSymbol(name: .init(root: .g))))
         #expect(ABCSymbolLine.Element.decoration(makeDecoration("p", .bang)) != .decoration(makeDecoration("f", .bang)))
     }
 }

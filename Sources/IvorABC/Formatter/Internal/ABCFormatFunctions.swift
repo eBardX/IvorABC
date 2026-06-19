@@ -121,8 +121,8 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .chord(chord):
         _formatChord(chord, unitNoteLength, meter)
 
-    case let .chordSymbol(text):
-        _formatChordSymbol(text)
+    case let .chordSymbol(chordSymbol):
+        _formatChordSymbol(chordSymbol)
 
     case let .decoration(decoration):
         _formatDecoration(decoration)
@@ -404,8 +404,99 @@ private func _formatChord(_ chord: ABCChord,
     return result
 }
 
-private func _formatChordSymbol(_ text: String) -> String {
-    "\"\(text)\""
+private func _formatChordSymbol(_ chordSymbol: ABCChordSymbol) -> String {
+    var result = "\""
+
+    result += _formatPitchName(chordSymbol.name.root)
+
+    if let kind = chordSymbol.name.kind {
+        result += kind
+    }
+
+    if let bass = chordSymbol.bass {
+        result += "/" + _formatPitchName(bass)
+    }
+
+    if let parenthesized = chordSymbol.parenthesized {
+        result += "(" + _formatPitchName(parenthesized.root)
+
+        if let kind = parenthesized.kind {
+            result += kind
+        }
+
+        result += ")"
+    }
+
+    result += "\""
+
+    return result
+}
+
+private func _formatPitchName(_ pitchName: ABCPitchName) -> String {
+    switch pitchName {
+    case .a:
+        "A"
+
+    case .aFlat:
+        "Ab"
+
+    case .aSharp:
+        "A#"
+
+    case .b:
+        "B"
+
+    case .bFlat:
+        "Bb"
+
+    case .bSharp:
+        "B#"
+
+    case .c:
+        "C"
+
+    case .cFlat:
+        "Cb"
+
+    case .cSharp:
+        "C#"
+
+    case .d:
+        "D"
+
+    case .dFlat:
+        "Db"
+
+    case .dSharp:
+        "D#"
+
+    case .e:
+        "E"
+
+    case .eFlat:
+        "Eb"
+
+    case .eSharp:
+        "E#"
+
+    case .f:
+        "F"
+
+    case .fFlat:
+        "Fb"
+
+    case .fSharp:
+        "F#"
+
+    case .g:
+        "G"
+
+    case .gFlat:
+        "Gb"
+
+    case .gSharp:
+        "G#"
+    }
 }
 
 private func _formatDecoration(_ decoration: ABCDecoration) -> String {
@@ -669,8 +760,8 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
         case let .annotation(annotation):
             _formatAnnotation(annotation)
 
-        case let .chordSymbol(text):
-            "\"\(text)\""
+        case let .chordSymbol(chordSymbol):
+            _formatChordSymbol(chordSymbol)
 
         case let .decoration(decoration):
             _formatDecoration(decoration)

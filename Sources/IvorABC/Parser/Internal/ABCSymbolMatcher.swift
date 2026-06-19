@@ -162,7 +162,8 @@ extension ABCSymbolMatcher {
     private mutating func _matchChordSymbol() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.chordSymbol)
 
-        let chordSymbol = String(token.value.dropFirst().dropLast())
+        guard let chordSymbol = parseChordSymbol(token.value)
+        else { return nil }
 
         return .chordSymbol(chordSymbol)
     }

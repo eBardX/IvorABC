@@ -274,16 +274,20 @@ extension ABCParseFunctionsTests {
         #expect(parseSymbolLine("**") == makeSymbolLine([.skip, .skip]))
         #expect(parseSymbolLine("!p!") == makeSymbolLine([.decoration(makeDecoration("p", .bang))]))
         #expect(parseSymbolLine("!pp!") == makeSymbolLine([.decoration(makeDecoration("pp", .bang))]))
-        #expect(parseSymbolLine("\"Am\"") == makeSymbolLine([.chordSymbol("Am")]))
+        #expect(parseSymbolLine("\"Am\"") == makeSymbolLine([.chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m")))]))
         #expect(parseSymbolLine("\"^forte\"") == makeSymbolLine([.annotation(makeAnnotation(.above, "forte"))]))
         #expect(parseSymbolLine("\"_text\"") == makeSymbolLine([.annotation(makeAnnotation(.below, "text"))]))
         #expect(parseSymbolLine("!p! * * *") == makeSymbolLine([.decoration(makeDecoration("p", .bang)), .skip, .skip, .skip]))
         #expect(parseSymbolLine("!pp! * !f!") == makeSymbolLine([.decoration(makeDecoration("pp", .bang)),
                                                                  .skip,
                                                                  .decoration(makeDecoration("f", .bang))]))
-        #expect(parseSymbolLine("\"Am\" * !trill!") == makeSymbolLine([.chordSymbol("Am"), .skip, .decoration(makeDecoration("trill", .bang))]))
+        #expect(parseSymbolLine("\"Am\" * !trill!") == makeSymbolLine([.chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m"))),
+                                                                       .skip,
+                                                                       .decoration(makeDecoration("trill", .bang))]))
         let aboveAnnotation = makeAnnotation(.above, "p")
-        #expect(parseSymbolLine("\"^p\" \"Am\" *") == makeSymbolLine([.annotation(aboveAnnotation), .chordSymbol("Am"), .skip]))
+        #expect(parseSymbolLine("\"^p\" \"Am\" *") == makeSymbolLine([.annotation(aboveAnnotation),
+                                                                      .chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m"))),
+                                                                      .skip]))
     }
 
     @Test
