@@ -22,7 +22,7 @@ extension ABCTunebook {
     public func migrate() -> ABCTunebook {
         ABCTunebook(version: ABCVersion.current,
                     headers: headers.map { _migrateHeader($0) },
-                    tunes: tunes.map { _migrateTune($0) })!  // swiftlint:disable:this force_unwrapping
+                    tunes: tunes.map { _migrateTune($0) }).require()
     }
 }
 
@@ -88,5 +88,5 @@ private func _migrateHeader(_ header: ABCHeader) -> ABCHeader {
 }
 
 private func _migrateTune(_ tune: ABCTune) -> ABCTune {
-    ABCTune(entries: tune.entries.map { _migrateEntry($0) })!   // swiftlint:disable:this force_unwrapping
+    ABCTune(entries: tune.entries.map { _migrateEntry($0) }).require()
 }

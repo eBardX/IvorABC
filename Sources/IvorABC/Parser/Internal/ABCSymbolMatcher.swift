@@ -63,7 +63,7 @@ extension ABCSymbolMatcher {
 
         if let duration {
             return ABCDuration(numerator: baseDuration.numerator * duration.numerator,
-                               denominator: baseDuration.denominator * duration.denominator)!   // swiftlint:disable:this force_unwrapping
+                               denominator: baseDuration.denominator * duration.denominator).require()
         }
 
         return baseDuration
@@ -320,7 +320,7 @@ extension ABCSymbolMatcher {
             "Z":
             let count = result.duration?.numerator ?? 1
 
-            rest = .multiMeasure(result.kind == "X", count)
+            rest = .multiMeasure(result.kind == "X", ABCRest.MeasureCount(count))
 
         case "x",
             "z":

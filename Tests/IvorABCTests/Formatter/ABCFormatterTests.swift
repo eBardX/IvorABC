@@ -709,13 +709,6 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func rest_multiMeasureZeroCount_throws() throws {
-        #expect(throws: ABCFormatter.Error.invalidMultiMeasureRestCount) {
-            try ABCFormatter().format(minimalTunebook(symbols: [.rest(.multiMeasure(false, 0))]))
-        }
-    }
-
-    @Test
     func rest_multiMeasure_emitsZN() throws {
         let output = try format(minimalTunebook(symbols: [.rest(.multiMeasure(false, 4))]))
 

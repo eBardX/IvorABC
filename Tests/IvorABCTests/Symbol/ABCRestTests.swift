@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCRestTests {
 }
@@ -9,6 +10,11 @@ struct ABCRestTests {
 // MARK: -
 
 extension ABCRestTests {
+    @Test
+    func measureCount_zeroIsInvalid() {
+        #expect(ABCRest.MeasureCount(uintValue: 0) == nil)
+    }
+
     @Test
     func multiMeasureInvisible() {
         let rest = ABCRest.multiMeasure(true, 4)

@@ -12,7 +12,7 @@
 ///
 /// ```swift
 /// let gMajor = ABCKeySignature.Standard(tonic: .g,
-///                                       mode: .major)!
+///                                       mode: .major).require()
 ///
 /// var ctx = ABCAccidentalContext(keySignature: .standard(gMajor))
 ///

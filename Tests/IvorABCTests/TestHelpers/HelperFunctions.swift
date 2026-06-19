@@ -301,7 +301,7 @@ func makeAlignedLyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAligne
 func makeAnnotation(_ placement: ABCAnnotation.Placement,
                     _ text: String) -> ABCAnnotation {
     ABCAnnotation(placement: placement,
-                  text: text)!          // swiftlint:disable:this force_unwrapping
+                  text: text).require()
 }
 
 func makeChord(_ notes: [ABCNote],
@@ -309,13 +309,13 @@ func makeChord(_ notes: [ABCNote],
                _ tie: ABCTie? = nil) -> ABCChord {
     ABCChord(notes: notes,
              duration: duration,
-             tie: tie)!             // swiftlint:disable:this force_unwrapping
+             tie: tie).require()
 }
 
 func makeDecoration(_ name: String,
                     _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
     ABCDecoration(name: ABCDecoration.Name(name),
-                  dialect: dialect)!    // swiftlint:disable:this force_unwrapping
+                  dialect: dialect).require()
 }
 
 func makeDirective(_ name: String,
@@ -323,13 +323,13 @@ func makeDirective(_ name: String,
                    _ content: [String]? = nil) -> ABCDirective {
     ABCDirective(name: name,
                  value: value,
-                 content: content)!  // swiftlint:disable:this force_unwrapping
+                 content: content).require()
 }
 
 func makeDuration(_ numerator: UInt,
                   _ denominator: UInt = 1) -> ABCDuration {
     ABCDuration(numerator: numerator,
-                denominator: denominator)!  // swiftlint:disable:this force_unwrapping
+                denominator: denominator).require()
 }
 
 func makeFileID(_ version: ABCVersion) -> ABCFileID {
@@ -339,13 +339,13 @@ func makeFileID(_ version: ABCVersion) -> ABCFileID {
 func makeGraceNotes(_ notes: [ABCNote],
                     _ isSlashed: Bool) -> ABCGraceNotes {
     ABCGraceNotes(notes: notes,
-                  isSlashed: isSlashed)!    // swiftlint:disable:this force_unwrapping
+                  isSlashed: isSlashed).require()
 }
 
 func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                       _ mode: ABCKeySignature.Mode) -> ABCKeySignature {
     .standard(ABCKeySignature.Standard(tonic: tonic,
-                                       mode: mode)!)    // swiftlint:disable:this force_unwrapping
+                                       mode: mode).require())
 }
 
 func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
@@ -353,7 +353,7 @@ func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                       _ extraAccidentals: [ABCKeySignature.ExtraAccidental]) -> ABCKeySignature {
     .standard(ABCKeySignature.Standard(tonic: tonic,
                                        mode: mode,
-                                       extraAccidentals: extraAccidentals)!)    // swiftlint:disable:this force_unwrapping
+                                       extraAccidentals: extraAccidentals).require())
 }
 
 func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
@@ -361,7 +361,7 @@ func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                       _ clef: ABCKeySignature.Clef) -> ABCKeySignature {
     .standard(ABCKeySignature.Standard(tonic: tonic,
                                        mode: mode,
-                                       clef: clef)!)    // swiftlint:disable:this force_unwrapping
+                                       clef: clef).require())
 }
 
 func makeMacro(_ trigger: String,
@@ -395,7 +395,7 @@ func makePartGroup(_ items: [ABCPartSequence.Item],
 }
 
 func makePartSequence(_ items: [ABCPartSequence.Item]) -> ABCPartSequence {
-    ABCPartSequence(items: items)!  // swiftlint:disable:this force_unwrapping
+    ABCPartSequence(items: items).require()
 }
 
 func makePitch(_ letter: ABCPitch.Letter,
@@ -440,30 +440,30 @@ func makeTempo(_ text: String) -> ABCTempo {
 func makeTimeSignature(_ numerator: UInt,
                        _ denominator: UInt) -> ABCTimeSignature {
     .standard(ABCTimeSignature.StandardMeter(numerator: numerator,
-                                             denominator: denominator)!) // swiftlint:disable:this force_unwrapping
+                                             denominator: denominator).require())
 }
 
 func makeTimeSignature(_ numerators: [UInt],
                        _ denominator: UInt) -> ABCTimeSignature {
     .complex(ABCTimeSignature.AdditiveMeter(numerators: numerators,
-                                            denominator: denominator)!) // swiftlint:disable:this force_unwrapping
+                                            denominator: denominator).require())
 }
 
 func makeTune(_ entries: [ABCEntry]) -> ABCTune {
-    ABCTune(entries: entries)!  // swiftlint:disable:this force_unwrapping
+    ABCTune(entries: entries).require()
 }
 
 func makeTunebook(_ headers: [ABCHeader],
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: makeVersion(2, 1),
                 headers: headers,
-                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+                tunes: tunes).require()
 }
 
 func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: makeVersion(2, 1),
                 headers: [],
-                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+                tunes: tunes).require()
 }
 
 func makeTunebook(_ version: ABCVersion,
@@ -471,14 +471,14 @@ func makeTunebook(_ version: ABCVersion,
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
                 headers: headers,
-                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+                tunes: tunes).require()
 }
 
 func makeTunebook(_ version: ABCVersion,
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
                 headers: [],
-                tunes: tunes)!      // swiftlint:disable:this force_unwrapping
+                tunes: tunes).require()
 }
 
 func makeTuplet(_ noteCount: UInt,
@@ -486,13 +486,13 @@ func makeTuplet(_ noteCount: UInt,
                 _ affectedCount: UInt? = nil) -> ABCTuplet {
     ABCTuplet(noteCount: noteCount,
               beatCount: beatCount,
-              affectedCount: affectedCount)!    // swiftlint:disable:this force_unwrapping
+              affectedCount: affectedCount).require()
 }
 
 func makeUserSymbol(_ shorthand: ABCShorthand,
                     _ definition: ABCUserSymbol.Definition) -> ABCUserSymbol {
     ABCUserSymbol(shorthand: shorthand,
-                  definition: definition)!    // swiftlint:disable:this force_unwrapping
+                  definition: definition).require()
 }
 
 func makeUserSymbol(_ shorthand: ABCShorthand,
@@ -501,7 +501,7 @@ func makeUserSymbol(_ shorthand: ABCShorthand,
 }
 
 func makeVariantEnding(_ endings: [ClosedRange<UInt>]) -> ABCVariantEnding {
-    ABCVariantEnding(endings: endings)! // swiftlint:disable:this force_unwrapping
+    ABCVariantEnding(endings: endings).require()
 }
 
 func makeVersion(_ major: UInt,
@@ -538,10 +538,11 @@ func format(_ tunebook: ABCTunebook) throws -> String {
     let formatter = ABCFormatter()
     let data = try formatter.format(tunebook)
 
-    return String(bytes: data, encoding: .utf8) ?? ""
+    return String(bytes: data,
+                  encoding: .utf8).require()
 }
 
-func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major)!),    // swiftlint:disable:this force_unwrapping
+func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major).require()),
                      symbols: [ABCSymbol] = []) -> ABCTunebook {
     makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
                             .field(.title("Test")),

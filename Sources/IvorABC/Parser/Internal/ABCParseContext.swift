@@ -1,5 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
+private import XestiTools
+
 internal struct ABCParseContext {
 
     // MARK: Internal Initializers
@@ -81,9 +83,9 @@ extension ABCParseContext {
     // MARK: Private Type Properties
 
     private static let durationEighths = ABCDuration(numerator: 1,
-                                                     denominator: 8)!       // swiftlint:disable:this force_unwrapping
+                                                     denominator: 8).require()
     private static let durationSixteenths = ABCDuration(numerator: 1,
-                                                        denominator: 16)!   // swiftlint:disable:this force_unwrapping
+                                                        denominator: 16).require()
 
     // MARK: Private Type Methods
 

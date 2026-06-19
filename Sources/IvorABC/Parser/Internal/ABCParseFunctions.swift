@@ -1197,7 +1197,7 @@ private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
     let value = String(trimPrefix(result.tail ?? ""))
 
     return ABCDirective(name: name,
-                        value: value)!  // swiftlint:disable:this force_unwrapping
+                        value: value).require()
 }
 
 private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySignature.Clef? {

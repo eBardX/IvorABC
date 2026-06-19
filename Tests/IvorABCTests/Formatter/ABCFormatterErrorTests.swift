@@ -53,11 +53,6 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidMultiMeasureRestCount() {
-        #expect(ABCFormatter.Error.invalidMultiMeasureRestCount.message.contains("zero"))
-    }
-
-    @Test
     func message_invalidStringArgument() {
         let error = ABCFormatter.Error.invalidTextValue("invalid characters")
 

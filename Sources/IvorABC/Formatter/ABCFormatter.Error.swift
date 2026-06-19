@@ -23,9 +23,6 @@ extension ABCFormatter {
         /// A bar repeat marker string is invalid.
         case invalidBarRepeat(String)
 
-        /// A multi-measure rest has a count of zero.
-        case invalidMultiMeasureRestCount
-
         /// A text value contains a newline character.
         case invalidTextValue(String)
 
@@ -89,9 +86,6 @@ extension ABCFormatter.Error: EnhancedError {
 
         case let .invalidBarRepeat(s):
             "Bar repeat marker is invalid: \(s.isEmpty ? "(empty)" : s)"
-
-        case .invalidMultiMeasureRestCount:
-            "Multi-measure rest has a count of zero"
 
         case let .invalidTextValue(value):
             "Text value contains invalid characters: \(value)"

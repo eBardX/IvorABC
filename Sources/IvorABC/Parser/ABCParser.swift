@@ -183,7 +183,7 @@ extension ABCParser {
 
             stringValue += tmpString
 
-            return ABCText(stringValue: stringValue)!   // swiftlint:disable:this force_unwrapping
+            return ABCText(stringValue: stringValue).require()
         }
 
         switch field {
@@ -283,7 +283,7 @@ extension ABCParser {
 
                 restLines.append(.directive(ABCDirective(name: name,
                                                          value: beginValue,
-                                                         content: contentLines)!))  // swiftlint:disable:this force_unwrapping
+                                                         content: contentLines).require()))
                 continue
             }
 
@@ -334,7 +334,7 @@ extension ABCParser {
         let value = String(trimPrefix(result.tail ?? ""))
 
         return ABCDirective(name: name,
-                            value: value)!  // swiftlint:disable:this force_unwrapping
+                            value: value).require()
     }
 
     private func _parseDirectiveLine(_ input: Substring) throws -> Line? {
@@ -462,7 +462,7 @@ extension ABCParser {
 
         let value = String(trimPrefix(result.tail ?? ""))
 
-        return .directive(ABCDirective(name: name, value: value)!)  // swiftlint:disable:this force_unwrapping
+        return .directive(ABCDirective(name: name, value: value).require())
     }
 
     private func _parseFileID(_ tidyInput: Substring) throws -> ABCFileID {

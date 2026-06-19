@@ -188,28 +188,6 @@ private let keySignatureModes: [ABCKeySignature.Mode: String] = [.aeolian: "aeol
                                                                  .mixolydian: "mixolydian",
                                                                  .phrygian: "phrygian"]
 
-private let keySignatureTonics: [ABCKeySignature.Tonic: String] = [.a: "A",
-                                                                   .aFlat: "Ab",
-                                                                   .aSharp: "A#",
-                                                                   .b: "B",
-                                                                   .bFlat: "Bb",
-                                                                   .bSharp: "B#",
-                                                                   .c: "C",
-                                                                   .cFlat: "Cb",
-                                                                   .cSharp: "C#",
-                                                                   .d: "D",
-                                                                   .dFlat: "Db",
-                                                                   .dSharp: "D#",
-                                                                   .e: "E",
-                                                                   .eFlat: "Eb",
-                                                                   .eSharp: "E#",
-                                                                   .f: "F",
-                                                                   .fFlat: "Fb",
-                                                                   .fSharp: "F#",
-                                                                   .g: "G",
-                                                                   .gFlat: "Gb",
-                                                                   .gSharp: "G#"]
-
 private let pitchAccidentals: [ABCPitch.Accidental: (key: String, note: String)] = [.doubleFlat: ("__", "__"),
                                                                                     .flat: ("_", "_"),
                                                                                     .natural: ("=", ""),
@@ -223,6 +201,28 @@ private let pitchLetters: [ABCPitch.Letter: (upper: String, lower: String)] = [.
                                                                                .e: ("E", "e"),
                                                                                .f: ("F", "f"),
                                                                                .g: ("G", "g")]
+
+private let pitchNames: [ABCPitchName: String] = [.a: "A",
+                                                  .aFlat: "Ab",
+                                                  .aSharp: "A#",
+                                                  .b: "B",
+                                                  .bFlat: "Bb",
+                                                  .bSharp: "B#",
+                                                  .c: "C",
+                                                  .cFlat: "Cb",
+                                                  .cSharp: "C#",
+                                                  .d: "D",
+                                                  .dFlat: "Db",
+                                                  .dSharp: "D#",
+                                                  .e: "E",
+                                                  .eFlat: "Eb",
+                                                  .eSharp: "E#",
+                                                  .f: "F",
+                                                  .fFlat: "Fb",
+                                                  .fSharp: "F#",
+                                                  .g: "G",
+                                                  .gFlat: "Gb",
+                                                  .gSharp: "G#"]
 
 private let shorthands: [ABCShorthand: String] = [.dot: ".",
                                                   .hLower: "h",
@@ -357,7 +357,8 @@ private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
 private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     var result = "\""
 
-    result += annotationPlacements[annotation.placement] ?? ""
+    result += annotationPlacements[annotation.placement].require()
+
     result += escapeAnnotationText(annotation.text)
 
     result += "\""
@@ -382,7 +383,7 @@ private func _formatBarRepeat(_ barRepeat: ABCBarRepeat) -> String {
 }
 
 private func _formatBrokenRhythm(_ brokenRhythm: ABCBrokenRhythm) -> String {
-    brokenRhythms[brokenRhythm] ?? ""
+    brokenRhythms[brokenRhythm].require()
 }
 
 private func _formatChord(_ chord: ABCChord,
@@ -398,7 +399,7 @@ private func _formatChord(_ chord: ABCChord,
                               unitNoteLength,
                               meter)
     if let tie = chord.tie {
-        result += ties[tie] ?? ""
+        result += ties[tie].require()
     }
 
     return result
@@ -407,18 +408,18 @@ private func _formatChord(_ chord: ABCChord,
 private func _formatChordSymbol(_ chordSymbol: ABCChordSymbol) -> String {
     var result = "\""
 
-    result += _formatPitchName(chordSymbol.name.root)
+    result += pitchNames[chordSymbol.name.root].require()
 
     if let kind = chordSymbol.name.kind {
         result += kind
     }
 
     if let bass = chordSymbol.bass {
-        result += "/" + _formatPitchName(bass)
+        result += "/" + pitchNames[bass].require()
     }
 
     if let parenthesized = chordSymbol.parenthesized {
-        result += "(" + _formatPitchName(parenthesized.root)
+        result += "(" + pitchNames[parenthesized.root].require()
 
         if let kind = parenthesized.kind {
             result += kind
@@ -430,73 +431,6 @@ private func _formatChordSymbol(_ chordSymbol: ABCChordSymbol) -> String {
     result += "\""
 
     return result
-}
-
-private func _formatPitchName(_ pitchName: ABCPitchName) -> String {
-    switch pitchName {
-    case .a:
-        "A"
-
-    case .aFlat:
-        "Ab"
-
-    case .aSharp:
-        "A#"
-
-    case .b:
-        "B"
-
-    case .bFlat:
-        "Bb"
-
-    case .bSharp:
-        "B#"
-
-    case .c:
-        "C"
-
-    case .cFlat:
-        "Cb"
-
-    case .cSharp:
-        "C#"
-
-    case .d:
-        "D"
-
-    case .dFlat:
-        "Db"
-
-    case .dSharp:
-        "D#"
-
-    case .e:
-        "E"
-
-    case .eFlat:
-        "Eb"
-
-    case .eSharp:
-        "E#"
-
-    case .f:
-        "F"
-
-    case .fFlat:
-        "Fb"
-
-    case .fSharp:
-        "F#"
-
-    case .g:
-        "G"
-
-    case .gFlat:
-        "Gb"
-
-    case .gSharp:
-        "G#"
-    }
 }
 
 private func _formatDecoration(_ decoration: ABCDecoration) -> String {
@@ -601,23 +535,25 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     case .highlandPipesPreset:
         return "Hp"
 
-    case let .standard(std):
-        var result = _formatKeySignatureTonic(std.tonic)
+    case let .standard(standard):
+        var result = pitchNames[standard.tonic].require()
 
-        let modeSuffix = _formatKeySignatureMode(std.mode)
-
-        if !modeSuffix.isEmpty {
+        if let modeSuffix = keySignatureModes[standard.mode] {
             result.append(" ")
             result.append(modeSuffix)
         }
 
-        for pitch in std.extraAccidentals {
+        for pitch in standard.extraAccidentals {
             result.append(" ")
-            result.append(_formatKeySignatureAccidental(pitch.accidental))
+
+            if let keyAccidental = pitchAccidentals[pitch.accidental]?.key {
+                result.append(keyAccidental)
+            }
+
             result.append(_formatPitchLetterOctave(pitch.letter, pitch.octave))
         }
 
-        if let clef = std.clef {
+        if let clef = standard.clef {
             let clefStr = _formatKeySignatureClef(clef)
 
             if !clefStr.isEmpty {
@@ -628,10 +564,6 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
 
         return result
     }
-}
-
-private func _formatKeySignatureAccidental(_ accidental: ABCPitch.Accidental) -> String {
-    pitchAccidentals[accidental]?.key ?? ""
 }
 
 private func _formatKeySignatureClef(_ clef: ABCKeySignature.Clef) -> String {
@@ -660,14 +592,6 @@ private func _formatKeySignatureClef(_ clef: ABCKeySignature.Clef) -> String {
     return parts.joined(separator: " ")
 }
 
-private func _formatKeySignatureMode(_ mode: ABCKeySignature.Mode) -> String {
-    keySignatureModes[mode] ?? ""
-}
-
-private func _formatKeySignatureTonic(_ tonic: ABCKeySignature.Tonic) -> String {
-    keySignatureTonics[tonic] ?? ""
-}
-
 private func _formatMacro(_ macro: ABCMacro) -> String {
     "\(macro.trigger)=\(macro.replacement)"
 }
@@ -675,7 +599,7 @@ private func _formatMacro(_ macro: ABCMacro) -> String {
 private func _formatNote(_ note: ABCNote,
                          _ unitNoteLength: ABCDuration?,
                          _ meter: ABCTimeSignature?) -> String {
-    var result = _formatPitchAccidental(note.pitch.accidental)
+    var result = pitchAccidentals[note.pitch.accidental]?.note ?? ""
 
     result += _formatPitchLetterOctave(note.pitch.letter,
                                        note.pitch.octave)
@@ -685,7 +609,7 @@ private func _formatNote(_ note: ABCNote,
                               meter)
 
     if let tie = note.tie {
-        result += ties[tie] ?? ""
+        result += ties[tie].require()
     }
 
     return result
@@ -709,10 +633,6 @@ private func _formatPartSequence(_ partSequence: ABCPartSequence) -> String {
     _formatPartItems(partSequence.items)
 }
 
-private func _formatPitchAccidental(_ accidental: ABCPitch.Accidental) -> String {
-    pitchAccidentals[accidental]?.note ?? ""
-}
-
 private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
                                       _ octave: ABCPitch.Octave) -> String {
     guard let (upper, lower) = pitchLetters[letter]
@@ -732,9 +652,6 @@ private func _formatRest(_ rest: ABCRest,
                          _ meter: ABCTimeSignature?) throws -> String {
     switch rest {
     case let .multiMeasure(invisible, measureCount):
-        guard measureCount > 0
-        else { throw ABCFormatter.Error.invalidMultiMeasureRestCount }
-
         let letter = invisible ? "X" : "Z"
 
         return measureCount == 1 ? letter : "\(letter)\(measureCount)"
@@ -747,11 +664,11 @@ private func _formatRest(_ rest: ABCRest,
 }
 
 private func _formatShorthand(_ shorthand: ABCShorthand) -> String {
-    shorthands[shorthand] ?? ""
+    shorthands[shorthand].require()
 }
 
 private func _formatSlur(_ slur: ABCSlur) -> String {
-    slurs[slur] ?? ""
+    slurs[slur].require()
 }
 
 private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
