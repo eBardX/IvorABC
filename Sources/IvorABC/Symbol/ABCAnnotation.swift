@@ -19,10 +19,25 @@ public struct ABCAnnotation {
     ///                        staff.
     /// - Parameter text:      The annotation text, without the surrounding quotes
     ///                        or placement prefix.
-    public init(placement: Placement,
-                text: String) {
+    public init?(placement: Placement,
+                 text: String) {
+        guard Self._isValid(placement, text)
+        else { return nil }
+
         self.placement = placement
-        self.text = text            // validate ???
+        self.text = text
+    }
+}
+
+// MARK: -
+
+extension ABCAnnotation {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ placement: Placement,
+                                 _ text: String) -> Bool {
+        !text.isEmpty
     }
 }
 

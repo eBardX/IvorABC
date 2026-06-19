@@ -174,6 +174,48 @@ internal func decodeHTMLEntityInLyrics(_ input: inout Substring) -> String {
     return "&"
 }
 
+/// Encodes annotation display text for output inside an ABC `"..."` annotation.
+///
+/// Like `escape(_:)` but only escapes characters that are unsafe within a
+/// double-quoted annotation. `%` is left as-is since it has no special
+/// meaning inside quotes, but `&` must still be escaped because `unescape`
+/// processes HTML entities on re-parse.
+/// Specifically:
+/// - `\` → `\\`
+/// - `"` → `\u0022` (`\"` is already the TeX umlaut modifier prefix)
+/// - `&` → `\&`
+/// - Non-ABC-visible characters → `\uXXXX`
+internal func escapeAnnotationText(_ input: String) -> String {
+    guard input.contains(where: { !$0.isABCVisible || $0 == "\\" || $0 == "\"" || $0 == "&" })
+    else { return input }
+
+    var result = ""
+
+    result.reserveCapacity(input.count)
+
+    for ch in input {
+        switch ch {
+        case "\\":
+            result += "\\\\"
+
+        case "\"":
+            result += "\\u0022"
+
+        case "&":
+            result += "\\&"
+
+        default:
+            if ch.isABCVisible {
+                result.append(ch)
+            } else {
+                result += _unicodeEscape(ch)
+            }
+        }
+    }
+
+    return result
+}
+
 /// Encodes syllable display text for output in an ABC `w:` field.
 ///
 /// Characters that are structural in ABC lyrics source are escaped so the

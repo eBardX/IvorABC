@@ -301,7 +301,7 @@ func makeAlignedLyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAligne
 func makeAnnotation(_ placement: ABCAnnotation.Placement,
                     _ text: String) -> ABCAnnotation {
     ABCAnnotation(placement: placement,
-                  text: text)
+                  text: text)!          // swiftlint:disable:this force_unwrapping
 }
 
 func makeChord(_ notes: [ABCNote],
@@ -309,7 +309,7 @@ func makeChord(_ notes: [ABCNote],
                _ tie: ABCTie? = nil) -> ABCChord {
     ABCChord(notes: notes,
              duration: duration,
-             tie: tie)!   // swiftlint:disable:this force_unwrapping
+             tie: tie)!             // swiftlint:disable:this force_unwrapping
 }
 
 func makeDecoration(_ name: String,

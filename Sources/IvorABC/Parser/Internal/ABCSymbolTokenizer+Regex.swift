@@ -177,11 +177,11 @@ extension ABCSymbolTokenizer {
     private nonisolated(unsafe) static let annotationText = Regex {
         OneOrMore {
             ChoiceOf {
-                "\\\\"
-                "\\&"
-                "\\%"
-                "\\\""
-                CharacterClass.anyOf("\n\r\\%\"").inverted
+                Regex {
+                    "\\"
+                    CharacterClass.anyOf("\n\r").inverted
+                }
+                CharacterClass.anyOf("\n\r\\\"").inverted
             }
         }
     }

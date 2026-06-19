@@ -1,8 +1,8 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
-private import XestiTools
-
 // swiftlint:disable file_length
+
+private import XestiTools
 
 // MARK: Internal Types
 
@@ -93,7 +93,7 @@ internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
     else { return nil }
 
     return ABCAnnotation(placement: placement,
-                         text: String(content.dropFirst()))
+                         text: normalize(content.dropFirst()))
 }
 
 internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
@@ -1566,5 +1566,3 @@ private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring
 
     return (name, value, isInline)
 }
-
-// swiftlint:enable file_length

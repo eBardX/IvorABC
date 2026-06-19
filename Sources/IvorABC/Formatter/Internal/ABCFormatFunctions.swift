@@ -358,7 +358,7 @@ private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     var result = "\""
 
     result += annotationPlacements[annotation.placement] ?? ""
-    result += annotation.text
+    result += escapeAnnotationText(annotation.text)
 
     result += "\""
 

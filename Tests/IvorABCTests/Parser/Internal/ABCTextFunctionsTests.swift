@@ -76,6 +76,40 @@ extension ABCTextFunctionsTests {
     }
 }
 
+// MARK: - escapeAnnotationText
+
+extension ABCTextFunctionsTests {
+    @Test
+    func escapeAnnotationText_ampersand() {
+        #expect(escapeAnnotationText("&") == "\\&")
+        #expect(escapeAnnotationText("P&L") == "P\\&L")
+    }
+
+    @Test
+    func escapeAnnotationText_backslash() {
+        #expect(escapeAnnotationText("a\\b") == "a\\\\b")
+        #expect(escapeAnnotationText("\\") == "\\\\")
+    }
+
+    @Test
+    func escapeAnnotationText_noSpecialChars_returnsInput() {
+        #expect(escapeAnnotationText("forte") == "forte")
+        #expect(escapeAnnotationText("").isEmpty)
+    }
+
+    @Test
+    func escapeAnnotationText_percent_notEscaped() {
+        #expect(escapeAnnotationText("100%") == "100%")
+        #expect(escapeAnnotationText("%") == "%")
+    }
+
+    @Test
+    func escapeAnnotationText_quote() {
+        #expect(escapeAnnotationText("\"") == "\\u0022")
+        #expect(escapeAnnotationText("a\"b") == "a\\u0022b")
+    }
+}
+
 // MARK: - unescape
 
 extension ABCTextFunctionsTests {

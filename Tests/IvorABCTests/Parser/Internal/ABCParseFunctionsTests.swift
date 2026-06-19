@@ -1,5 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
+// swiftlint:disable file_length
+
 @testable import IvorABC
 import Testing
 import XestiTools
@@ -16,6 +18,26 @@ extension ABCParseFunctionsTests {
         #expect(IvorABC.normalize("  xyzzy  \\% keep  % ignore  ") == "xyzzy % keep % ignore")
         #expect(IvorABC.normalize("  xyzzy  % ignore  ") == "xyzzy % ignore")
         #expect(IvorABC.normalize("  xyzzy  %ignore \\% keep  ") == "xyzzy %ignore % keep")
+    }
+
+    @Test
+    func parseAnnotation_decodesAmpersandEntity() {
+        #expect(parseAnnotation(Substring("\"<P&amp;L\"")) == makeAnnotation(.left, "P&L"))
+    }
+
+    @Test
+    func parseAnnotation_decodesBackslash() {
+        #expect(parseAnnotation(Substring("\"^a\\\\b\"")) == makeAnnotation(.above, "a\\b"))
+    }
+
+    @Test
+    func parseAnnotation_decodesPercent() {
+        #expect(parseAnnotation(Substring("\"^100\\%\"")) == makeAnnotation(.above, "100%"))
+    }
+
+    @Test
+    func parseAnnotation_decodesUnicodeEscapeToQuote() {
+        #expect(parseAnnotation(Substring("\"^a\\u0022b\"")) == makeAnnotation(.above, "a\"b"))
     }
 
     @Test
