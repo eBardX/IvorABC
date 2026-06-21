@@ -65,7 +65,7 @@ private func _migrateField(_ field: ABCField) -> ABCField {
        tempo.legacyBeatMultiple != nil {
         return .tempo(ABCTempo(durations: tempo.durations,
                                rate: tempo.rate,
-                               text: tempo.text))
+                               text: tempo.text).require())
     }
 
     return field

@@ -55,7 +55,7 @@ extension ABCTunebookMigrateTests {
     func migrated_fromV16_tempoLegacyFlagCleared() {
         let v16 = makeVersion(1, 6)
         let dottedQuarter = makeDuration(3, 8)
-        let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, legacyBeatMultiple: 3)
+        let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, legacyBeatMultiple: 3).require()
         let tune = makeTune(header: [.field(.tempo(legacyTempo))])
         let tunebook = makeTunebook(v16, [tune])
         let migrated = tunebook.migrate()

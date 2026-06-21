@@ -344,7 +344,7 @@ extension ABCParser {
             if let rate = UInt(trim(vtext)), rate > 0 {
                 let field = ABCField.tempo(ABCTempo(durations: [],
                                                     rate: rate,
-                                                    text: nil))
+                                                    text: nil).require())
 
                 if strictness == .lenient {
                     diagnostics.append(.bareTempoRate(rate))

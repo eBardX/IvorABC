@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCTempoTests {
 }
@@ -94,7 +95,7 @@ extension ABCTempoTests {
     @Test
     func init_legacyBeatMultiple_storesValue() {
         let dur = makeDuration(3, 8)
-        let tempo = ABCTempo(durations: [dur], rate: 40, text: nil, legacyBeatMultiple: 3)
+        let tempo = ABCTempo(durations: [dur], rate: 40, text: nil, legacyBeatMultiple: 3).require()
 
         #expect(tempo.legacyBeatMultiple == 3)
     }
@@ -102,8 +103,8 @@ extension ABCTempoTests {
     @Test
     func inequality_legacyBeatMultiple() {
         let dur = makeDuration(1, 8)
-        let withFlag = ABCTempo(durations: [dur], rate: 120, text: nil, legacyBeatMultiple: 1)
-        let withoutFlag = ABCTempo(durations: [dur], rate: 120, text: nil)
+        let withFlag = ABCTempo(durations: [dur], rate: 120, text: nil, legacyBeatMultiple: 1).require()
+        let withoutFlag = makeTempo([dur], 120)
 
         #expect(withFlag != withoutFlag)
     }

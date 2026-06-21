@@ -420,7 +420,7 @@ func makeTempo(_ numerator: UInt,
                _ text: String? = nil) -> ABCTempo {
     ABCTempo(durations: [makeDuration(numerator, denominator)],
              rate: rate,
-             text: text)
+             text: text).require()
 }
 
 func makeTempo(_ durations: [ABCDuration],
@@ -428,13 +428,13 @@ func makeTempo(_ durations: [ABCDuration],
                _ text: String? = nil) -> ABCTempo {
     ABCTempo(durations: durations,
              rate: rate,
-             text: text)
+             text: text).require()
 }
 
 func makeTempo(_ text: String) -> ABCTempo {
     ABCTempo(durations: [],
              rate: nil,
-             text: text)
+             text: text).require()
 }
 
 func makeTimeSignature(_ numerator: UInt,
