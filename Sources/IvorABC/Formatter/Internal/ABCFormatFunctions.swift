@@ -10,8 +10,8 @@ private import XestiTools
 
 internal func formatField(_ field: ABCField) throws -> (String, String) {
     switch field {
-    case let .alignedLyrics(alignedLyrics):
-        return ("w", _formatAlignedLyrics(alignedLyrics))
+    case let .wordsAligned(alignedLyrics):
+        return ("w", _formatAlignedWords(alignedLyrics))
 
     case let .area(text):
         return ("A", _formatText(text))
@@ -46,7 +46,7 @@ internal func formatField(_ field: ABCField) throws -> (String, String) {
     case let .key(ABCKeySignature):
         return ("K", _formatKeySignature(ABCKeySignature))
 
-    case let .lyrics(text):
+    case let .words(text):
         return ("W", _formatText(text))
 
     case let .macro(macro):
@@ -82,7 +82,7 @@ internal func formatField(_ field: ABCField) throws -> (String, String) {
     case let .tempo(tempo):
         return ("Q", _formatTempo(tempo))
 
-    case let .title(text):
+    case let .tuneTitle(text):
         return ("T", _formatText(text))
 
     case let .transcription(text):
@@ -91,7 +91,7 @@ internal func formatField(_ field: ABCField) throws -> (String, String) {
     case let .unitNoteLength(duration):
         return ("L", "\(duration.numerator)/\(duration.denominator)")
 
-    case let .userSymbol(userSymbol):
+    case let .userDefined(userSymbol):
         return ("U", _formatUserSymbol(userSymbol))
 
     case let .voice(voice):
@@ -300,7 +300,7 @@ private func _effectiveBaseDuration(_ unitNoteLength: ABCDuration?,
                        denominator: 8)
 }
 
-private func _formatAlignedLyrics(_ alignedLyrics: ABCAlignedLyrics) -> String {
+private func _formatAlignedWords(_ alignedLyrics: ABCAlignedWords) -> String {
     var prevIsConnector = false
     var result = ""
 

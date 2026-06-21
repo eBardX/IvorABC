@@ -12,28 +12,36 @@ struct ABCTuneTests {
 extension ABCTuneTests {
     @Test
     func equality() {
-        let entries: [ABCEntry] = [.field(.title("My Tune"))]
-        let a = makeTune(entries)
-        let b = makeTune(entries)
+        let header: [ABCHeaderEntry] = [.field(.tuneTitle("My Tune"))]
+        let a = makeTune(header: header)
+        let b = makeTune(header: header)
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let a = makeTune([.field(.title("Tune A"))])
-        let b = makeTune([.field(.title("Tune B"))])
+        let a = makeTune(header: [.field(.tuneTitle("Tune A"))])
+        let b = makeTune(header: [.field(.tuneTitle("Tune B"))])
 
         #expect(a != b)
     }
 
     @Test
-    func init_storesEntries() {
-        let entries: [ABCEntry] = [.field(.title("Test")),
-                                   .field(.composer("J.S. Bach"))]
-        let tune = makeTune(entries)
+    func init_emptyHeader_returnsNil() {
+        #expect(ABCTune(header: [], body: []) == nil)
+    }
 
-        #expect(tune.entries == entries)
-        #expect(tune.entries.count == 2)
+    @Test
+    func init_storesHeaderAndBody() {
+        let header: [ABCHeaderEntry] = [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                        .field(.tuneTitle("Test")),
+                                        .field(.key(makeKeySignature(.c, .major)))]
+        let body: [ABCBodyEntry] = [.field(.tempo(makeTempo(1, 4, 120))),
+                                    .symbols([])]
+        let tune = makeTune(header: header, body: body)
+
+        #expect(tune.header == header)
+        #expect(tune.body == body)
     }
 }

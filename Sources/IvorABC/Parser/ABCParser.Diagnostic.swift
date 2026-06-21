@@ -19,6 +19,10 @@ extension ABCParser {
         /// The input had no `%abc` file identifier line; ABC version 2.1 was assumed.
         case missingFileID
 
+        /// A tune had no ``ABCField/key(_:)`` field terminating its header; the
+        /// tune body was started at the first music symbols line.
+        case missingKeyField
+
         /// A line could not be parsed and was skipped. The associated value is
         /// the text of the skipped line.
         case unrecognizedLine(String)
@@ -47,6 +51,9 @@ extension ABCParser.Diagnostic {
 
         case .missingFileID:
             "Missing file identifier; assumed ABC 2.1"
+
+        case .missingKeyField:
+            "Tune has no K: field; tune body assumed to start at first music line"
 
         case let .unrecognizedLine(line):
             "Unrecognized line skipped: '\(line)'"

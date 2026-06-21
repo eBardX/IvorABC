@@ -72,7 +72,7 @@ extension ABCParseContext {
         case let .unitNoteLength(duration):
             durationFromUnitNoteLength = duration
 
-        case let .userSymbol(userSymbol):
+        case let .userDefined(userSymbol):
             userSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
 
         default:

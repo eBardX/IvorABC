@@ -31,7 +31,7 @@ public struct ABCParser {
 
     // MARK: Private Instance Properties
 
-    private let strictness: Strictness
+    let strictness: Strictness
     private let tokenizer: ABCSymbolTokenizer
 }
 
@@ -143,100 +143,6 @@ extension ABCParser {
         return result
     }
 
-    private func _makeTunebook(_ version: ABCVersion,
-                               _ restLines: [Line],
-                               _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
-        var lineReader = SequenceReader(restLines)
-
-        let headers = _processHeaderLines(&lineReader)
-        let tunes = try _makeTunes(&lineReader, &diagnostics)
-
-        guard let tunebook = ABCTunebook(version: version,
-                                         headers: headers,
-                                         tunes: tunes)
-        else { throw ABCParser.Error.missingTunes }
-
-        return tunebook
-    }
-
-    private func _makeTunes(_ reader: inout SequenceReader<[Line]>,
-                            _ diagnostics: inout [Diagnostic]) throws -> [ABCTune] {
-        var tunes: [ABCTune] = []
-
-        while let tune = try _processTuneLines(&reader, &diagnostics) {
-            tunes.append(tune)
-        }
-
-        return tunes
-    }
-
-    private func _mergeContinuation(_ tidyInput: String,
-                                    _ field: ABCField) -> ABCField? {
-        func joinText(_ text: ABCText) -> ABCText {
-            let tmpString = normalize(Substring(tidyInput))
-
-            var stringValue = text.stringValue
-
-            if !stringValue.isEmpty {
-                stringValue += " "
-            }
-
-            stringValue += tmpString
-
-            return ABCText(stringValue: stringValue).require()
-        }
-
-        switch field {
-        case let .area(text):
-            return .area(joinText(text))
-
-        case let .book(text):
-            return .book(joinText(text))
-
-        case let .composer(text):
-            return .composer(joinText(text))
-
-        case let .discography(text):
-            return .discography(joinText(text))
-
-        case let .fileURL(text):
-            return .fileURL(joinText(text))
-
-        case let .group(text):
-            return .group(joinText(text))
-
-        case let .history(text):
-            return .history(joinText(text))
-
-        case let .lyrics(text):
-            return .lyrics(joinText(text))
-
-        case let .notes(text):
-            return .notes(joinText(text))
-
-        case let .origin(text):
-            return .origin(joinText(text))
-
-        case let .remark(text):
-            return .remark(joinText(text))
-
-        case let .rhythm(text):
-            return .rhythm(joinText(text))
-
-        case let .source(text):
-            return .source(joinText(text))
-
-        case let .title(text):
-            return .title(joinText(text))
-
-        case let .transcription(text):
-            return .transcription(joinText(text))
-
-        default:
-            return nil
-        }
-    }
-
     private func _parse(_ data: Data,
                         _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
         guard let input = String(data: data,
@@ -305,7 +211,7 @@ extension ABCParser {
             }
         }
 
-        return try _makeTunebook(version, restLines, &diagnostics)
+        return try makeTunebook(version, restLines, &diagnostics)
     }
 
     private func _parseBeginDirective(_ input: Substring) -> (name: String, value: String)? {
@@ -538,125 +444,6 @@ extension ABCParser {
 
         return ABCVersion(major: major,
                           minor: minor)
-    }
-
-    private func _processHeaderLine(_ line: Line) -> (header: ABCHeader?, empty: Bool) {
-        switch line {
-        case let .directive(directive):
-            (.directive(directive), false)
-
-        case .empty:
-            (nil, true)
-
-        case let .field(field) where field.isValidInFileHeader:
-            (.field(field), false)
-
-        default:
-            (nil, false)
-        }
-    }
-
-    private func _processHeaderLines(_ reader: inout SequenceReader<[Line]>) -> [ABCHeader] {
-        var headers: [ABCHeader] = []
-
-        while let line = reader.peek() {
-            if case let .continuation(text) = line {
-                if let lastIndex = headers.indices.last,
-                   case let .field(field) = headers[lastIndex],
-                   let merged = _mergeContinuation(text, field) {
-                    headers[lastIndex] = .field(merged)
-                }
-
-                reader.skip()
-                continue
-            }
-
-            let result = _processHeaderLine(line)
-
-            if result.empty {
-                reader.skip()
-                break
-            }
-
-            guard let header = result.header
-            else { break }
-
-            headers.append(header)
-
-            reader.skip()
-        }
-
-        return headers
-    }
-
-    private func _processTuneLine(_ line: Line,
-                                  _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCEntry?, empty: Bool) {
-        switch line {
-        case let .directive(directive):
-            return (.directive(directive), false)
-
-        case .empty:
-            return (nil, true)
-
-        case let .field(field):
-            if field.isValidInTuneHeader || field.isValidInTuneBody {
-                return (.field(field), false)
-            } else if strictness == .lenient {
-                diagnostics.append(.misplacedField(field))
-                return (nil, false)
-            } else {
-                throw Error.misplacedField(field)
-            }
-
-        case let .symbols(symbols):
-            return (.symbols(symbols), false)
-
-        default:
-            return (nil, false)
-        }
-    }
-
-    private func _processTuneLines(_ reader: inout SequenceReader<[Line]>,
-                                   _ diagnostics: inout [Diagnostic]) throws -> ABCTune? {
-        // Skip any leading empty lines before the tune content starts (e.g., after
-        // multiple blank lines or skipped prose in lenient mode).
-        while let line = reader.peek(), case .empty = line {
-            reader.skip()
-        }
-
-        var entries: [ABCEntry] = []
-
-        while let line = reader.peek() {
-            if case let .continuation(text) = line {
-                if let lastIndex = entries.indices.last,
-                   case let .field(field) = entries[lastIndex],
-                   let merged = _mergeContinuation(text, field) {
-                    entries[lastIndex] = .field(merged)
-                }
-
-                reader.skip()
-                continue
-            }
-
-            let result = try _processTuneLine(line, &diagnostics)
-
-            if result.empty {
-                reader.skip()
-                break
-            }
-
-            guard let entry = result.entry
-            else { break }
-
-            entries.append(entry)
-
-            reader.skip()
-        }
-
-        guard !entries.isEmpty
-        else { return nil }
-
-        return ABCTune(entries: entries)
     }
 
     private func _resolveFileID(_ lines: [Substring],

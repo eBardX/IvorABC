@@ -1,7 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
-/// A single entry in an ABC file header.
-public enum ABCHeader {
+/// A single entry in an ABC file header or tune header.
+public enum ABCHeaderEntry {
     /// A directive entry.
     case directive(ABCDirective)
 
@@ -11,10 +11,10 @@ public enum ABCHeader {
 
 // MARK: - Equatable
 
-extension ABCHeader: Equatable {
+extension ABCHeaderEntry: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCHeader: Sendable {
+extension ABCHeaderEntry: Sendable {
 }

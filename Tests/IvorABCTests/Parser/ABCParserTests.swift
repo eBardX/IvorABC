@@ -22,20 +22,20 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
 
-        let lyricsEntry = tune.entries.first {
-            if case .field(.alignedLyrics) = $0 {
+        let lyricsEntry = tune.body.first {
+            if case .field(.wordsAligned) = $0 {
                 return true
             }
 
             return false
         }
 
-        if case let .field(.alignedLyrics(al)) = lyricsEntry {
-            #expect(al == makeAlignedLyrics([.syllable("fó"),
-                                             .syllable("ü"),
-                                             .continuation,
-                                             .syllable("zy"),
-                                             .syllable("foo%bar")]))
+        if case let .field(.wordsAligned(al)) = lyricsEntry {
+            #expect(al == makeAlignedWords([.syllable("fó"),
+                                            .syllable("ü"),
+                                            .continuation,
+                                            .syllable("zy"),
+                                            .syllable("foo%bar")]))
         } else {
             Issue.record("Expected .field(.alignedLyrics)")
         }
@@ -53,7 +53,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -70,7 +70,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -86,7 +86,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -105,7 +105,7 @@ extension ABCParserTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+        let directive = try #require(tunebook.fileHeader.compactMap { header -> ABCDirective? in
             guard case let .directive(d) = header
             else { return nil }
 
@@ -124,7 +124,7 @@ extension ABCParserTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+        let directive = try #require(tunebook.fileHeader.compactMap { header -> ABCDirective? in
             guard case let .directive(d) = header
             else { return nil }
 
@@ -143,7 +143,7 @@ extension ABCParserTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+        let directive = try #require(tunebook.fileHeader.compactMap { header -> ABCDirective? in
             guard case let .directive(d) = header
             else { return nil }
 
@@ -162,7 +162,7 @@ extension ABCParserTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let directive = try #require(tunebook.headers.compactMap { header -> ABCDirective? in
+        let directive = try #require(tunebook.fileHeader.compactMap { header -> ABCDirective? in
             guard case let .directive(d) = header
             else { return nil }
 
@@ -182,7 +182,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let directive = try #require(tune.entries.compactMap { entry -> ABCDirective? in
+        let directive = try #require(tune.body.compactMap { entry -> ABCDirective? in
             guard case let .directive(d) = entry
             else { return nil }
 
@@ -211,7 +211,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -248,7 +248,7 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
 
-        let historyEntries = tune.entries.filter {
+        let historyEntries = tune.header.filter {
             if case .field(.history) = $0 {
                 return true
             }
@@ -295,7 +295,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbolLine = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -328,7 +328,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let symbolLine = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbolLine = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -358,8 +358,8 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbolEntries = tune.entries.filter { if case .symbols = $0 { true } else { false } }
-        let lyricsEntries = tune.entries.filter { if case .field(.alignedLyrics) = $0 { true } else { false } }
+        let symbolEntries = tune.body.filter { if case .symbols = $0 { true } else { false } }
+        let lyricsEntries = tune.body.filter { if case .field(.wordsAligned) = $0 { true } else { false } }
 
         #expect(symbolEntries.count == 2)
         #expect(lyricsEntries.count == 2)
@@ -373,7 +373,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let meterEntries = tune.entries.filter { if case .field(.meter) = $0 { true } else { false } }
+        let meterEntries = tune.body.filter { if case .field(.meter) = $0 { true } else { false } }
 
         #expect(meterEntries.count == 1)
     }
@@ -388,7 +388,7 @@ extension ABCParserTests {
         let tune = try #require(tunebook.tunes.first)
 
         // Continued lines should merge into one .symbols entry
-        let symbolEntries = tune.entries.filter {
+        let symbolEntries = tune.body.filter {
             if case .symbols = $0 {
                 return true
             }
@@ -424,7 +424,7 @@ extension ABCParserTests {
 
         let tune = tunebook.tunes[0]
 
-        #expect(!tune.entries.isEmpty)
+        #expect(!tune.header.isEmpty)
     }
 
     @Test
@@ -457,7 +457,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -477,7 +477,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -515,7 +515,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -536,15 +536,15 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
 
-        let titleEntry = tune.entries.first {
-            if case .field(.title) = $0 {
+        let titleEntry = tune.header.first {
+            if case .field(.tuneTitle) = $0 {
                 return true
             }
 
             return false
         }
 
-        if case let .field(.title(text)) = titleEntry {
+        if case let .field(.tuneTitle(text)) = titleEntry {
             #expect(text == "Foo % Bar")
         } else {
             Issue.record("Expected .field(.title)")
@@ -566,7 +566,7 @@ extension ABCParserTests {
         let tunebook = try parser.parse(data)
         let tune = try #require(tunebook.tunes.first)
 
-        let historyEntry = tune.entries.first {
+        let historyEntry = tune.header.first {
             if case .field(.history) = $0 {
                 return true
             }
@@ -593,7 +593,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -616,7 +616,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -639,7 +639,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -672,7 +672,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -688,7 +688,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 
@@ -724,7 +724,7 @@ extension ABCParserTests {
 
         let tunebook = try parser.parse(data)
 
-        #expect(tunebook.headers.count == 2)
+        #expect(tunebook.fileHeader.count == 2)
         #expect(tunebook.tunes.count == 1)
     }
 
@@ -745,7 +745,7 @@ extension ABCParserTests {
         let tunebook = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
-        let symbols = try #require(tune.entries.compactMap { entry -> [ABCSymbol]? in
+        let symbols = try #require(tune.body.compactMap { entry -> [ABCSymbol]? in
             guard case let .symbols(s) = entry
             else { return nil }
 

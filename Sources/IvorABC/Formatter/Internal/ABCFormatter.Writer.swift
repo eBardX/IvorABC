@@ -65,7 +65,7 @@ extension ABCFormatter.Writer {
         var usedNumbers = Set<UInt>()
 
         for tune in tunebook.tunes {
-            for entry in tune.entries {
+            for entry in tune.header {
                 if case let .field(.referenceNumber(rn)) = entry {
                     usedNumbers.insert(rn.uintValue)
                 }
@@ -76,7 +76,7 @@ extension ABCFormatter.Writer {
         var nextCandidate: UInt = 1
 
         for (index, tune) in tunebook.tunes.enumerated() {
-            let hasRefNumber = tune.entries.contains {
+            let hasRefNumber = tune.header.contains {
                 if case .field(.referenceNumber) = $0 {
                     return true
                 }
@@ -134,19 +134,6 @@ extension ABCFormatter.Writer {
         }
     }
 
-    private mutating func _writeEntry(_ entry: ABCEntry) throws {
-        switch entry {
-        case let .directive(d):
-            _writeDirective(d)
-
-        case let .field(f):
-            try _writeField(f)
-
-        case let .symbols(syms):
-            try _writeSymbolsLine(syms)
-        }
-    }
-
     private mutating func _writeField(_ field: ABCField) throws {
         let (letter, value) = try formatField(field)
 
@@ -156,11 +143,11 @@ extension ABCFormatter.Writer {
         buffer.append("\n")
 
         switch field {
-        case let .meter(ts):
-            meter = ts
+        case let .meter(timeSignature):
+            meter = timeSignature
 
-        case let .unitNoteLength(dur):
-            unitNoteLength = dur
+        case let .unitNoteLength(duration):
+            unitNoteLength = duration
 
         default:
             break
@@ -168,16 +155,16 @@ extension ABCFormatter.Writer {
     }
 
     private mutating func _writeFileHeaders() throws {
-        for header in tunebook.headers {
-            switch header {
-            case let .directive(d):
-                _writeDirective(d)
+        for entry in tunebook.fileHeader {
+            switch entry {
+            case let .directive(directive):
+                _writeDirective(directive)
 
-            case let .field(f):
-                guard f.isValidInFileHeader
-                else { throw ABCFormatter.Error.misplacedFileHeaderField(f) }
+            case let .field(field):
+                guard field.isValidInFileHeader
+                else { throw ABCFormatter.Error.misplacedFileHeaderField(field) }
 
-                try _writeField(f)
+                try _writeField(field)
             }
         }
     }
@@ -193,10 +180,10 @@ extension ABCFormatter.Writer {
             }
 
             // Keep duration state current for inline fields within the line.
-            if case let .inlineField(.meter(ts)) = symbol {
-                meter = ts
-            } else if case let .inlineField(.unitNoteLength(dur)) = symbol {
-                unitNoteLength = dur
+            if case let .inlineField(.meter(timeSignature)) = symbol {
+                meter = timeSignature
+            } else if case let .inlineField(.unitNoteLength(duration)) = symbol {
+                unitNoteLength = duration
             }
 
             try line.append(formatSymbol(symbol, unitNoteLength, meter))
@@ -207,45 +194,49 @@ extension ABCFormatter.Writer {
     }
 
     private mutating func _writeTune(_ tune: ABCTune,
-                                     _ autoRefNumber: ABCReferenceNumber?) throws {
-        var seenRefNumber = false
-        var seenKey = false
+                                     _ autoReferenceNumber: ABCReferenceNumber?) throws {
+        var seenReferenceNumber = false
 
-        if let rn = autoRefNumber {
-            try _writeField(.referenceNumber(rn))
+        if let refereneceNumber = autoReferenceNumber {
+            try _writeField(.referenceNumber(refereneceNumber))
 
-            seenRefNumber = true
+            seenReferenceNumber = true
         }
 
-        for entry in tune.entries {
+        for entry in tune.header {
             switch entry {
-            case .directive:
-                break
+            case let .directive(directive):
+                _writeDirective(directive)
 
             case let .field(field):
-                if !seenRefNumber {
+                if !seenReferenceNumber {
                     guard case .referenceNumber = field
                     else { throw ABCFormatter.Error.missingReferenceNumber }
 
-                    seenRefNumber = true
-                } else if !seenKey {
-                    guard field.isValidInTuneHeader
-                    else { throw ABCFormatter.Error.misplacedTuneField(field) }
-
-                    if case .key = field {
-                        seenKey = true
-                    }
+                    seenReferenceNumber = true
                 } else {
-                    guard field.isValidInTuneBody
+                    guard field.isValidInTuneHeader
                     else { throw ABCFormatter.Error.misplacedTuneField(field) }
                 }
 
-            case .symbols:
-                guard seenKey
-                else { throw ABCFormatter.Error.missingKeySignature }
+                try _writeField(field)
             }
+        }
 
-            try _writeEntry(entry)
+        for entry in tune.body {
+            switch entry {
+            case let .directive(directive):
+                _writeDirective(directive)
+
+            case let .field(field):
+                guard field.isValidInTuneBody
+                else { throw ABCFormatter.Error.misplacedTuneField(field) }
+
+                try _writeField(field)
+
+            case let .symbols(symbols):
+                try _writeSymbolsLine(symbols)
+            }
         }
     }
 }

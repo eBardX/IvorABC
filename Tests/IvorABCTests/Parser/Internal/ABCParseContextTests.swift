@@ -106,7 +106,7 @@ extension ABCParseContextTests {
     func update_unrelatedField_hasNoEffect() {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .title("My Song"))
+        ctx.update(with: .tuneTitle("My Song"))
 
         #expect(ctx.accidentalsInKey.isEmpty)
         #expect(!ctx.isCompoundMeter)

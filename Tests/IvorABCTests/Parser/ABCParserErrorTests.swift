@@ -173,10 +173,31 @@ extension ABCParserErrorTests {
     }
 
     @Test
+    func message_missingKeyField() {
+        let error = ABCParser.Error.missingKeyField
+
+        #expect(error.message.contains("K:"))
+    }
+
+    @Test
+    func message_missingReferenceNumber() {
+        let error = ABCParser.Error.missingReferenceNumber
+
+        #expect(error.message.contains("X:"))
+    }
+
+    @Test
     func message_missingTunes() {
         let error = ABCParser.Error.missingTunes
 
         #expect(error.message.contains("tunes"))
+    }
+
+    @Test
+    func message_orphanedContinuation() {
+        let error = ABCParser.Error.orphanedContinuation
+
+        #expect(error.message.contains("+:"))
     }
 
     @Test

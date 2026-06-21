@@ -1,7 +1,7 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
-/// A single entry in an ABC tune.
-public enum ABCEntry {
+/// A single entry in an ABC tune body.
+public enum ABCBodyEntry {
     /// A directive entry.
     case directive(ABCDirective)
 
@@ -14,10 +14,10 @@ public enum ABCEntry {
 
 // MARK: - Equatable
 
-extension ABCEntry: Equatable {
+extension ABCBodyEntry: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCEntry: Sendable {
+extension ABCBodyEntry: Sendable {
 }

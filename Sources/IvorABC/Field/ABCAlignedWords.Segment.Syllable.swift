@@ -2,7 +2,7 @@
 
 public import XestiTools
 
-extension ABCAlignedLyrics.Segment {
+extension ABCAlignedWords.Segment {
 
     // MARK: Public Nested Types
 

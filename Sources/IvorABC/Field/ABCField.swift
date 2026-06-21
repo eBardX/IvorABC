@@ -2,9 +2,6 @@
 
 /// An ABC field.
 public enum ABCField {
-    /// An aligned lyrics field (`w:`).
-    case alignedLyrics(ABCAlignedLyrics)
-
     /// An area field (`A:`).
     case area(ABCText)
 
@@ -54,9 +51,6 @@ public enum ABCField {
     /// A key signature field (`K:`).
     case key(ABCKeySignature)
 
-    /// A lyrics field (`W:`).
-    case lyrics(ABCText)
-
     /// A macro field (`m:`).
     case macro(ABCMacro)
 
@@ -105,8 +99,8 @@ public enum ABCField {
     /// A tempo field (`Q:`).
     case tempo(ABCTempo)
 
-    /// A title field (`T:`).
-    case title(ABCText)
+    /// A tune title field (`T:`).
+    case tuneTitle(ABCText)
 
     /// A transcription field (`Z:`).
     case transcription(ABCText)
@@ -114,11 +108,17 @@ public enum ABCField {
     /// A unit note length field (`L:`).
     case unitNoteLength(ABCDuration)
 
-    /// A user symbol field (`U:`).
-    case userSymbol(ABCUserSymbol)
+    /// A user-defined symbol field (`U:`).
+    case userDefined(ABCUserSymbol)
 
     /// A voice field (`V:`).
     case voice(ABCVoice)
+
+    /// A words (lyrics) field (`W:`).
+    case words(ABCText)
+
+    /// An aligned lyrics field (`w:`).
+    case wordsAligned(ABCAlignedWords)
 }
 
 // MARK: -
@@ -135,11 +135,10 @@ extension ABCField {
              .book,
              .composer,
              .discography,
-             .elemskip,
              .fileURL,
              .group,
              .history,
-             .information,
+             .instruction,
              .macro,
              .meter,
              .notes,
@@ -149,7 +148,28 @@ extension ABCField {
              .source,
              .transcription,
              .unitNoteLength,
-             .userSymbol:
+             .userDefined:
+            true
+
+        default:
+            false
+        }
+    }
+
+    public var isValidInline: Bool {
+        switch self {
+        case .instruction,
+             .key,
+             .macro,
+             .meter,
+             .notes,
+             .parts,
+             .remark,
+             .rhythm,
+             .tempo,
+             .unitNoteLength,
+             .userDefined,
+             .voice:
             true
 
         default:
@@ -160,12 +180,8 @@ extension ABCField {
     /// A Boolean value indicating whether this field is valid in a tune body.
     public var isValidInTuneBody: Bool {
         switch self {
-        case .alignedLyrics,
-             .elemskip,
-             .information,
-             .instruction,
+        case .instruction,
              .key,
-             .lyrics,
              .macro,
              .meter,
              .notes,
@@ -174,10 +190,12 @@ extension ABCField {
              .rhythm,
              .symbolLine,
              .tempo,
-             .title,
+             .tuneTitle,
              .unitNoteLength,
-             .userSymbol,
-             .voice:
+             .userDefined,
+             .voice,
+             .words,
+             .wordsAligned:
             true
 
         default:
@@ -192,13 +210,13 @@ extension ABCField {
              .book,
              .composer,
              .discography,
-             .elemskip,
+             .elemskip,     // for now…
              .fileURL,
              .group,
              .history,
-             .information,
+             .information,  // for now…
+             .instruction,
              .key,
-             .lyrics,
              .macro,
              .meter,
              .notes,
@@ -209,11 +227,12 @@ extension ABCField {
              .rhythm,
              .source,
              .tempo,
-             .title,
              .transcription,
+             .tuneTitle,
              .unitNoteLength,
-             .userSymbol,
-             .voice:
+             .userDefined,
+             .voice,
+             .words:
             true
 
         default:

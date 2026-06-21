@@ -12,14 +12,14 @@ struct ABCFieldTests {
 extension ABCFieldTests {
     @Test
     func isValidInFileHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
+        let invalidFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
                                          .key(.empty),
-                                         .lyrics(""),
+                                         .words(""),
                                          .parts(makePartSequence([makePart("A")])),
                                          .referenceNumber(makeReferenceNumber(1)),
                                          .symbolLine(makeSymbolLine([])),
                                          .tempo(makeTempo([])),
-                                         .title(""),
+                                         .tuneTitle(""),
                                          .voice(makeVoice("1"))]
 
         for field in invalidFields {
@@ -45,7 +45,7 @@ extension ABCFieldTests {
                                        .source(""),
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll")))]
+                                       .userDefined(makeUserSymbol(.tilde, makeDecoration("roll")))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -73,10 +73,10 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneBody_validFields() {
-        let validFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
+        let validFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
                                        .instruction(makeDirective("linebreak", "")),
                                        .key(.empty),
-                                       .lyrics(""),
+                                       .words(""),
                                        .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
@@ -85,9 +85,9 @@ extension ABCFieldTests {
                                        .rhythm(""),
                                        .symbolLine(makeSymbolLine([])),
                                        .tempo(makeTempo([])),
-                                       .title(""),
+                                       .tuneTitle(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll"))),
+                                       .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {
@@ -97,7 +97,7 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.alignedLyrics(makeAlignedLyrics()),
+        let invalidFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
                                          .symbolLine(makeSymbolLine([]))]
 
         for field in invalidFields {
@@ -115,7 +115,7 @@ extension ABCFieldTests {
                                        .group(""),
                                        .history(""),
                                        .key(.empty),
-                                       .lyrics(""),
+                                       .words(""),
                                        .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
@@ -126,10 +126,10 @@ extension ABCFieldTests {
                                        .rhythm(""),
                                        .source(""),
                                        .tempo(makeTempo([])),
-                                       .title(""),
+                                       .tuneTitle(""),
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userSymbol(makeUserSymbol(.tilde, makeDecoration("roll"))),
+                                       .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {

@@ -1,6 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension ABCAlignedLyrics {
+extension ABCAlignedWords {
 
     // MARK: Public Nested Types
 
@@ -26,10 +26,10 @@ extension ABCAlignedLyrics {
 
 // MARK: - Equatable
 
-extension ABCAlignedLyrics.Segment: Equatable {
+extension ABCAlignedWords.Segment: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCAlignedLyrics.Segment: Sendable {
+extension ABCAlignedWords.Segment: Sendable {
 }

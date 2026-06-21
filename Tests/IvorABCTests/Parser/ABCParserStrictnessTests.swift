@@ -106,7 +106,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser(strictness: .lenient)
 
         let tunebook = try parser.parse(data)
-        let tempo = tunebook.tunes.first?.entries.compactMap { entry -> ABCTempo? in
+        let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
             else { return nil }
@@ -168,7 +168,7 @@ extension ABCParserStrictnessTests {
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.self) {
+        #expect(throws: ABCParser.Error.missingFileID) {
             try parser.parse(data)
         }
     }
@@ -203,7 +203,7 @@ extension ABCParserStrictnessTests {
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.self) {
+        #expect(throws: ABCParser.Error.unsupportedVersion(makeVersion(3, 0))) {
             try parser.parse(data)
         }
     }
@@ -215,7 +215,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let tempo = tunebook.tunes.first?.entries.compactMap { entry -> ABCTempo? in
+        let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
             else { return nil }
@@ -248,7 +248,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let fields = tunebook.tunes.first?.entries.compactMap { entry -> ABCField? in
+        let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
 
@@ -265,7 +265,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let fields = tunebook.tunes.first?.entries.compactMap { entry -> ABCField? in
+        let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
 
@@ -283,7 +283,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let tempo = tunebook.tunes.first?.entries.compactMap { entry -> ABCTempo? in
+        let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(f) = entry,
                   case let .tempo(t) = f
             else { return nil }
@@ -304,7 +304,7 @@ extension ABCParserStrictnessTests {
         let parser = ABCParser()
 
         let tunebook = try parser.parse(data)
-        let tempo = tunebook.tunes.first?.entries.compactMap { entry -> ABCTempo? in
+        let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(f) = entry,
                   case let .tempo(t) = f
             else { return nil }
@@ -338,5 +338,128 @@ extension ABCParserStrictnessTests {
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
         #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(1, 6))))
+    }
+
+    // MARK: - Header/body structure
+
+    @Test
+    func parse_headerBodySplit_keyFieldInHeader_symbolsInBody() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let keyInHeader = tune.header.contains { if case .field(.key) = $0 { true } else { false } }
+        let keyInBody = tune.body.contains { if case .field(.key) = $0 { true } else { false } }
+        let symbolsInBody = tune.body.contains { if case .symbols = $0 { true } else { false } }
+        let symbolsInHeader = tune.header.contains { if case .field = $0 { false } else { true } }
+
+        #expect(keyInHeader)
+        #expect(!keyInBody)
+        #expect(symbolsInBody)
+        #expect(!symbolsInHeader)
+    }
+
+    @Test
+    func parse_missingKeyField_lenient_emitsDiagnostic() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nCDEF|\n"
+        let parser = ABCParser(strictness: .lenient)
+
+        let (_, diagnostics) = try parser.parseWithDiagnostics(Data(input.utf8))
+
+        #expect(diagnostics.contains(.missingKeyField))
+    }
+
+    @Test
+    func parse_missingKeyField_lenient_symbolsGoToBody() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nCDEF|\n"
+        let tunebook = try ABCParser(strictness: .lenient).parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbolsInBody = tune.body.contains { if case .symbols = $0 { true } else { false } }
+
+        #expect(symbolsInBody)
+    }
+
+    @Test
+    func parse_missingKeyField_strict_throws() {
+        let input = "%abc-2.1\nX:1\nT:Test\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.missingKeyField) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_missingReferenceNumber_strict_throws() {
+        let input = "%abc-2.1\nT:Test\nK:C\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.missingReferenceNumber) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_multipleTitlesConsecutive_valid() throws {
+        let input = "%abc-2.1\nX:1\nT:Main Title\nT:Subtitle\nK:C\nCDEF|\n"
+
+        #expect(throws: Never.self) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_multipleTitlesNonConsecutive_strict_throws() {
+        let input = "%abc-2.1\nX:1\nT:First Title\nC:Bach\nT:Second Title\nK:C\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.self) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_tuneTitleAfterOtherField_strict_throws() {
+        let input = "%abc-2.1\nX:1\nC:Bach\nT:Test\nK:C\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.self) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_orphanedContinuationInHeader_strict_throws() {
+        let input = "%abc-2.1\nX:1\n+:ignored\nT:Test\nK:C\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.orphanedContinuation) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_orphanedContinuationInHeader_lenient_succeeds() throws {
+        let input = "%abc-2.1\nX:1\n+:ignored\nT:Test\nK:C\nCDEF|\n"
+        let parser = ABCParser(strictness: .lenient)
+
+        let tunebook = try parser.parse(Data(input.utf8))
+
+        #expect(tunebook.tunes.count == 1)
+    }
+
+    @Test
+    func parse_orphanedContinuationInBody_strict_throws() {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\n+:orphaned\nCDEF|\n"
+
+        #expect(throws: ABCParser.Error.orphanedContinuation) {
+            try ABCParser().parse(Data(input.utf8))
+        }
+    }
+
+    @Test
+    func parse_orphanedContinuationInBody_lenient_succeeds() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\n+:orphaned\nCDEF|\n"
+        let parser = ABCParser(strictness: .lenient)
+
+        let tunebook = try parser.parse(Data(input.utf8))
+
+        #expect(tunebook.tunes.count == 1)
     }
 }

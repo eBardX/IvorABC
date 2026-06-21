@@ -91,8 +91,23 @@ extension ABCParser {
         /// instead and reported as ``ABCParser/Diagnostic/missingFileID``.
         case missingFileID
 
+        /// A tune is missing its required ``ABCField/key(_:)`` field, which must
+        /// be the last entry in the tune header.
+        ///
+        /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
+        /// instead and reported as ``ABCParser/Diagnostic/missingKeyField``.
+        case missingKeyField
+
+        /// A tune does not begin with a ``ABCField/referenceNumber(_:)`` field
+        /// (`X:`), which must be the first field in the tune header.
+        case missingReferenceNumber
+
         /// The input contains no tunes.
         case missingTunes
+
+        /// The parser encountered a `+:` continuation line with no preceding field
+        /// to merge it into.
+        case orphanedContinuation
 
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
@@ -189,8 +204,17 @@ extension ABCParser.Error: EnhancedError {
         case .missingFileID:
             "Missing required file ID"
 
+        case .missingKeyField:
+            "Tune is missing required K: field"
+
+        case .missingReferenceNumber:
+            "Tune does not begin with a reference number (X:) field"
+
         case .missingTunes:
             "ABC file contains no tunes"
+
+        case .orphanedContinuation:
+            "Continuation (+:) line has no preceding field to merge with"
 
         case let .unmatchedBeginDirective(name):
             "'%%begin\(name)' has no matching '%%end\(name)'"
@@ -199,6 +223,11 @@ extension ABCParser.Error: EnhancedError {
             "Unsupported ABC version: \(version.major).\(version.minor)"
         }
     }
+}
+
+// MARK: - Equatable
+
+extension ABCParser.Error: Equatable {
 }
 
 // MARK: - Sendable

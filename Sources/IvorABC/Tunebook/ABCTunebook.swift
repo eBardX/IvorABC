@@ -11,27 +11,27 @@ public struct ABCTunebook {
 
     // MARK: Public Initializers
 
-    /// Creates a new ABC file with the provided version, headers, and tunes,
+    /// Creates a new ABC file with the provided version, file header, and tunes,
     /// or returns `nil` if `tunes` is empty.
     ///
-    /// - Parameter version: The ABC version of the file.
-    /// - Parameter headers: The file-level header entries.
-    /// - Parameter tunes:   The tunes contained in the file.
+    /// - Parameter version:    The ABC version of the file.
+    /// - Parameter fileHeader: The entries that make up the file header.
+    /// - Parameter tunes:      The tunes contained in the file.
     public init?(version: ABCVersion,
-                 headers: [ABCHeader],
+                 fileHeader: [ABCHeaderEntry],
                  tunes: [ABCTune]) {
-        guard Self._isValid(version, headers, tunes)
+        guard Self._isValid(version, fileHeader, tunes)
         else { return nil }
 
-        self.headers = headers
+        self.fileHeader = fileHeader
         self.tunes = tunes
         self.version = version
     }
 
     // MARK: Public Instance Properties
 
-    /// The file-level header entries of this tunebook.
-    public let headers: [ABCHeader]
+    /// The entries that make up the file header of this tunebook.
+    public let fileHeader: [ABCHeaderEntry]
 
     /// The tunes contained in this tunebook.
     public let tunes: [ABCTune]
@@ -47,7 +47,7 @@ extension ABCTunebook {
     // MARK: Private Type Methods
 
     private static func _isValid(_ version: ABCVersion,
-                                 _ headers: [ABCHeader],
+                                 _ fileHeader: [ABCHeaderEntry],
                                  _ tunes: [ABCTune]) -> Bool {
         !tunes.isEmpty
     }

@@ -21,12 +21,25 @@ extension ABCTunebook {
     /// - Returns: A new ``ABCTunebook`` whose ``version`` is ``ABCVersion/current``.
     public func migrate() -> ABCTunebook {
         ABCTunebook(version: ABCVersion.current,
-                    headers: headers.map { _migrateHeader($0) },
+                    fileHeader: fileHeader.map { _migrateHeaderEntry($0) },
                     tunes: tunes.map { _migrateTune($0) }).require()
     }
 }
 
 // MARK: - Private Functions
+
+private func _migrateBodyEntry(_ entry: ABCBodyEntry) -> ABCBodyEntry {
+    switch entry {
+    case let .field(field):
+        .field(_migrateField(field))
+
+    case let .symbols(symbols):
+        .symbols(symbols.map { _migrateSymbol($0) })
+
+    default:
+        entry
+    }
+}
 
 private func _migrateField(_ field: ABCField) -> ABCField {
     switch field {
@@ -58,6 +71,14 @@ private func _migrateField(_ field: ABCField) -> ABCField {
     return field
 }
 
+private func _migrateHeaderEntry(_ entry: ABCHeaderEntry) -> ABCHeaderEntry {
+    if case let .field(field) = entry {
+        return .field(_migrateField(field))
+    }
+
+    return entry
+}
+
 private func _migrateSymbol(_ symbol: ABCSymbol) -> ABCSymbol {
     if case let .inlineField(field) = symbol {
         .inlineField(_migrateField(field))
@@ -66,27 +87,7 @@ private func _migrateSymbol(_ symbol: ABCSymbol) -> ABCSymbol {
     }
 }
 
-private func _migrateEntry(_ entry: ABCEntry) -> ABCEntry {
-    switch entry {
-    case let .field(field):
-        .field(_migrateField(field))
-
-    case let .symbols(symbols):
-        .symbols(symbols.map { _migrateSymbol($0) })
-
-    default:
-        entry
-    }
-}
-
-private func _migrateHeader(_ header: ABCHeader) -> ABCHeader {
-    if case let .field(field) = header {
-        return .field(_migrateField(field))
-    }
-
-    return header
-}
-
 private func _migrateTune(_ tune: ABCTune) -> ABCTune {
-    ABCTune(entries: tune.entries.map { _migrateEntry($0) }).require()
+    ABCTune(header: tune.header.map { _migrateHeaderEntry($0) },
+            body: tune.body.map { _migrateBodyEntry($0) }).require()
 }

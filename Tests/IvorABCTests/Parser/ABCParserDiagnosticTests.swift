@@ -38,6 +38,13 @@ extension ABCParserDiagnosticTests {
     }
 
     @Test
+    func message_missingKeyField() {
+        let diagnostic = ABCParser.Diagnostic.missingKeyField
+
+        #expect(diagnostic.message.contains("K:"))
+    }
+
+    @Test
     func message_missingFileID() {
         let diagnostic = ABCParser.Diagnostic.missingFileID
 

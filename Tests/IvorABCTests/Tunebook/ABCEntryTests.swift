@@ -14,12 +14,12 @@ extension ABCEntryTests {
     func equality_directive() {
         let directive = makeDirective("pagewidth", "21cm")
 
-        #expect(ABCEntry.directive(directive) == .directive(directive))
+        #expect(ABCBodyEntry.directive(directive) == .directive(directive))
     }
 
     @Test
     func equality_field() {
-        #expect(ABCEntry.field(.title("My Tune")) == .field(.title("My Tune")))
+        #expect(ABCBodyEntry.field(.tuneTitle("My Tune")) == .field(.tuneTitle("My Tune")))
     }
 
     @Test
@@ -29,14 +29,14 @@ extension ABCEntryTests {
         let note = makeNote(pitch, duration)
         let symbols: [ABCSymbol] = [.note(note)]
 
-        #expect(ABCEntry.symbols(symbols) == .symbols(symbols))
+        #expect(ABCBodyEntry.symbols(symbols) == .symbols(symbols))
     }
 
     @Test
     func inequality() {
         let directive = makeDirective("pagewidth", "21cm")
 
-        #expect(ABCEntry.directive(directive) != .field(.title("My Tune")))
-        #expect(ABCEntry.field(.title("My Tune")) != .field(.title("Other Tune")))
+        #expect(ABCBodyEntry.directive(directive) != .field(.tuneTitle("My Tune")))
+        #expect(ABCBodyEntry.field(.tuneTitle("My Tune")) != .field(.tuneTitle("Other Tune")))
     }
 }

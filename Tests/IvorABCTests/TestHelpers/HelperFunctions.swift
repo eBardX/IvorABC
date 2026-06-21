@@ -7,10 +7,10 @@ import XestiTools
 
 // MARK: - ABCField Expectations
 
-func expectFieldIsAlignedLyrics(_ field: ABCField,
-                                _ expected: ABCAlignedLyrics,
-                                sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .alignedLyrics(v) = field {
+func expectFieldIsAlignedWords(_ field: ABCField,
+                               _ expected: ABCAlignedWords,
+                               sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .wordsAligned(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .alignedLyrics", sourceLocation: sourceLocation)
@@ -107,7 +107,7 @@ func expectFieldIsKey(_ field: ABCField,
 func expectFieldIsLyrics(_ field: ABCField,
                          _ expected: String,
                          sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .lyrics(v) = field {
+    if case let .words(v) = field {
         #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .lyrics", sourceLocation: sourceLocation)
@@ -218,7 +218,7 @@ func expectFieldIsTempo(_ field: ABCField,
 func expectFieldIsTitle(_ field: ABCField,
                         _ expected: String,
                         sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .title(v) = field {
+    if case let .tuneTitle(v) = field {
         #expect(v.stringValue == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .title", sourceLocation: sourceLocation)
@@ -245,7 +245,7 @@ func expectFieldIsUnitNoteLength(_ field: ABCField,
 func expectFieldIsUserSymbol(_ field: ABCField,
                              _ expected: ABCUserSymbol,
                              sourceLocation: SourceLocation = #_sourceLocation) {
-    if case let .userSymbol(v) = field {
+    if case let .userDefined(v) = field {
         #expect(v == expected, sourceLocation: sourceLocation)
     } else {
         Issue.record("Expected .userSymbol", sourceLocation: sourceLocation)
@@ -294,8 +294,8 @@ func == (lhs: ParseTupletResult?,
 
 // MARK: - Factory Functions
 
-func makeAlignedLyrics(_ segments: [ABCAlignedLyrics.Segment] = []) -> ABCAlignedLyrics {
-    ABCAlignedLyrics(segments: segments)
+func makeAlignedWords(_ segments: [ABCAlignedWords.Segment] = []) -> ABCAlignedWords {
+    ABCAlignedWords(segments: segments)
 }
 
 func makeAnnotation(_ placement: ABCAnnotation.Placement,
@@ -449,35 +449,36 @@ func makeTimeSignature(_ numerators: [UInt],
                                             denominator: denominator).require())
 }
 
-func makeTune(_ entries: [ABCEntry]) -> ABCTune {
-    ABCTune(entries: entries).require()
+func makeTune(header: [ABCHeaderEntry],
+              body: [ABCBodyEntry] = []) -> ABCTune {
+    ABCTune(header: header, body: body).require()
 }
 
-func makeTunebook(_ headers: [ABCHeader],
+func makeTunebook(_ fileHeaders: [ABCHeaderEntry],
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: makeVersion(2, 1),
-                headers: headers,
+                fileHeader: fileHeaders,
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: makeVersion(2, 1),
-                headers: [],
+                fileHeader: [],
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ version: ABCVersion,
-                  _ headers: [ABCHeader],
+                  _ fileHeaders: [ABCHeaderEntry],
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
-                headers: headers,
+                fileHeader: fileHeaders,
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ version: ABCVersion,
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
-                headers: [],
+                fileHeader: [],
                 tunes: tunes).require()
 }
 
@@ -544,22 +545,21 @@ func format(_ tunebook: ABCTunebook) throws -> String {
 
 func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major).require()),
                      symbols: [ABCSymbol] = []) -> ABCTunebook {
-    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
-                            .field(.title("Test")),
-                            .field(.key(key)),
-                            .symbols(symbols)])])
+    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tuneTitle("Test")),
+                                    .field(.key(key))],
+                           body: symbols.isEmpty ? [] : [.symbols(symbols)])])
 }
 
 func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
-    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
-                            .field(.unitNoteLength(makeDuration(1, 4))),
-                            .field(.key(makeKeySignature(.c, .major))),
-                            .symbols(symbols)])])
+    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.unitNoteLength(makeDuration(1, 4))),
+                                    .field(.key(makeKeySignature(.c, .major)))],
+                           body: [.symbols(symbols)])])
 }
 
 func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
-    makeTunebook([makeTune([.field(.referenceNumber(ABCReferenceNumber(1))),
-                            .field(.tempo(tempo)),
-                            .field(.key(makeKeySignature(.c, .major))),
-                            .symbols([])])])
+    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tempo(tempo)),
+                                    .field(.key(makeKeySignature(.c, .major)))])])
 }

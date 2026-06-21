@@ -4,7 +4,7 @@
 ///
 /// The `segments` array is a flat token sequence. Note positions are bounded by
 /// word boundaries (consecutive `text` tokens) and explicit `hyphen` tokens.
-public struct ABCAlignedLyrics {
+public struct ABCAlignedWords {
 
     // MARK: Public Initializers
 
@@ -23,10 +23,10 @@ public struct ABCAlignedLyrics {
 
 // MARK: - Equatable
 
-extension ABCAlignedLyrics: Equatable {
+extension ABCAlignedWords: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCAlignedLyrics: Sendable {
+extension ABCAlignedWords: Sendable {
 }

@@ -14,19 +14,19 @@ extension ABCHeaderTests {
     func equality_directive() {
         let directive = makeDirective("pagewidth", "21cm")
 
-        #expect(ABCHeader.directive(directive) == .directive(directive))
+        #expect(ABCHeaderEntry.directive(directive) == .directive(directive))
     }
 
     @Test
     func equality_field() {
-        #expect(ABCHeader.field(.composer("J.S. Bach")) == .field(.composer("J.S. Bach")))
+        #expect(ABCHeaderEntry.field(.composer("J.S. Bach")) == .field(.composer("J.S. Bach")))
     }
 
     @Test
     func inequality() {
         let directive = makeDirective("pagewidth", "21cm")
 
-        #expect(ABCHeader.directive(directive) != .field(.composer("J.S. Bach")))
-        #expect(ABCHeader.field(.composer("Bach")) != .field(.composer("Handel")))
+        #expect(ABCHeaderEntry.directive(directive) != .field(.composer("J.S. Bach")))
+        #expect(ABCHeaderEntry.field(.composer("Bach")) != .field(.composer("Handel")))
     }
 }

@@ -18,30 +18,62 @@ extension ABCTunebook {
         var issues: [ABCValidationIssue] = []
         var state = _ValidationState()
 
-        for header in headers {
+        for header in fileHeader {
             switch header {
             case let .directive(directive):
-                _updateState(&state, from: directive)
+                _updateState(&state,
+                             from: directive)
 
             case let .field(field):
-                _checkField(field, tuneIndex: nil, state, &issues)
-                _updateState(&state, from: field)
+                _checkField(field,
+                            tuneIndex: nil,
+                            state,
+                            &issues)
+
+                _updateState(&state,
+                             from: field)
             }
         }
 
         for (tuneIndex, tune) in tunes.enumerated() {
-            for entry in tune.entries {
+            for entry in tune.header {
                 switch entry {
                 case let .directive(directive):
-                    _updateState(&state, from: directive)
+                    _updateState(&state,
+                                 from: directive)
 
                 case let .field(field):
-                    _checkField(field, tuneIndex: tuneIndex, state, &issues)
-                    _updateState(&state, from: field)
+                    _checkField(field,
+                                tuneIndex: tuneIndex,
+                                state,
+                                &issues)
+
+                    _updateState(&state,
+                                 from: field)
+                }
+            }
+
+            for entry in tune.body {
+                switch entry {
+                case let .directive(directive):
+                    _updateState(&state,
+                                 from: directive)
+
+                case let .field(field):
+                    _checkField(field,
+                                tuneIndex: tuneIndex,
+                                state,
+                                &issues)
+
+                    _updateState(&state,
+                                 from: field)
 
                 case let .symbols(symbols):
                     for symbol in symbols {
-                        _checkSymbol(symbol, tuneIndex: tuneIndex, &state, &issues)
+                        _checkSymbol(symbol,
+                                     tuneIndex: tuneIndex,
+                                     &state,
+                                     &issues)
                     }
                 }
             }
@@ -69,7 +101,7 @@ private func _checkField(_ field: ABCField,
                          _ state: _ValidationState,
                          _ issues: inout [ABCValidationIssue]) {
     switch field {
-    case let .userSymbol(userSymbol):
+    case let .userDefined(userSymbol):
         if case let .decoration(decoration) = userSymbol.definition {
             _checkDecoration(decoration,
                              tuneIndex: tuneIndex,
@@ -166,7 +198,7 @@ private func _updateState(_ state: inout _ValidationState,
     case let .macro(macro):
         state.definedMacros.append(macro)
 
-    case let .userSymbol(userSymbol):
+    case let .userDefined(userSymbol):
         state.definedUserSymbols.insert(userSymbol.shorthand)
 
     default:

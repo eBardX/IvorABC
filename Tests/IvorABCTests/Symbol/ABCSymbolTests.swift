@@ -64,7 +64,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_inlineField() {
-        #expect(ABCSymbol.inlineField(.title("My Tune")) == .inlineField(.title("My Tune")))
+        #expect(ABCSymbol.inlineField(.tuneTitle("My Tune")) == .inlineField(.tuneTitle("My Tune")))
     }
 
     @Test

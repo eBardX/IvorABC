@@ -17,12 +17,12 @@ internal func normalize(_ input: Substring) -> String {
     unescape(String(input).normalizedABCWhitespace())
 }
 
-internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
-    var segments: [ABCAlignedLyrics.Segment] = []
+internal func parseAlignedWords(_ tidyInput: Substring) -> ABCAlignedWords {
+    var segments: [ABCAlignedWords.Segment] = []
     var input = tidyInput
     var currentText = ""
 
-    func appendSegment(_ segment: ABCAlignedLyrics.Segment) {
+    func appendSegment(_ segment: ABCAlignedWords.Segment) {
         flushText()
 
         segments.append(segment)
@@ -32,7 +32,7 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
         guard !currentText.isEmpty
         else { return }
 
-        segments.append(.syllable(ABCAlignedLyrics.Segment.Syllable(currentText)))
+        segments.append(.syllable(ABCAlignedWords.Segment.Syllable(currentText)))
 
         currentText = ""
     }
@@ -78,7 +78,7 @@ internal func parseAlignedLyrics(_ tidyInput: Substring) -> ABCAlignedLyrics {
 
     flushText()
 
-    return ABCAlignedLyrics(segments: segments)
+    return ABCAlignedWords(segments: segments)
 }
 
 internal func parseAnnotation(_ tidyInput: Substring) -> ABCAnnotation? {
@@ -325,13 +325,13 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .symbolLine(sl)
 
     case "T" where !isInline:
-        return try .title(parseText(vtext))
+        return try .tuneTitle(parseText(vtext))
 
     case "U":
         guard let uds = parseUserSymbol(vtext)
         else { throw ABCParser.Error.invalidUserSymbol(vtext) }
 
-        return .userSymbol(uds)
+        return .userDefined(uds)
 
     case "V":
         guard let voice = parseVoice(vtext)
@@ -340,10 +340,10 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
         return .voice(voice)
 
     case "W" where !isInline:
-        return try .lyrics(parseText(vtext))
+        return try .words(parseText(vtext))
 
     case "w" where !isInline:
-        return .alignedLyrics(parseAlignedLyrics(vtext))
+        return .wordsAligned(parseAlignedWords(vtext))
 
     case "X" where !isInline:
         guard let rn = parseReferenceNumber(vtext)
