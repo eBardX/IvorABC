@@ -4,6 +4,8 @@ public import XestiTools
 
 extension ABCRest {
 
+    // MARK: Public Nested Types
+
     /// The number of measures in a multi-measure rest.
     public struct MeasureCount: UIntRepresentable {
 

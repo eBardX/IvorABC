@@ -1,6 +1,9 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
 extension ABCKeySignature {
+
+    // MARK: Public Nested Types
+
     /// The mode of an ABC key signature.
     public enum Mode {
         /// The Aeolian mode. An alias for ``minor``; see ``effectiveMode(for:)``.

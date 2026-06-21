@@ -1,6 +1,9 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
 extension ABCPitch {
+
+    // MARK: Public Nested Types
+
     /// The accidental of an ABC pitch.
     public enum Accidental {
         /// A double flat (𝄫).

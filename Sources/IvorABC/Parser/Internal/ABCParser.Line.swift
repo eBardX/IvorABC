@@ -1,8 +1,11 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
 extension ABCParser {
+
+    // MARK: Internal Nested Types
+
     internal enum Line {
-        case continuation(String)   // ABCText ???
+        case continuation(String)
         case directive(ABCDirective)
         case empty
         case field(ABCField)

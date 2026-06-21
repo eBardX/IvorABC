@@ -103,16 +103,16 @@ internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
 
     var rest = tidyInput.dropFirst().dropLast()
 
-    guard let root = _parsePitchName(&rest)
+    guard let root = _parseChordSymbolRoot(&rest)
     else { return nil }
 
     let kind = _parseChordSymbolKind(&rest)
 
-    var bass: ABCPitchName?
+    var bass: ABCChordSymbol.Root?
 
     if rest.first == "/" {
         rest = rest.dropFirst()
-        bass = _parsePitchName(&rest)
+        bass = _parseChordSymbolRoot(&rest)
     }
 
     var parenthesized: ABCChordSymbol.Name?
@@ -120,7 +120,7 @@ internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
     if rest.first == "(" {
         rest = rest.dropFirst()
 
-        if let parenRoot = _parsePitchName(&rest) {
+        if let parenRoot = _parseChordSymbolRoot(&rest) {
             parenthesized = ABCChordSymbol.Name(root: parenRoot,
                                                 kind: _parseChordSymbolKind(&rest))
         }
@@ -1117,6 +1117,93 @@ private func _parseChordSymbolKind(_ input: inout Substring) -> String? {
     return kind.isEmpty ? nil : String(kind)
 }
 
+private func _parseChordSymbolRoot(_ input: inout Substring) -> ABCChordSymbol.Root? {
+    guard let letter = input.first,
+          ("A"..."G").contains(letter)
+    else { return nil }
+
+    input = input.dropFirst()
+
+    switch (letter, input.first) {
+    case ("A", "b"):
+        input = input.dropFirst()
+        return .aFlat
+
+    case ("A", "#"):
+        input = input.dropFirst()
+        return .aSharp
+
+    case ("A", _):
+        return .a
+
+    case ("B", "b"):
+        input = input.dropFirst()
+        return .bFlat
+
+    case ("B", "#"):
+        input = input.dropFirst()
+        return .bSharp
+
+    case ("B", _):
+        return .b
+
+    case ("C", "b"):
+        input = input.dropFirst()
+        return .cFlat
+
+    case ("C", "#"):
+        input = input.dropFirst()
+        return .cSharp
+
+    case ("C", _):
+        return .c
+
+    case ("D", "b"):
+        input = input.dropFirst()
+        return .dFlat
+
+    case ("D", "#"):
+        input = input.dropFirst()
+        return .dSharp
+
+    case ("D", _):
+        return .d
+
+    case ("E", "b"):
+        input = input.dropFirst()
+        return .eFlat
+
+    case ("E", "#"):
+        input = input.dropFirst()
+        return .eSharp
+
+    case ("E", _):
+        return .e
+
+    case ("F", "b"):
+        input = input.dropFirst()
+        return .fFlat
+
+    case ("F", "#"):
+        input = input.dropFirst()
+        return .fSharp
+
+    case ("F", _):
+        return .f
+
+    case ("G", "b"):
+        input = input.dropFirst()
+        return .gFlat
+
+    case ("G", "#"):
+        input = input.dropFirst()
+        return .gSharp
+
+    default:
+        return .g
+    }
+}
+
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     let numeratorText: Substring
     let denominatorText: Substring
@@ -1372,92 +1459,6 @@ private func _parsePartItems(_ input: inout Substring,
         default:
             return nil
         }
-    }
-}
-
-private func _parsePitchName(_ input: inout Substring) -> ABCPitchName? {
-    guard let letter = input.first, ("A"..."G").contains(letter)
-    else { return nil }
-
-    input = input.dropFirst()
-
-    switch (letter, input.first) {
-    case ("A", "b"):
-        input = input.dropFirst()
-        return .aFlat
-
-    case ("A", "#"):
-        input = input.dropFirst()
-        return .aSharp
-
-    case ("A", _):
-        return .a
-
-    case ("B", "b"):
-        input = input.dropFirst()
-        return .bFlat
-
-    case ("B", "#"):
-        input = input.dropFirst()
-        return .bSharp
-
-    case ("B", _):
-        return .b
-
-    case ("C", "b"):
-        input = input.dropFirst()
-        return .cFlat
-
-    case ("C", "#"):
-        input = input.dropFirst()
-        return .cSharp
-
-    case ("C", _):
-        return .c
-
-    case ("D", "b"):
-        input = input.dropFirst()
-        return .dFlat
-
-    case ("D", "#"):
-        input = input.dropFirst()
-        return .dSharp
-
-    case ("D", _):
-        return .d
-
-    case ("E", "b"):
-        input = input.dropFirst()
-        return .eFlat
-
-    case ("E", "#"):
-        input = input.dropFirst()
-        return .eSharp
-
-    case ("E", _):
-        return .e
-
-    case ("F", "b"):
-        input = input.dropFirst()
-        return .fFlat
-
-    case ("F", "#"):
-        input = input.dropFirst()
-        return .fSharp
-
-    case ("F", _):
-        return .f
-
-    case ("G", "b"):
-        input = input.dropFirst()
-        return .gFlat
-
-    case ("G", "#"):
-        input = input.dropFirst()
-        return .gSharp
-
-    default:
-        return .g
     }
 }
 

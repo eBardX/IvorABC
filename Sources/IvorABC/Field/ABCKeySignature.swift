@@ -23,12 +23,6 @@ public enum ABCKeySignature {
 
 extension ABCKeySignature {
 
-    // MARK: Public Nested Types
-
-    /// A type alias for ``ABCPitch`` used to represent extra accidentals in a
-    /// key signature.
-    public typealias ExtraAccidental = ABCPitch
-
     // MARK: Public Instance Properties
 
     /// The accidentals implied by this key signature, keyed by pitch letter.

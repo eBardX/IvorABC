@@ -2,6 +2,8 @@
 
 extension ABCKeySignature {
 
+    // MARK: Public Nested Types
+
     /// The associated value type for the ``ABCKeySignature/standard(_:)`` case.
     public struct Standard {
 

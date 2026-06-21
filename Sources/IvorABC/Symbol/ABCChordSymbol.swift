@@ -7,7 +7,7 @@ public struct ABCChordSymbol {
 
     /// The bass note of a slash chord (e.g. `B` in `"G/B"`),
     /// or `nil` if there is no explicit bass note.
-    public let bass: ABCPitchName?
+    public let bass: Root?
 
     /// The chord name (root and quality).
     public let name: Name
@@ -24,7 +24,7 @@ public struct ABCChordSymbol {
     /// - Parameter bass:          The bass note for a slash chord, or `nil`.
     /// - Parameter parenthesized: An optional secondary chord written in parentheses.
     public init(name: Name,
-                bass: ABCPitchName? = nil,
+                bass: Root? = nil,
                 parenthesized: Name? = nil) {
         self.bass = bass
         self.name = name

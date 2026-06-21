@@ -2,6 +2,8 @@
 
 extension ABCKeySignature {
 
+    // MARK: Public Nested Types
+
     /// Clef and transposition properties that can appear in a `K:` field.
     public struct Clef {
 

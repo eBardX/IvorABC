@@ -1,6 +1,9 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
 extension ABCPitch {
+
+    // MARK: Public Nested Types
+
     /// The letter name of an ABC pitch.
     public enum Letter {
         /// The pitch letter A.
