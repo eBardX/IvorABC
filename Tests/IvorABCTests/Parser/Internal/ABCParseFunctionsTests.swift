@@ -116,18 +116,53 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseKeySignature_clef() {
-        let bassClef = ABCKeySignature.Clef(name: "bass")
-        let trebleClef = ABCKeySignature.Clef(name: "treble")
-        let transposeClef = ABCKeySignature.Clef(transpose: -2)
-        let combinedClef = ABCKeySignature.Clef(name: "bass", transpose: -2)
+    func parseKeySignature_clef() throws {
+        let bassClef = try #require(ABCClef(name: "bass"))
+        let percClef = try #require(ABCClef(name: "perc"))
+        let trebleClef = try #require(ABCClef(name: "treble"))
+        let transposeClef = try #require(ABCClef(transpose: -2))
+        let combinedClef = try #require(ABCClef(name: "bass", transpose: -2))
+        let percStafflinesClef = try #require(ABCClef(name: "perc", stafflines: 1))
+        let trebleAbove8Clef = try #require(ABCClef(name: "treble", ottava: .alta))
+        let bassBelow8Clef = try #require(ABCClef(name: "bass", ottava: .bassa))
+        let middleTransposeClef = try #require(ABCClef(name: "bass", middle: ABCClef.Middle(letter: .d, octave: 5), transpose: -24))
 
+        // clef= prefix form
         #expect(parseKeySignature("G clef=bass") == makeKeySignature(.g, .major, bassClef))
         #expect(parseKeySignature("C transpose=-2") == makeKeySignature(.c, .major, transposeClef))
         #expect(parseKeySignature("C major transpose=-2") == makeKeySignature(.c, .major, transposeClef))
         #expect(parseKeySignature("G clef=bass transpose=-2") == makeKeySignature(.g, .major, combinedClef))
         #expect(parseKeySignature("clef=treble") == .clefOnly(trebleClef))
         #expect(parseKeySignature("none clef=treble") == .clefOnly(trebleClef))
+
+        // bare clef name form (no clef= prefix)
+        #expect(parseKeySignature("perc stafflines=1") == .clefOnly(percStafflinesClef))
+        #expect(parseKeySignature("G bass") == makeKeySignature(.g, .major, bassClef))
+        #expect(parseKeySignature("G perc") == makeKeySignature(.g, .major, percClef))
+
+        // +8 / -8 ottava markers
+        #expect(parseKeySignature("clef=treble+8") == .clefOnly(trebleAbove8Clef))
+        #expect(parseKeySignature("clef=bass-8") == .clefOnly(bassBelow8Clef))
+        #expect(parseKeySignature("treble+8") == .clefOnly(trebleAbove8Clef))
+
+        // m= and t= abbreviations
+        #expect(parseKeySignature("C t=-2") == makeKeySignature(.c, .major, transposeClef))
+        #expect(parseKeySignature("bass middle=d t=-24") == .clefOnly(middleTransposeClef))
+        #expect(parseKeySignature("bass m=d t=-24") == .clefOnly(middleTransposeClef))
+
+        // line number (clef= prefix form)
+        let bass3Clef = try #require(ABCClef(name: "bass", line: 3))
+        let alto2Clef = try #require(ABCClef(name: "alto", line: 2))
+        let treble2Above8Clef = try #require(ABCClef(name: "treble", line: 2, ottava: .alta))
+
+        #expect(parseKeySignature("clef=bass3") == .clefOnly(bass3Clef))
+        #expect(parseKeySignature("clef=alto2") == .clefOnly(alto2Clef))
+        #expect(parseKeySignature("clef=treble2+8") == .clefOnly(treble2Above8Clef))
+        #expect(parseKeySignature("G clef=bass3") == makeKeySignature(.g, .major, bass3Clef))
+
+        // line number (bare form)
+        #expect(parseKeySignature("bass3") == .clefOnly(bass3Clef))
+        #expect(parseKeySignature("treble2+8") == .clefOnly(treble2Above8Clef))
     }
 
     @Test
@@ -449,22 +484,42 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseVoice_success() {
-        #expect(parseVoice("1 clef=treble name=\"Soprano\"sname=\"A\"") == makeVoice("1", ["clef": "treble",
-                                                                                           "name": "Soprano",
-                                                                                           "sname": "A"]))
+    func parseVoice_bareClefName() throws {
+        let bassClef = try #require(ABCClef(name: "bass"))
+        let bassMidClef = try #require(ABCClef(name: "bass", middle: ABCClef.Middle(letter: .d, octave: 5)))
+
+        #expect(parseVoice("B bass") == makeVoice("B", clef: bassClef))
+        #expect(parseVoice("B middle=d bass") == makeVoice("B", clef: bassMidClef))
+    }
+
+    @Test
+    func parseVoice_success() throws {
+        let trebleClef = try #require(ABCClef(name: "treble"))
+        let bassMidClef = try #require(ABCClef(name: "bass", middle: ABCClef.Middle(letter: .d, octave: 5)))
+        let bassMidTransposeClef = try #require(ABCClef(name: "bass", middle: ABCClef.Middle(letter: .d, octave: 5), transpose: -24))
+        let trebleBelow8Clef = try #require(ABCClef(name: "treble", ottava: .bassa))
+
+        #expect(parseVoice("1 clef=treble name=\"Soprano\"sname=\"A\"") == makeVoice("1",
+                                                                                     clef: trebleClef,
+                                                                                     ["name": "Soprano",
+                                                                                      "sname": "A"]))
         #expect(parseVoice("2") == makeVoice("2"))
-        #expect(parseVoice("3 clef = bass middle = d name = \"Tenor\" sname = \"B\"") == makeVoice("3", ["clef": "bass",
-                                                                                                         "middle": "d",
-                                                                                                         "name": "Tenor",
-                                                                                                         "sname": "B"]))
-        let b1Properties = ["middle": "d", "clef": "bass", "name": "Basso I", "snm": "B.I", "transpose": "-24"]
+        #expect(parseVoice("3 clef = bass middle = d name = \"Tenor\" sname = \"B\"") ==
+                makeVoice("3",
+                          clef: bassMidClef,
+                          ["name": "Tenor",
+                           "sname": "B"]))
         #expect(parseVoice("B1   middle=d   clef=bass      name=\"Basso I\"     snm=\"B.I\"    transpose=-24") ==
-                makeVoice("B1", b1Properties))
+                makeVoice("B1",
+                          clef: bassMidTransposeClef,
+                          ["name": "Basso I",
+                           "snm": "B.I"]))
         #expect(parseVoice("T1") == makeVoice("T1"))
-        #expect(parseVoice("T2               clef=treble-8    name=\"Tenore II\"    snm=\"T.II\"") == makeVoice("T2", ["clef": "treble-8",
-                                                                                                                       "name": "Tenore II",
-                                                                                                                       "snm": "T.II"]))
+        #expect(parseVoice("T2               clef=treble-8    name=\"Tenore II\"    snm=\"T.II\"") ==
+                makeVoice("T2",
+                          clef: trebleBelow8Clef,
+                          ["name": "Tenore II",
+                           "snm": "T.II"]))
     }
 
     @Test

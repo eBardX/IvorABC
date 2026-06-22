@@ -358,7 +358,7 @@ func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
 
 func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                       _ mode: ABCKeySignature.Mode,
-                      _ clef: ABCKeySignature.Clef) -> ABCKeySignature {
+                      _ clef: ABCClef) -> ABCKeySignature {
     .standard(ABCKeySignature.Standard(tonic: tonic,
                                        mode: mode,
                                        clef: clef).require())
@@ -514,6 +514,14 @@ func makeVersion(_ major: UInt,
 func makeVoice(_ id: String,
                _ properties: [String: String] = [:]) -> ABCVoice {
     ABCVoice(id: id,
+             properties: properties)
+}
+
+func makeVoice(_ id: String,
+               clef: ABCClef,
+               _ properties: [String: String] = [:]) -> ABCVoice {
+    ABCVoice(id: id,
+             clef: clef,
              properties: properties)
 }
 

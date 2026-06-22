@@ -23,7 +23,7 @@ extension ABCKeySignature {
         public init?(tonic: Tonic,
                      mode: Mode,
                      extraAccidentals: [ExtraAccidental] = [],
-                     clef: Clef? = nil) {
+                     clef: ABCClef? = nil) {
             guard Self._isValid(tonic, mode, extraAccidentals, clef)
             else { return nil }
 
@@ -36,7 +36,7 @@ extension ABCKeySignature {
         // MARK: Public Instance Properties
 
         /// Optional clef and transposition properties.
-        public let clef: Clef?
+        public let clef: ABCClef?
 
         /// Extra accidentals overlaid on the key signature beyond those
         /// implied by the tonic and mode (e.g., `K:D Phr ^f`).
@@ -84,14 +84,18 @@ extension ABCKeySignature.Standard {
     private static func _isValid(_ tonic: ABCKeySignature.Tonic,
                                  _ mode: ABCKeySignature.Mode,
                                  _ extraAccidentals: [ABCKeySignature.ExtraAccidental],
-                                 _ clef: ABCKeySignature.Clef?) -> Bool {
+                                 _ clef: ABCClef?) -> Bool {
         let emode = ABCKeySignature.Mode.effectiveMode(for: mode)
 
         guard emode == .explicit || Self.accidentalCounts[tonic]?[emode] != nil
         else { return false }
 
-        for xacc in extraAccidentals where xacc.accidental == .omitted {
-            return false
+        var seen = Set<ABCPitch.Letter>()
+
+        for xacc in extraAccidentals {
+            guard xacc.accidental != .omitted,
+                  seen.insert(xacc.letter).inserted
+            else { return false }
         }
 
         return true

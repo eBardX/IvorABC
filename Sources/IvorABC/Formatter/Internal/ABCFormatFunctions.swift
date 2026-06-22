@@ -566,27 +566,37 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     }
 }
 
-private func _formatKeySignatureClef(_ clef: ABCKeySignature.Clef) -> String {
+private func _formatKeySignatureClef(_ clef: ABCClef) -> String {
     var parts: [String] = []
 
     if let name = clef.name {
-        parts.append("clef=\(name)")
+        var part = "clef=\(name)"
+
+        if clef.line != ABCClef.defaultLine(for: clef.name) {
+            part += "\(clef.line)"
+        }
+
+        if let ottava = clef.ottava {
+            part += ottava == .alta ? "+8" : "-8"
+        }
+
+        parts.append(part)
     }
 
     if let middle = clef.middle {
-        parts.append("middle=\(middle)")
+        parts.append("middle=\(_formatPitchLetterOctave(middle.letter, middle.octave))")
     }
 
-    if let transpose = clef.transpose {
-        parts.append("transpose=\(transpose)")
+    if clef.transpose != 0 {
+        parts.append("transpose=\(clef.transpose)")
     }
 
-    if let octave = clef.octave {
-        parts.append("octave=\(octave)")
+    if clef.octave != 0 {
+        parts.append("octave=\(clef.octave)")
     }
 
-    if let stafflines = clef.stafflines {
-        parts.append("stafflines=\(stafflines)")
+    if clef.stafflines != 5 {
+        parts.append("stafflines=\(clef.stafflines)")
     }
 
     return parts.joined(separator: " ")
@@ -638,12 +648,14 @@ private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
     guard let (upper, lower) = pitchLetters[letter]
     else { preconditionFailure("Unknown pitch letter: \(letter)") }
 
-    if octave <= 4 {
+    let octaveInt = Int(octave.uintValue)
+
+    if octaveInt <= 4 {
         return upper + String(repeating: ",",
-                              count: 4 - octave)
+                              count: 4 - octaveInt)
     } else {
         return lower + String(repeating: "'",
-                              count: octave - 5)
+                              count: octaveInt - 5)
     }
 }
 
@@ -782,6 +794,14 @@ private func _formatVariantEnding(_ variantEnding: ABCVariantEnding) -> String {
 
 private func _formatVoice(_ voice: ABCVoice) -> String {
     var parts = [voice.id]
+
+    if let clef = voice.clef {
+        let clefStr = _formatKeySignatureClef(clef)
+
+        if !clefStr.isEmpty {
+            parts.append(clefStr)
+        }
+    }
 
     for key in voice.properties.keys.sorted() {
         guard let value = voice.properties[key]

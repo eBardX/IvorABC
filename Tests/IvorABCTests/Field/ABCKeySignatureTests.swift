@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCKeySignatureTests {
 }
@@ -10,8 +11,8 @@ struct ABCKeySignatureTests {
 
 extension ABCKeySignatureTests {
     @Test
-    func equality_clefOnly() {
-        let clef = ABCKeySignature.Clef(name: "bass")
+    func equality_clefOnly() throws {
+        let clef = try #require(ABCClef(name: "bass"))
 
         #expect(ABCKeySignature.clefOnly(clef) == .clefOnly(clef))
     }

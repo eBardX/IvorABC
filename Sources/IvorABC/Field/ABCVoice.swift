@@ -5,18 +5,25 @@ public struct ABCVoice {
 
     // MARK: Public Initializers
 
-    /// Creates a new voice specification with the provided identifier and
-    /// properties.
+    /// Creates a new voice specification with the provided identifier, clef,
+    /// and properties.
     ///
     /// - Parameter id:         The identifier of the voice.
+    /// - Parameter clef:       Optional clef and transposition properties.
+    ///                         Defaults to `nil`.
     /// - Parameter properties: A dictionary of named properties for the voice.
     public init(id: String,
-                properties: [String: String]) {
-        self.id = id                    // validate ???
-        self.properties = properties    // validate ???
+                clef: ABCClef? = nil,
+                properties: [String: String] = [:]) {
+        self.clef = clef
+        self.id = id
+        self.properties = properties
     }
 
     // MARK: Public Instance Properties
+
+    /// Optional clef and transposition properties.
+    public let clef: ABCClef?
 
     /// The identifier of this voice.
     public let id: String

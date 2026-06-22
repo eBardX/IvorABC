@@ -362,27 +362,15 @@ internal func parseField(_ tidyInput: Substring) throws -> ABCField {
 }
 
 internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
-    // Partition whitespace-split tokens into key=value property tokens (clef,
-    // transpose, etc.) and everything else (tonic, mode, accidentals).
-    // A property token contains '=' at any position other than index 0;
-    // '=' at index 0 is the natural-sign accidental prefix (e.g. "=F").
-    var propertyTokens: [Substring] = []
-    var otherTokens: [Substring] = []
+    let (propertyTokens, bareClefToken, otherTokens) = _partitionKeySignatureTokens(tidyInput)
 
-    for token in tidyInput.split(whereSeparator: \.isABCWhitespace) {
-        if let eqIdx = token.firstIndex(of: "="), eqIdx != token.startIndex {
-            propertyTokens.append(token)
-        } else {
-            otherTokens.append(token)
-        }
-    }
+    let clef: ABCClef?
 
-    let clef: ABCKeySignature.Clef?
-
-    if propertyTokens.isEmpty {
+    if propertyTokens.isEmpty, bareClefToken == nil {
         clef = nil
     } else {
-        guard let c = _parseKeySignatureClef(propertyTokens)
+        guard let c = _parseKeySignatureClef(bareClefToken: bareClefToken,
+                                             propertyTokens: propertyTokens)
         else { return nil }
 
         clef = c
@@ -570,7 +558,11 @@ internal func parsePitch(_ tidyInput: Substring) -> ParsePitchResult? {
         }
     }
 
-    return (plResult.letter, accidental, octave)
+    guard octave >= 0,
+          let octaveValue = ABCPitch.Octave(uintValue: UInt(octave))
+    else { return nil }
+
+    return (plResult.letter, accidental, octaveValue)
 }
 
 internal func parseReferenceNumber(_ tidyInput: Substring) -> ABCReferenceNumber? {
@@ -878,22 +870,54 @@ internal func parseVoice(_ tidyInput: Substring) -> ABCVoice? {
     guard !tidyInput.isEmpty
     else { return nil }
 
-    let result = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
+    let idResult = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
 
     var properties: [String: String] = [:]
+    var clefProperties: [ClefPropertyPair] = []
+    var bareClefToken: Substring?
 
-    if var rest = result.tail {
+    if var rest = idResult.tail {
         while !rest.isEmpty {
-            guard let result = _parseVoiceProperty(rest)
+            rest = trimPrefix(rest)
+
+            guard !rest.isEmpty
+            else { break }
+
+            let peek = rest.splitBeforeFirst { $0.isABCWhitespace }
+
+            if _isBareClefNameToken(peek.head) {
+                bareClefToken = peek.head
+                rest = trimPrefix(peek.tail ?? "")
+                continue
+            }
+
+            guard let propResult = _parseVoiceProperty(rest)
             else { return nil }
 
-            properties[result.key] = result.value
+            if clefPropertyKeys.contains(propResult.key.lowercased()) {
+                clefProperties.append((propResult.key, propResult.value))
+            } else {
+                properties[propResult.key] = propResult.value
+            }
 
-            rest = result.rest
+            rest = propResult.rest
         }
     }
 
-    return ABCVoice(id: String(result.head),
+    let clef: ABCClef?
+
+    if clefProperties.isEmpty, bareClefToken == nil {
+        clef = nil
+    } else {
+        guard let c = _parseKeySignatureClef(bareClefToken: bareClefToken,
+                                             propertyTokens: clefProperties.map { Substring("\($0.key)=\($0.value)") })
+        else { return nil }
+
+        clef = c
+    }
+
+    return ABCVoice(id: String(idResult.head),
+                    clef: clef,
                     properties: properties)
 }
 
@@ -943,9 +967,10 @@ loop:
 
 // MARK: Private Types
 
+private typealias ClefPropertyPair              = (key: String, value: String)
 private typealias ParseTempoDurationsRateResult = (durations: [ABCDuration], rate: UInt)
 private typealias ParseVoicePropertyResult      = (key: String, value: String, rest: Substring)
-private typealias PitchLetterResult             = (letter: ABCPitch.Letter, octave: ABCPitch.Octave)
+private typealias PitchLetterResult             = (letter: ABCPitch.Letter, octave: Int)
 
 // MARK: Private Constants
 
@@ -954,6 +979,12 @@ private let durationCS: Set<Character>    = ["/", "0", "1", "2", "3", "4", "5", 
 private let octaveCS: Set<Character>      = [",", "'"]
 private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
+
+// Known bare clef name prefixes (excludes "none" which is handled as the empty key special case).
+private let clefNamePrefixes: [String] = ["treble", "alto", "tenor", "bass", "perc"]
+
+// Property keys that belong to the clef specifier rather than voice metadata.
+private let clefPropertyKeys: Set<String> = ["clef", "middle", "m", "transpose", "t", "octave", "stafflines"]
 
 private let annotationPlacements: [Substring: ABCAnnotation.Placement] = ["^": .above,
                                                                           "@": .auto,
@@ -1105,6 +1136,20 @@ private func _consumeTempoText(_ input: Substring) -> (String, Substring)? {
     return (t, rest)
 }
 
+private func _isBareClefNameToken(_ token: Substring) -> Bool {
+    var t = token
+
+    if t.hasSuffix("+8") || t.hasSuffix("-8") {
+        t = t.dropLast(2)
+    }
+
+    let lineCount = t.reversed().prefix { $0.isNumber }.count
+
+    t = t.dropLast(lineCount)
+
+    return clefNamePrefixes.contains(String(t))
+}
+
 private func _parseAnnotationPlacement(_ tidyInput: Substring) -> ABCAnnotation.Placement? {
     annotationPlacements[tidyInput]
 }
@@ -1204,6 +1249,55 @@ private func _parseChordSymbolRoot(_ input: inout Substring) -> ABCChordSymbol.R
     }
 }
 
+private func _parseClefMiddle(_ value: Substring) -> ABCClef.Middle? {
+    guard !value.isEmpty,
+          let plResult = pitchLetters[value.prefix(1)]
+    else { return nil }
+
+    var octave = plResult.octave
+
+    for chr in value.dropFirst() {
+        switch chr {
+        case "'":
+            octave += 1
+
+        case ",":
+            octave -= 1
+
+        default:
+            return nil
+        }
+    }
+
+    guard octave >= 0,
+          let octaveValue = ABCPitch.Octave(uintValue: UInt(octave))
+    else { return nil }
+
+    return ABCClef.Middle(letter: plResult.letter, octave: octaveValue)
+}
+
+private func _parseClefNameLineAndOttava(_ value: Substring) -> (ABCClef.Name?, Int?, ABCClef.Ottava?) {
+    var v = value
+    var ottava: ABCClef.Ottava?
+
+    if v.hasSuffix("+8") {
+        ottava = .alta
+
+        v = v.dropLast(2)
+    } else if v.hasSuffix("-8") {
+        ottava = .bassa
+
+        v = v.dropLast(2)
+    }
+
+    let lineCount = v.reversed().prefix { $0.isNumber }.count
+    let line: Int? = lineCount == 0 ? nil : Int(v.suffix(lineCount))
+
+    v = v.dropLast(lineCount)
+
+    return (ABCClef.Name(stringValue: String(v)), line, ottava)
+}
+
 private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignature? {
     let numeratorText: Substring
     let denominatorText: Substring
@@ -1287,26 +1381,37 @@ private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
                         value: value).require()
 }
 
-private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySignature.Clef? {
-    var name: String?
-    var middle: String?
+private func _parseKeySignatureClef(bareClefToken: Substring?,
+                                    propertyTokens: [Substring]) -> ABCClef? {
+    var name: ABCClef.Name?
+    var line: Int?
+    var middle: ABCClef.Middle?
     var octave: Int?
+    var ottava: ABCClef.Ottava?
     var stafflines: Int?
     var transpose: Int?
+
+    if let token = bareClefToken {
+        (name, line, ottava) = _parseClefNameLineAndOttava(token)
+    }
 
     for token in propertyTokens {
         guard let eqIdx = token.firstIndex(of: "=")
         else { return nil }
 
         let key = String(token[token.startIndex..<eqIdx]).lowercased()
-        let value = String(token[token.index(after: eqIdx)...])
+        let value = Substring(token[token.index(after: eqIdx)...])
 
         switch key {
         case "clef":
-            name = value
+            (name, line, ottava) = _parseClefNameLineAndOttava(value)
 
-        case "middle":
-            middle = value
+        case "m",
+             "middle":
+            guard let m = _parseClefMiddle(value)
+            else { return nil }
+
+            middle = m
 
         case "octave":
             guard let n = Int(value)
@@ -1320,7 +1425,8 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySign
 
             stafflines = n
 
-        case "transpose":
+        case "t",
+             "transpose":
             guard let n = Int(value)
             else { return nil }
 
@@ -1331,7 +1437,13 @@ private func _parseKeySignatureClef(_ propertyTokens: [Substring]) -> ABCKeySign
         }
     }
 
-    return ABCKeySignature.Clef(name: name, middle: middle, octave: octave, stafflines: stafflines, transpose: transpose)
+    return ABCClef(name: name,
+                   line: line,
+                   ottava: ottava,
+                   middle: middle,
+                   transpose: transpose ?? 0,
+                   octave: octave ?? 0,
+                   stafflines: stafflines ?? 5)
 }
 
 private func _parseKeySignatureExtraAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.ExtraAccidental]? {
@@ -1537,6 +1649,32 @@ private func _parseVoiceProperty(_ tidyInput: Substring) -> ParseVoicePropertyRe
     }
 
     return (String(key), String(value), trimPrefix(rest))
+}
+
+// Partitions whitespace-split tokens from a K: field value into:
+//   propertyTokens – contain '=' not at position 0 (e.g. "clef=treble", "t=-2")
+//   bareClefToken  – a single bare clef name token (e.g. "perc", "treble+8")
+//   otherTokens    – tonic, mode, and extra-accidental tokens
+//
+// '=' at position 0 is the natural-sign accidental prefix (e.g. "=F"), so those
+// always go to otherTokens.
+private func _partitionKeySignatureTokens(_ tidyInput: Substring)
+    -> (propertyTokens: [Substring], bareClefToken: Substring?, otherTokens: [Substring]) {
+    var propertyTokens: [Substring] = []
+    var bareClefToken: Substring?
+    var otherTokens: [Substring] = []
+
+    for token in tidyInput.split(whereSeparator: \.isABCWhitespace) {
+        if let eqIdx = token.firstIndex(of: "="), eqIdx != token.startIndex {
+            propertyTokens.append(token)
+        } else if _isBareClefNameToken(token) {
+            bareClefToken = token
+        } else {
+            otherTokens.append(token)
+        }
+    }
+
+    return (propertyTokens, bareClefToken, otherTokens)
 }
 
 private func _splitField(_ tidyInput: Substring) throws -> (Substring, Substring, Bool) {

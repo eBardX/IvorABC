@@ -3,11 +3,6 @@
 /// A pitch in ABC notation.
 public struct ABCPitch {
 
-    // MARK: Public Nested Types
-
-    /// A type alias for `Int` representing the octave number of a pitch.
-    public typealias Octave = Int
-
     // MARK: Public Initializers
 
     /// Creates a new pitch with the provided letter, accidental, and octave.
@@ -21,7 +16,7 @@ public struct ABCPitch {
                 octave: Octave) {
         self.accidental = accidental
         self.letter = letter
-        self.octave = octave    // validate ???
+        self.octave = octave
     }
 
     // MARK: Public Instance Properties

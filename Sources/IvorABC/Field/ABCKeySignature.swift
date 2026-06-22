@@ -3,7 +3,7 @@
 /// An ABC key signature.
 public enum ABCKeySignature {
     /// A clef-only specification (no tonic), e.g., `K:clef=treble`.
-    case clefOnly(Clef)
+    case clefOnly(ABCClef)
 
     /// An empty (key-less) key signature.
     case empty

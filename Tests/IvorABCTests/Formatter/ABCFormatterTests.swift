@@ -512,7 +512,7 @@ extension ABCFormatterTests {
 
     @Test
     func key_clefOnly_emitsClefProperty() throws {
-        let clef = ABCKeySignature.Clef(name: "treble")
+        let clef = try #require(ABCClef(name: "treble"))
         let output = try format(minimalTunebook(key: .clefOnly(clef)))
 
         #expect(output.contains("K:clef=treble\n"))
@@ -569,11 +569,91 @@ extension ABCFormatterTests {
     }
 
     @Test
+    func key_withClefDefaultOctave_omitsOctave() throws {
+        let clef = try #require(ABCClef(name: "treble"))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(!output.contains("octave="))
+    }
+
+    @Test
+    func key_withClefDefaultStafflines_omitsStafflines() throws {
+        let clef = try #require(ABCClef(name: "treble"))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(!output.contains("stafflines="))
+    }
+
+    @Test
+    func key_withClefDefaultTranspose_omitsTranspose() throws {
+        let clef = try #require(ABCClef(name: "treble"))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(!output.contains("transpose="))
+    }
+
+    @Test
     func key_withClef_emitsClefAfterKey() throws {
-        let clef = ABCKeySignature.Clef(name: "bass")
+        let clef = try #require(ABCClef(name: "bass"))
         let output = try format(minimalTunebook(key: makeKeySignature(.g, .major, clef)))
 
         #expect(output.contains("K:G major clef=bass\n"))
+    }
+
+    @Test
+    func key_withClefLineNumber_emitsLineNumberAfterName() throws {
+        let clef = try #require(ABCClef(name: "bass", line: 3))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("K:clef=bass3\n"))
+    }
+
+    @Test
+    func key_withClefLineNumberAndOttava_emitsLineBeforeOttava() throws {
+        let clef = try #require(ABCClef(name: "treble", line: 3, ottava: .alta))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("K:clef=treble3+8\n"))
+    }
+
+    @Test
+    func key_withClefDefaultLine_omitsLine() throws {
+        let clef = try #require(ABCClef(name: "treble"))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("K:clef=treble\n"))
+    }
+
+    @Test
+    func key_withClefNonDefaultLine_emitsLine() throws {
+        let clef = try #require(ABCClef(name: "treble", line: 3))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("clef=treble3"))
+    }
+
+    @Test
+    func key_withClefOctave_emitsOctave() throws {
+        let clef = try #require(ABCClef(name: "treble", octave: 1))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("octave=1"))
+    }
+
+    @Test
+    func key_withClefStafflines_emitsStafflines() throws {
+        let clef = try #require(ABCClef(name: "perc", stafflines: 1))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("stafflines=1"))
+    }
+
+    @Test
+    func key_withClefTranspose_emitsTranspose() throws {
+        let clef = try #require(ABCClef(name: "treble", transpose: -2))
+        let output = try format(minimalTunebook(key: .clefOnly(clef)))
+
+        #expect(output.contains("transpose=-2"))
     }
 
     @Test
