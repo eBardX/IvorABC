@@ -1011,6 +1011,33 @@ private let keySignatureModes: [Substring: ABCKeySignature.Mode] = ["": .major,
                                                                     "mix": .mixolydian,
                                                                     "phr": .phrygian]
 
+private let parts: [Character: ABCPart] = ["A": .a,
+                                           "B": .b,
+                                           "C": .c,
+                                           "D": .d,
+                                           "E": .e,
+                                           "F": .f,
+                                           "G": .g,
+                                           "H": .h,
+                                           "I": .i,
+                                           "J": .j,
+                                           "K": .k,
+                                           "L": .l,
+                                           "M": .m,
+                                           "N": .n,
+                                           "O": .o,
+                                           "P": .p,
+                                           "Q": .q,
+                                           "R": .r,
+                                           "S": .s,
+                                           "T": .t,
+                                           "U": .u,
+                                           "V": .v,
+                                           "W": .w,
+                                           "X": .x,
+                                           "Y": .y,
+                                           "Z": .z]
+
 private let pitchAccidentals: [Substring: ABCPitch.Accidental] = ["_": .flat,
                                                                   "__": .doubleFlat,
                                                                   "^": .sharp,
@@ -1511,15 +1538,17 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
     return (tonic, mode)
 }
 
-private func _parsePartCount(_ input: inout Substring) -> UInt {
+private func _parsePartItemCount(_ input: inout Substring) -> ABCPartSequence.Item.Count {
     var digits = ""
 
-    while let ch = input.first, ch.isABCDigit {
+    while let ch = input.first,
+          ch.isABCDigit {
         digits.append(ch)
+
         input = input.dropFirst()
     }
 
-    return UInt(digits) ?? 1
+    return UInt(digits).flatMap { ABCPartSequence.Item.Count(uintValue: $0) } ?? 1
 }
 
 private func _parsePartItems(_ input: inout Substring,
@@ -1534,8 +1563,6 @@ private func _parsePartItems(_ input: inout Substring,
         if let term = terminator {
             guard let ch = input.first
             else { return nil }
-
-     // unmatched "("
 
             if ch == term {
                 input = input.dropFirst()
@@ -1558,14 +1585,17 @@ private func _parsePartItems(_ input: inout Substring,
                                                    terminator: ")")
             else { return nil }
 
-            let count = _parsePartCount(&input)
+            let count = _parsePartItemCount(&input)
 
             items.append(.group(groupItems, count))
 
         case "A"..."Z":
-            let count = _parsePartCount(&input)
+            guard let part = parts[ch]
+            else { return nil }
 
-            items.append(.part(ch, count))
+            let count = _parsePartItemCount(&input)
+
+            items.append(.part(part, count))
 
         default:
             return nil

@@ -100,7 +100,7 @@ extension ABCParseFunctionsTests {
         try expectFieldIsNotes(parseField("N:See also"), "See also")
         try expectFieldIsOrigin(parseField("O:Ireland"), "Ireland")
         try expectFieldIsParts(parseField("P:AABB"),
-                               makePartSequence([makePart("A"), makePart("A"), makePart("B"), makePart("B")]))
+                               makePartSequence([makePart(.a), makePart(.a), makePart(.b), makePart(.b)]))
         try expectFieldIsRefNumber(parseField("X:1"))
         try expectFieldIsRemark(parseField("r:editorial note"), "editorial note")
         try expectFieldIsRhythm(parseField("R:Reel"), "Reel")

@@ -14,8 +14,9 @@ extension ABCFieldTests {
     func isValidInFileHeader_invalidFields() {
         let invalidFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
                                          .key(.empty),
+                                         .part(.a),
                                          .words(""),
-                                         .parts(makePartSequence([makePart("A")])),
+                                         .parts(makePartSequence([makePart(.a)])),
                                          .referenceNumber(makeReferenceNumber(1)),
                                          .symbolLine(makeSymbolLine([])),
                                          .tempo(makeTempo([])),
@@ -62,6 +63,7 @@ extension ABCFieldTests {
                                          .group(""),
                                          .history(""),
                                          .origin(""),
+                                         .parts(makePartSequence([makePart(.a)])),
                                          .referenceNumber(makeReferenceNumber(1)),
                                          .source(""),
                                          .transcription("")]
@@ -76,11 +78,11 @@ extension ABCFieldTests {
         let validFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
                                        .instruction(makeDirective("linebreak", "")),
                                        .key(.empty),
+                                       .part(.a),
                                        .words(""),
                                        .macro(makeMacro("~G2", "{A}G{F}G")),
                                        .meter(.common),
                                        .notes(""),
-                                       .parts(makePartSequence([makePart("A")])),
                                        .remark(""),
                                        .rhythm(""),
                                        .symbolLine(makeSymbolLine([])),
@@ -97,7 +99,8 @@ extension ABCFieldTests {
 
     @Test
     func isValidInTuneHeader_invalidFields() {
-        let invalidFields: [ABCField] = [.wordsAligned(makeAlignedWords()),
+        let invalidFields: [ABCField] = [.part(.a),
+                                         .wordsAligned(makeAlignedWords()),
                                          .symbolLine(makeSymbolLine([]))]
 
         for field in invalidFields {
@@ -120,7 +123,7 @@ extension ABCFieldTests {
                                        .meter(.common),
                                        .notes(""),
                                        .origin(""),
-                                       .parts(makePartSequence([makePart("A")])),
+                                       .parts(makePartSequence([makePart(.a)])),
                                        .referenceNumber(makeReferenceNumber(1)),
                                        .remark(""),
                                        .rhythm(""),

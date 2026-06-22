@@ -61,6 +61,9 @@ internal func formatField(_ field: ABCField) throws -> (String, String) {
     case let .origin(text):
         ("O", _formatText(text))
 
+    case let .part(part):
+        ("P", formatPart(part))
+
     case let .parts(partSequence):
         ("P", _formatPartSequence(partSequence))
 
@@ -97,6 +100,10 @@ internal func formatField(_ field: ABCField) throws -> (String, String) {
     case let .voice(voice):
         ("V", _formatVoice(voice))
     }
+}
+
+internal func formatPart(_ part: ABCPart) -> String {
+    parts[part].require()
 }
 
 internal func formatSymbol(_ symbol: ABCSymbol,
@@ -184,6 +191,33 @@ private let keySignatureModes: [ABCKeySignature.Mode: String] = [.aeolian: "aeol
                                                                  .minor: "minor",
                                                                  .mixolydian: "mixolydian",
                                                                  .phrygian: "phrygian"]
+
+private let parts: [ABCPart: String] = [.a: "A",
+                                        .b: "B",
+                                        .c: "C",
+                                        .d: "D",
+                                        .e: "E",
+                                        .f: "F",
+                                        .g: "G",
+                                        .h: "H",
+                                        .i: "I",
+                                        .j: "J",
+                                        .k: "K",
+                                        .l: "L",
+                                        .m: "M",
+                                        .n: "N",
+                                        .o: "O",
+                                        .p: "P",
+                                        .q: "Q",
+                                        .r: "R",
+                                        .s: "S",
+                                        .t: "T",
+                                        .u: "U",
+                                        .v: "V",
+                                        .w: "W",
+                                        .x: "X",
+                                        .y: "Y",
+                                        .z: "Z"]
 
 private let pitchAccidentals: [ABCPitch.Accidental: (key: String, note: String)] = [.doubleFlat: ("__", "__"),
                                                                                     .flat: ("_", "_"),
@@ -431,39 +465,39 @@ private func _formatChordSymbol(_ chordSymbol: ABCChordSymbol) -> String {
 }
 
 private func _formatClef(_ clef: ABCClef) -> String {
-    var parts: [String] = []
+    var segments: [String] = []
 
     if let name = clef.name {
-        var part = "clef=\(name)"
+        var segment = "clef=\(name)"
 
         if clef.line != ABCClef.defaultLine(for: clef.name) {
-            part += "\(clef.line)"
+            segment += "\(clef.line)"
         }
 
         if let ottava = clef.ottava {
-            part += ottava == .alta ? "+8" : "-8"
+            segment += ottava == .alta ? "+8" : "-8"
         }
 
-        parts.append(part)
+        segments.append(segment)
     }
 
     if let middle = clef.middle {
-        parts.append("middle=\(_formatPitchLetterOctave(middle.letter, middle.octave))")
+        segments.append("middle=\(_formatPitchLetterOctave(middle.letter, middle.octave))")
     }
 
     if clef.transpose != 0 {
-        parts.append("transpose=\(clef.transpose)")
+        segments.append("transpose=\(clef.transpose)")
     }
 
     if clef.octave != 0 {
-        parts.append("octave=\(clef.octave)")
+        segments.append("octave=\(clef.octave)")
     }
 
     if clef.stafflines != 5 {
-        parts.append("stafflines=\(clef.stafflines)")
+        segments.append("stafflines=\(clef.stafflines)")
     }
 
-    return parts.joined(separator: " ")
+    return segments.joined(separator: " ")
 }
 
 private func _formatDecoration(_ decoration: ABCDecoration) -> String {
@@ -626,12 +660,25 @@ private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
     items.map { item in
         switch item {
         case let .group(children, count):
-            let inner = _formatPartItems(children)
+            var result = "("
 
-            return count == 1 ? "(\(inner))" : "(\(inner))\(count)"
+            result += _formatPartItems(children)
+            result += ")"
 
-        case let .part(char, count):
-            return count == 1 ? String(char) : "\(char)\(count)"
+            if count > 1 {
+                result += String(count.uintValue)
+            }
+
+            return result
+
+        case let .part(part, count):
+            var result = formatPart(part)
+
+            if count > 1 {
+                result += String(count.uintValue)
+            }
+
+            return result
         }
     }.joined()
 }
@@ -699,25 +746,25 @@ private func _formatSymbolLine(_ symbolLine: ABCSymbolLine) -> String {
 }
 
 private func _formatTempo(_ tempo: ABCTempo) -> String {
-    var parts: [String] = []
+    var segments: [String] = []
 
     if let text = tempo.text {
-        parts.append("\"\(text)\"")
+        segments.append("\"\(text)\"")
     }
 
     if !tempo.durations.isEmpty {
         let durStr = tempo.durations.map { "\($0.numerator)/\($0.denominator)" }.joined(separator: " ")
 
         if let rate = tempo.rate {
-            parts.append("\(durStr)=\(rate)")
+            segments.append("\(durStr)=\(rate)")
         } else {
-            parts.append(durStr)
+            segments.append(durStr)
         }
     } else if let rate = tempo.rate {
-        parts.append("\(rate)")
+        segments.append("\(rate)")
     }
 
-    return parts.joined(separator: " ")
+    return segments.joined(separator: " ")
 }
 
 private func _formatText(_ text: ABCText) -> String {
@@ -790,13 +837,13 @@ private func _formatVariantEnding(_ variantEnding: ABCVariantEnding) -> String {
 }
 
 private func _formatVoice(_ voice: ABCVoice) -> String {
-    var parts = [voice.id.stringValue]
+    var segments = [voice.id.stringValue]
 
     if let clef = voice.clef {
         let clefStr = _formatClef(clef)
 
         if !clefStr.isEmpty {
-            parts.append(clefStr)
+            segments.append(clefStr)
         }
     }
 
@@ -805,13 +852,13 @@ private func _formatVoice(_ voice: ABCVoice) -> String {
         else { continue }
 
         if value.contains(where: { $0.isWhitespace }) {
-            parts.append("\(key)=\"\(value)\"")
+            segments.append("\(key)=\"\(value)\"")
         } else {
-            parts.append("\(key)=\(value)")
+            segments.append("\(key)=\(value)")
         }
     }
 
-    return parts.joined(separator: " ")
+    return segments.joined(separator: " ")
 }
 
 private func _uintLog2(_ uintValue: UInt) -> Int {

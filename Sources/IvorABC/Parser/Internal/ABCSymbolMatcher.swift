@@ -224,7 +224,15 @@ extension ABCSymbolMatcher {
     private mutating func _matchInlineField(_ context: inout ABCParseContext) throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.inlineField)
 
-        let field = try parseField(token.value)
+        var field = try parseField(token.value)
+
+        if case let .parts(ps) = field {
+            guard ps.items.count == 1,
+                  case let .part(abcPart, 1) = ps.items[0]
+            else { throw ABCParser.Error.misplacedField(field) }
+
+            field = .part(abcPart)
+        }
 
         context.update(with: field)
 

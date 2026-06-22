@@ -704,9 +704,19 @@ extension ABCFormatterTests {
     }
 
     @Test
+    func part_inBody_emitsLetter() throws {
+        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))],
+                                          body: [.field(.part(.a)),
+                                                 .symbols([])])])
+
+        #expect(try format(book).contains("P:A\n"))
+    }
+
+    @Test
     func parts_simple_emitsLetters() throws {
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.parts(makePartSequence([makePart("A"), makePart("B")]))),
+                                                   .field(.parts(makePartSequence([makePart(.a), makePart(.b)]))),
                                                    .field(.key(makeKeySignature(.c, .major)))],
                                           body: [.symbols([])])])
 
@@ -716,9 +726,9 @@ extension ABCFormatterTests {
     @Test
     func parts_withGroup_emitsParentheses() throws {
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.parts(makePartSequence([makePart("A"),
-                                                                                   makePartGroup([makePart("B"),
-                                                                                                  makePart("C")], 3)]))),
+                                                   .field(.parts(makePartSequence([makePart(.a),
+                                                                                   makePartGroup([makePart(.b),
+                                                                                                  makePart(.c)], 3)]))),
                                                    .field(.key(makeKeySignature(.c, .major)))],
                                           body: [.symbols([])])])
 
@@ -728,7 +738,7 @@ extension ABCFormatterTests {
     @Test
     func parts_withRepeats_emitsRepeatCounts() throws {
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.parts(makePartSequence([makePart("A", 2), makePart("B")]))),
+                                                   .field(.parts(makePartSequence([makePart(.a, 2), makePart(.b)]))),
                                                    .field(.key(makeKeySignature(.c, .major)))],
                                           body: [.symbols([])])])
 

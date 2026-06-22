@@ -211,6 +211,14 @@ extension ABCParser {
         }
     }
 
+    private func _bodyPart(from ps: ABCPartSequence) -> ABCPart? {
+        guard ps.items.count == 1,
+              case let .part(abcPart, 1) = ps.items[0]
+        else { return nil }
+
+        return abcPart
+    }
+
     private func _processTuneBodyLine(_ line: Line,
                                       _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
         switch line {
@@ -221,14 +229,30 @@ extension ABCParser {
             return (nil, true)
 
         case let .field(field):
-            if field.isValidInTuneBody {
-                return (.field(field), false)
+            let effectiveField: ABCField
+
+            if case let .parts(ps) = field {
+                if let abcPart = _bodyPart(from: ps) {
+                    effectiveField = .part(abcPart)
+                } else if strictness == .lenient {
+                    diagnostics.append(.misplacedField(field))
+
+                    return (nil, false)
+                } else {
+                    throw Error.misplacedField(field)
+                }
+            } else {
+                effectiveField = field
+            }
+
+            if effectiveField.isValidInTuneBody {
+                return (.field(effectiveField), false)
             } else if strictness == .lenient {
-                diagnostics.append(.misplacedField(field))
+                diagnostics.append(.misplacedField(effectiveField))
 
                 return (nil, false)
             } else {
-                throw Error.misplacedField(field)
+                throw Error.misplacedField(effectiveField)
             }
 
         case let .symbols(symbols):

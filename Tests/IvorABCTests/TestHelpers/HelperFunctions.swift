@@ -151,6 +151,16 @@ func expectFieldIsOrigin(_ field: ABCField,
     }
 }
 
+func expectFieldIsPart(_ field: ABCField,
+                       _ expected: ABCPart,
+                       sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .part(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .part", sourceLocation: sourceLocation)
+    }
+}
+
 func expectFieldIsParts(_ field: ABCField,
                         _ expected: ABCPartSequence,
                         sourceLocation: SourceLocation = #_sourceLocation) {
@@ -384,13 +394,13 @@ func makeNote(_ pitch: ABCPitch,
             tie: tie)
 }
 
-func makePart(_ letter: Character,
-              _ count: UInt = 1) -> ABCPartSequence.Item {
-    .part(letter, count)
+func makePart(_ part: ABCPart,
+              _ count: ABCPartSequence.Item.Count = 1) -> ABCPartSequence.Item {
+    .part(part, count)
 }
 
 func makePartGroup(_ items: [ABCPartSequence.Item],
-                   _ count: UInt = 1) -> ABCPartSequence.Item {
+                   _ count: ABCPartSequence.Item.Count = 1) -> ABCPartSequence.Item {
     .group(items, count)
 }
 

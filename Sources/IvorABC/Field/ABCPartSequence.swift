@@ -1,36 +1,18 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-/// A structured representation of an ABC `P:` (parts) field value.
+/// A structured representation of an ABC `P:` (parts) field value in the tune
+/// header.
 ///
-/// ## Dual use of `P:`
+/// A `P:` field in the tune _header_ declares the overall part play order,
+/// optionally with repeat counts and nested groups:
 ///
-/// The ABC standard uses the `P:` field for two distinct purposes depending on
-/// where it appears:
+/// ```
+/// P:ABABCDCD
+/// P:A2B(CD)3
+/// ```
 ///
-/// - **Tune header** — declares the overall part play order, optionally with
-///   repeat counts and nested groups:
-///   ```
-///   P:ABABCDCD
-///   P:A2B(CD)3
-///   ```
-/// - **Tune body** — marks the start of a named part. The value is always a
-///   single uppercase letter:
-///   ```
-///   P:A
-///   P:B
-///   ```
-///
-/// ## Unified representation
-///
-/// The parser produces an `ABCPartSequence` for **both** uses. It has no
-/// knowledge of whether a given `P:` field appears in a tune header or a tune
-/// body — that distinction is determined by position in the entry stream, which
-/// only the caller can observe.
-///
-/// A body-context `P:A` therefore parses to a one-item sequence
-/// `[.part("A", 1)]`, indistinguishable in type from a header-context
-/// `P:A`. **The caller is responsible for using the surrounding context to
-/// decide which interpretation applies.**
+/// For the `P:` field in the tune _body_ (a single part label such as `P:A`),
+/// see ``ABCPart`` and ``ABCField/part(_:)``.
 ///
 /// ## Accessing the play order
 ///
@@ -38,11 +20,6 @@
 /// The ``expansion`` property provides the same information as a flat string
 /// of part letters in play order — for example, `P:A2B(CD)3` expands to
 /// `"AABCDCDCD"`. Choose whichever form suits your use case.
-///
-/// The parser does **not** enforce the body-context rule that the value must
-/// be a single letter. A multi-item sequence in the body position is
-/// syntactically accepted. Callers that care about this constraint must check
-/// it themselves.
 public struct ABCPartSequence {
 
     // MARK: Public Initializers
@@ -96,10 +73,12 @@ public struct ABCPartSequence {
         items.map { item -> String in
             switch item {
             case let .group(children, count):
-                String(repeating: _expand(children), count: Int(count))
+                String(repeating: _expand(children),
+                       count: Int(count.uintValue))
 
-            case let .part(letter, count):
-                String(repeating: String(letter), count: Int(count))
+            case let .part(part, count):
+                String(repeating: formatPart(part),
+                       count: Int(count.uintValue))
             }
         }.joined()
     }
