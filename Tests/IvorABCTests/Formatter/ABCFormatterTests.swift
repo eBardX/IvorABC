@@ -1147,18 +1147,6 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func voice_emptyID_throws() throws {
-        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.voice(makeVoice(""))),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([])])])
-
-        #expect(throws: ABCFormatter.Error.emptyVoiceID) {
-            try ABCFormatter().format(book)
-        }
-    }
-
-    @Test
     func voice_simple_emitsIDOnly() throws {
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                    .field(.voice(makeVoice("V1"))),

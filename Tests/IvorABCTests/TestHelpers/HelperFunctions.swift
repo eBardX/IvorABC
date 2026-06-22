@@ -511,18 +511,18 @@ func makeVersion(_ major: UInt,
                minor: minor)
 }
 
-func makeVoice(_ id: String,
-               _ properties: [String: String] = [:]) -> ABCVoice {
-    ABCVoice(id: id,
-             properties: properties)
-}
-
-func makeVoice(_ id: String,
+func makeVoice(_ id: ABCVoice.ID,
                clef: ABCClef,
                _ properties: [String: String] = [:]) -> ABCVoice {
     ABCVoice(id: id,
              clef: clef,
-             properties: properties)
+             properties: properties).require()
+}
+
+func makeVoice(_ id: ABCVoice.ID,
+               _ properties: [String: String] = [:]) -> ABCVoice {
+    ABCVoice(id: id,
+             properties: properties).require()
 }
 
 func matchSymbols(_ input: String) throws -> [ABCSymbol] {

@@ -158,6 +158,8 @@ function_parameter_count:
 identifier_name:
   max_length: 50
   min_length: 1
+type_name:
+  min_length: 2
 large_tuple:
   warning: 3
   error: 4

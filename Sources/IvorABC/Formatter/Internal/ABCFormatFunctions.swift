@@ -11,94 +11,91 @@ private import XestiTools
 internal func formatField(_ field: ABCField) throws -> (String, String) {
     switch field {
     case let .wordsAligned(alignedLyrics):
-        return ("w", _formatAlignedWords(alignedLyrics))
+        ("w", _formatAlignedWords(alignedLyrics))
 
     case let .area(text):
-        return ("A", _formatText(text))
+        ("A", _formatText(text))
 
     case let .book(text):
-        return ("B", _formatText(text))
+        ("B", _formatText(text))
 
     case let .composer(text):
-        return ("C", _formatText(text))
+        ("C", _formatText(text))
 
     case let .discography(text):
-        return ("D", _formatText(text))
+        ("D", _formatText(text))
 
     case let .fileURL(text):
-        return ("F", _formatText(text))
+        ("F", _formatText(text))
 
     case let .group(text):
-        return ("G", _formatText(text))
+        ("G", _formatText(text))
 
     case let .history(text):
-        return ("H", _formatText(text))
+        ("H", _formatText(text))
 
     case let .elemskip(elemskip):
-        return ("E", _formatElemskip(elemskip))
+        ("E", _formatElemskip(elemskip))
 
     case let .information(text):
-        return ("I", _formatText(text))
+        ("I", _formatText(text))
 
     case let .instruction(directive):
-        return ("I", _formatInstructionDirective(directive))
+        ("I", _formatInstructionDirective(directive))
 
     case let .key(ABCKeySignature):
-        return ("K", _formatKeySignature(ABCKeySignature))
+        ("K", _formatKeySignature(ABCKeySignature))
 
     case let .words(text):
-        return ("W", _formatText(text))
+        ("W", _formatText(text))
 
     case let .macro(macro):
-        return ("m", _formatMacro(macro))
+        ("m", _formatMacro(macro))
 
     case let .meter(timeSignature):
-        return ("M", _formatTimeSignature(timeSignature))
+        ("M", _formatTimeSignature(timeSignature))
 
     case let .notes(text):
-        return ("N", _formatText(text))
+        ("N", _formatText(text))
 
     case let .origin(text):
-        return ("O", _formatText(text))
+        ("O", _formatText(text))
 
     case let .parts(partSequence):
-        return ("P", _formatPartSequence(partSequence))
+        ("P", _formatPartSequence(partSequence))
 
     case let .referenceNumber(referenceNumber):
-        return ("X", "\(referenceNumber.uintValue)")
+        ("X", "\(referenceNumber.uintValue)")
 
     case let .remark(text):
-        return ("r", _formatText(text))
+        ("r", _formatText(text))
 
     case let .rhythm(text):
-        return ("R", _formatText(text))
+        ("R", _formatText(text))
 
     case let .source(text):
-        return ("S", _formatText(text))
+        ("S", _formatText(text))
 
     case let .symbolLine(symbolLine):
-        return ("s", _formatSymbolLine(symbolLine))
+        ("s", _formatSymbolLine(symbolLine))
 
     case let .tempo(tempo):
-        return ("Q", _formatTempo(tempo))
+        ("Q", _formatTempo(tempo))
 
     case let .tuneTitle(text):
-        return ("T", _formatText(text))
+        ("T", _formatText(text))
 
     case let .transcription(text):
-        return ("Z", _formatText(text))
+        ("Z", _formatText(text))
 
     case let .unitNoteLength(duration):
-        return ("L", "\(duration.numerator)/\(duration.denominator)")
+        ("L", "\(duration.numerator)/\(duration.denominator)")
 
     case let .userDefined(userSymbol):
-        return ("U", _formatUserSymbol(userSymbol))
+        ("U", _formatUserSymbol(userSymbol))
 
     case let .voice(voice):
-        guard !voice.id.isEmpty
-        else { throw ABCFormatter.Error.emptyVoiceID }
-
-        return ("V", _formatVoice(voice))
+        ("V", _formatVoice(voice))
     }
 }
 
@@ -433,6 +430,42 @@ private func _formatChordSymbol(_ chordSymbol: ABCChordSymbol) -> String {
     return result
 }
 
+private func _formatClef(_ clef: ABCClef) -> String {
+    var parts: [String] = []
+
+    if let name = clef.name {
+        var part = "clef=\(name)"
+
+        if clef.line != ABCClef.defaultLine(for: clef.name) {
+            part += "\(clef.line)"
+        }
+
+        if let ottava = clef.ottava {
+            part += ottava == .alta ? "+8" : "-8"
+        }
+
+        parts.append(part)
+    }
+
+    if let middle = clef.middle {
+        parts.append("middle=\(_formatPitchLetterOctave(middle.letter, middle.octave))")
+    }
+
+    if clef.transpose != 0 {
+        parts.append("transpose=\(clef.transpose)")
+    }
+
+    if clef.octave != 0 {
+        parts.append("octave=\(clef.octave)")
+    }
+
+    if clef.stafflines != 5 {
+        parts.append("stafflines=\(clef.stafflines)")
+    }
+
+    return parts.joined(separator: " ")
+}
+
 private func _formatDecoration(_ decoration: ABCDecoration) -> String {
     if decoration.dialect == .plus {
         "+\(decoration.name)+"
@@ -524,7 +557,7 @@ private func _formatInstructionDirective(_ directive: ABCDirective) -> String {
 private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     switch keySignature {
     case let .clefOnly(clef):
-        return _formatKeySignatureClef(clef)
+        return _formatClef(clef)
 
     case .empty:
         return "none"
@@ -554,7 +587,7 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
         }
 
         if let clef = standard.clef {
-            let clefStr = _formatKeySignatureClef(clef)
+            let clefStr = _formatClef(clef)
 
             if !clefStr.isEmpty {
                 result.append(" ")
@@ -564,42 +597,6 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
 
         return result
     }
-}
-
-private func _formatKeySignatureClef(_ clef: ABCClef) -> String {
-    var parts: [String] = []
-
-    if let name = clef.name {
-        var part = "clef=\(name)"
-
-        if clef.line != ABCClef.defaultLine(for: clef.name) {
-            part += "\(clef.line)"
-        }
-
-        if let ottava = clef.ottava {
-            part += ottava == .alta ? "+8" : "-8"
-        }
-
-        parts.append(part)
-    }
-
-    if let middle = clef.middle {
-        parts.append("middle=\(_formatPitchLetterOctave(middle.letter, middle.octave))")
-    }
-
-    if clef.transpose != 0 {
-        parts.append("transpose=\(clef.transpose)")
-    }
-
-    if clef.octave != 0 {
-        parts.append("octave=\(clef.octave)")
-    }
-
-    if clef.stafflines != 5 {
-        parts.append("stafflines=\(clef.stafflines)")
-    }
-
-    return parts.joined(separator: " ")
 }
 
 private func _formatMacro(_ macro: ABCMacro) -> String {
@@ -793,10 +790,10 @@ private func _formatVariantEnding(_ variantEnding: ABCVariantEnding) -> String {
 }
 
 private func _formatVoice(_ voice: ABCVoice) -> String {
-    var parts = [voice.id]
+    var parts = [voice.id.stringValue]
 
     if let clef = voice.clef {
-        let clefStr = _formatKeySignatureClef(clef)
+        let clefStr = _formatClef(clef)
 
         if !clefStr.isEmpty {
             parts.append(clefStr)
