@@ -318,12 +318,12 @@ func makeDecoration(_ name: String,
                   dialect: dialect).require()
 }
 
-func makeDirective(_ name: String,
+func makeDirective(_ name: ABCDirective.Name,
                    _ value: String,
                    _ content: [String]? = nil) -> ABCDirective {
     ABCDirective(name: name,
                  value: value,
-                 content: content).require()
+                 content: content)
 }
 
 func makeDuration(_ numerator: UInt,

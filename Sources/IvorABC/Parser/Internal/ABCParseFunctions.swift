@@ -172,13 +172,8 @@ internal func parseBrokenRhythm(_ tidyInput: Substring) -> ABCBrokenRhythm? {
     brokenRhythms[tidyInput]
 }
 
-internal func parseDirectiveName(_ tidyInput: Substring) -> String? {
-    guard let head = tidyInput.first,
-          head.isABCDirectiveNameHead,
-          tidyInput.dropFirst().allSatisfy({ $0.isABCDirectiveNameTail })
-    else { return nil }
-
-    return String(tidyInput)
+internal func parseDirectiveName(_ tidyInput: Substring) -> ABCDirective.Name? {
+    ABCDirective.Name(stringValue: String(tidyInput))
 }
 
 internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
@@ -1447,7 +1442,7 @@ private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
     let value = String(trimPrefix(result.tail ?? ""))
 
     return ABCDirective(name: name,
-                        value: value).require()
+                        value: value)
 }
 
 private func _parseKeySignatureExtraAccidentals(_ tidyInput: Substring) -> [ABCKeySignature.ExtraAccidental]? {

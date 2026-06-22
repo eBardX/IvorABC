@@ -39,7 +39,7 @@ extension ABCParseContext {
     // MARK: Internal Instance Methods
 
     internal mutating func update(with directive: ABCDirective) {
-        guard directive.name == "decoration"
+        guard directive.name == .decoration
         else { return }
 
         switch directive.value {

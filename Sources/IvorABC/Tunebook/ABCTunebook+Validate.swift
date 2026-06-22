@@ -174,7 +174,7 @@ private func _macroTriggerMatches(_ pattern: String,
 
 private func _updateState(_ state: inout _ValidationState,
                           from directive: ABCDirective) {
-    guard directive.name == "decoration"
+    guard directive.name == .decoration
     else { return }
 
     switch directive.value {

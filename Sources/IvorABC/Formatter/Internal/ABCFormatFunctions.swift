@@ -544,7 +544,7 @@ private func _formatInlineField(_ field: ABCField) throws -> String {
 }
 
 private func _formatInstructionDirective(_ directive: ABCDirective) -> String {
-    var result = directive.name
+    var result = directive.name.stringValue
 
     if !directive.value.isEmpty {
         result += " "

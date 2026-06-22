@@ -166,7 +166,7 @@ extension ABCParser {
             idx += 1
 
             if let (name, beginValue) = _parseBeginDirective(text) {
-                let endDirective = Self.expectedEndDirectivePrefix + name
+                let endDirective = Self.expectedEndDirectivePrefix + name.stringValue
 
                 var contentLines: [String] = []
                 var foundEnd = false
@@ -185,11 +185,11 @@ extension ABCParser {
                 }
 
                 guard foundEnd
-                else { throw Error.unmatchedBeginDirective(name) }
+                else { throw Error.unmatchedBeginDirective(name.stringValue) }
 
                 restLines.append(.directive(ABCDirective(name: name,
                                                          value: beginValue,
-                                                         content: contentLines).require()))
+                                                         content: contentLines)))
                 continue
             }
 
@@ -214,7 +214,7 @@ extension ABCParser {
         return try makeTunebook(version, restLines, &diagnostics)
     }
 
-    private func _parseBeginDirective(_ input: Substring) -> (name: String, value: String)? {
+    private func _parseBeginDirective(_ input: Substring) -> (name: ABCDirective.Name, value: String)? {
         let beginPrefix = Self.expectedBeginDirectivePrefix
 
         guard input.hasPrefix(beginPrefix)
@@ -240,7 +240,7 @@ extension ABCParser {
         let value = String(trimPrefix(result.tail ?? ""))
 
         return ABCDirective(name: name,
-                            value: value).require()
+                            value: value)
     }
 
     private func _parseDirectiveLine(_ input: Substring) throws -> Line? {
@@ -368,7 +368,7 @@ extension ABCParser {
 
         let value = String(trimPrefix(result.tail ?? ""))
 
-        return .directive(ABCDirective(name: name, value: value).require())
+        return .directive(ABCDirective(name: name, value: value))
     }
 
     private func _parseFileID(_ tidyInput: Substring) throws -> ABCFileID {

@@ -2,6 +2,7 @@
 
 @testable import IvorABC
 import Testing
+import XestiTools
 
 struct ABCDirectiveTests {
 }
@@ -50,22 +51,22 @@ extension ABCDirectiveTests {
     }
 
     @Test
-    func init_nilForEmptyName() {
-        #expect(ABCDirective(name: "", value: "") == nil)
+    func name_nilForEmptyString() {
+        #expect(ABCDirective.Name(stringValue: "") == nil)
     }
 
     @Test
-    func init_nilForNameStartingWithDigit() {
-        #expect(ABCDirective(name: "1abc", value: "") == nil)
+    func name_nilForStringStartingWithDigit() {
+        #expect(ABCDirective.Name(stringValue: "1abc") == nil)
     }
 
     @Test
-    func init_nilForNameStartingWithHyphen() {
-        #expect(ABCDirective(name: "-abc", value: "") == nil)
+    func name_nilForStringStartingWithHyphen() {
+        #expect(ABCDirective.Name(stringValue: "-abc") == nil)
     }
 
     @Test
-    func init_nilForNameWithInvalidCharacter() {
-        #expect(ABCDirective(name: "page_width", value: "") == nil)
+    func name_nilForStringWithInvalidCharacter() {
+        #expect(ABCDirective.Name(stringValue: "page_width") == nil)
     }
 }

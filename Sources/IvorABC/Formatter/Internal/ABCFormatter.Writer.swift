@@ -104,7 +104,7 @@ extension ABCFormatter.Writer {
     private mutating func _writeDirective(_ directive: ABCDirective) {
         if let content = directive.content {
             buffer.append("%%begin")
-            buffer.append(directive.name)
+            buffer.append(directive.name.stringValue)
 
             if !directive.value.isEmpty {
                 buffer.append(" ")
@@ -119,11 +119,11 @@ extension ABCFormatter.Writer {
             }
 
             buffer.append("%%end")
-            buffer.append(directive.name)
+            buffer.append(directive.name.stringValue)
             buffer.append("\n")
         } else {
             buffer.append("%%")
-            buffer.append(directive.name)
+            buffer.append(directive.name.stringValue)
 
             if !directive.value.isEmpty {
                 buffer.append(" ")
