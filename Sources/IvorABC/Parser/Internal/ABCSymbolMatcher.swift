@@ -252,7 +252,7 @@ extension ABCSymbolMatcher {
     }
 
     private mutating func _matchMacroCall(_ context: inout ABCParseContext) throws -> ABCSymbol? {
-        guard !context.macros.isEmpty
+        guard context.hasMacros
         else { return nil }
 
         let savedMatcher = tokenMatcher
@@ -264,7 +264,7 @@ extension ABCSymbolMatcher {
             let noteValue = String(noteToken.value)
             let fullTrigger = decorValue + noteValue
 
-            if let macro = context.macros[fullTrigger] {
+            if let macro = context.macro(for: fullTrigger) {
                 let expansion = try _expandMacroReplacement(macro.replacement, &context)
 
                 return .macroCall(ABCMacroCall(trigger: fullTrigger,
@@ -272,7 +272,7 @@ extension ABCSymbolMatcher {
             }
 
             if let transposedKey = _transposedTriggerKey(decorValue, noteValue),
-               let macro = context.macros[transposedKey],
+               let macro = context.macro(for: transposedKey),
                let letter = _notePitchLetter(noteValue) {
                 let replacement = macro.replacement.replacingOccurrences(of: "n",
                                                                          with: String(letter))
@@ -285,7 +285,7 @@ extension ABCSymbolMatcher {
 
         tokenMatcher = afterDecorMatcher
 
-        if let macro = context.macros[decorValue] {
+        if let macro = context.macro(for: decorValue) {
             let expansion = try _expandMacroReplacement(macro.replacement, &context)
 
             return .macroCall(ABCMacroCall(trigger: decorValue,

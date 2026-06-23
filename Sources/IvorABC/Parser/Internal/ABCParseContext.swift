@@ -9,27 +9,49 @@ internal struct ABCParseContext {
     internal init() {
         self.accidentalsInKey = [:]
         self.decorationDialect = .bang
+        self.globalDecorationDialect = .bang
+        self.globalDurationFromMeter = nil
+        self.globalDurationFromUnitNoteLength = nil
+        self.globalIsCompoundMeter = false
+        self.globalMacros = [:]
+        self.globalUserSymbolDefinitions = [:]
+        self.inTune = false
         self.isCompoundMeter = false
-        self.macros = [:]
-        self.userSymbolDefinitions = [:]
+        self.tuneMacros = [:]
+        self.tuneUserSymbolDefinitions = [:]
     }
 
     // MARK: Internal Instance Properties
 
     internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
     internal var decorationDialect: ABCDecoration.Dialect
+    internal var inTune: Bool
     internal var isCompoundMeter: Bool
-    internal var macros: [String: ABCMacro]
-    internal var userSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 
     internal var baseDuration: ABCDuration {
         durationFromUnitNoteLength ?? durationFromMeter ?? Self.durationEighths
     }
 
+    internal var hasMacros: Bool {
+        !globalMacros.isEmpty || !tuneMacros.isEmpty
+    }
+
     // MARK: Private Instance Properties
 
+    // Global (file-header) snapshots: kept in sync with the live fields while
+    // !inTune, then held fixed so resetTuneScope() can restore them.
+    private var globalDecorationDialect: ABCDecoration.Dialect
+    private var globalDurationFromMeter: ABCDuration?
+    private var globalDurationFromUnitNoteLength: ABCDuration?
+    private var globalIsCompoundMeter: Bool
+    private var globalMacros: [String: ABCMacro]
+    private var globalUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
+
+    // Live working values for meter/unit-note-length (tune may override these).
     private var durationFromMeter: ABCDuration?
     private var durationFromUnitNoteLength: ABCDuration?
+    private var tuneMacros: [String: ABCMacro]
+    private var tuneUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 }
 
 // MARK: -
@@ -37,6 +59,20 @@ internal struct ABCParseContext {
 extension ABCParseContext {
 
     // MARK: Internal Instance Methods
+
+    internal func macro(for trigger: String) -> ABCMacro? {
+        tuneMacros[trigger] ?? globalMacros[trigger]
+    }
+
+    internal mutating func resetTuneScope() {
+        accidentalsInKey = [:]   // K: is never valid in the file header
+        decorationDialect = globalDecorationDialect
+        durationFromMeter = globalDurationFromMeter
+        durationFromUnitNoteLength = globalDurationFromUnitNoteLength
+        isCompoundMeter = globalIsCompoundMeter
+        tuneMacros = [:]
+        tuneUserSymbolDefinitions = [:]
+    }
 
     internal mutating func update(with directive: ABCDirective) {
         guard directive.name == .decoration
@@ -46,8 +82,16 @@ extension ABCParseContext {
         case "!":
             decorationDialect = .bang
 
+            if !inTune {
+                globalDecorationDialect = .bang
+            }
+
         case "+":
             decorationDialect = .plus
+
+            if !inTune {
+                globalDecorationDialect = .plus
+            }
 
         default:
             break
@@ -63,21 +107,44 @@ extension ABCParseContext {
             accidentalsInKey = keySignature.accidentals
 
         case let .macro(macro):
-            macros[macro.trigger] = macro
+            if inTune {
+                tuneMacros[macro.trigger] = macro
+            } else {
+                globalMacros[macro.trigger] = macro
+            }
 
         case let .meter(timeSignature):
-            durationFromMeter = Self._determineDuration(from: timeSignature)
-            isCompoundMeter = timeSignature.isCompound
+            let duration = Self._determineDuration(from: timeSignature)
+            let compound = timeSignature.isCompound
+
+            durationFromMeter = duration
+            isCompoundMeter = compound
+
+            if !inTune {
+                globalDurationFromMeter = duration
+                globalIsCompoundMeter = compound
+            }
 
         case let .unitNoteLength(duration):
             durationFromUnitNoteLength = duration
+            if !inTune {
+                globalDurationFromUnitNoteLength = duration
+            }
 
         case let .userDefined(userSymbol):
-            userSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
+            if inTune {
+                tuneUserSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
+            } else {
+                globalUserSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
+            }
 
         default:
             break
         }
+    }
+
+    internal func userSymbolDefinition(for shorthand: ABCShorthand) -> ABCUserSymbol.Definition? {
+        tuneUserSymbolDefinitions[shorthand] ?? globalUserSymbolDefinitions[shorthand]
     }
 
     // MARK: Private Type Properties

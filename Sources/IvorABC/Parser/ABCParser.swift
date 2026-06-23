@@ -87,6 +87,26 @@ extension ABCParser {
 
     // MARK: Private Instance Methods
 
+    private func _applyLine(_ line: Line,
+                            inFileHeader: inout Bool,
+                            context: inout ABCParseContext) {
+        switch line {
+        case .empty:
+            if inFileHeader {
+                inFileHeader = false
+                context.inTune = true
+            } else {
+                context.resetTuneScope()
+            }
+
+        case let .directive(directive):
+            context.update(with: directive)
+
+        default:
+            break
+        }
+    }
+
     private func _isEndDirectiveLine(_ input: Substring,
                                      _ endDirective: String) -> Bool {
         guard input.hasPrefix(endDirective)
@@ -154,6 +174,7 @@ extension ABCParser {
         let lines = _joinContinuationLines(rawLines)
 
         var context = ABCParseContext()
+        var inFileHeader = true
 
         let (version, bodyLines) = try _resolveFileID(lines, &diagnostics)
 
@@ -193,13 +214,24 @@ extension ABCParser {
                 continue
             }
 
+            //
+            // If still in the file header and this line opens with a reference-
+            // number field (X:), the file has no file header.  Switch to tune
+            // scope before parsing so any definitions on this line land in the
+            // per-tune store rather than the global one.
+            //
+            if inFileHeader, text.hasPrefix("X:") {
+                inFileHeader = false
+                context.inTune = true
+            }
+
             do {
                 guard let line = try _parseLine(text, version, &context, &diagnostics)
                 else { continue }
 
-                if case let .directive(directive) = line {
-                    context.update(with: directive)
-                }
+                _applyLine(line,
+                           inFileHeader: &inFileHeader,
+                           context: &context)
 
                 restLines.append(line)
             } catch {

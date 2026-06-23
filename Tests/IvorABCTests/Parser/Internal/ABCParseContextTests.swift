@@ -32,6 +32,8 @@ extension ABCParseContextTests {
         let ctx = ABCParseContext()
 
         #expect(ctx.accidentalsInKey.isEmpty)
+        #expect(!ctx.hasMacros)
+        #expect(!ctx.inTune)
         #expect(!ctx.isCompoundMeter)
     }
 
@@ -64,6 +66,31 @@ extension ABCParseContextTests {
         #expect(ctx.accidentalsInKey[.c] == .sharp)
         #expect(ctx.accidentalsInKey[.f] == .sharp)
         #expect(ctx.accidentalsInKey[.g] == .natural)
+    }
+
+    @Test
+    func update_macro_notInTune_persistsAfterReset() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(makeMacro("~G2", "GHG")))
+        ctx.inTune = true
+        ctx.resetTuneScope()
+
+        #expect(ctx.macro(for: "~G2") != nil)
+    }
+
+    @Test
+    func update_macro_inTune_clearedByReset() {
+        var ctx = ABCParseContext()
+
+        ctx.inTune = true
+        ctx.update(with: .macro(makeMacro("~G2", "GHG")))
+
+        #expect(ctx.hasMacros)
+
+        ctx.resetTuneScope()
+
+        #expect(ctx.macro(for: "~G2") == nil)
     }
 
     @Test
@@ -111,5 +138,102 @@ extension ABCParseContextTests {
         #expect(ctx.accidentalsInKey.isEmpty)
         #expect(!ctx.isCompoundMeter)
         #expect(ctx.baseDuration == makeDuration(1, 8))
+    }
+
+    @Test
+    func macro_forTrigger_tuneOverridesGlobal() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(makeMacro("~G2", "global")))
+        ctx.inTune = true
+        ctx.update(with: .macro(makeMacro("~G2", "tune")))
+
+        #expect(ctx.macro(for: "~G2")?.replacement == "tune")
+    }
+
+    @Test
+    func macro_forTrigger_fallsBackToGlobal() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(makeMacro("~G2", "global")))
+        ctx.inTune = true
+
+        #expect(ctx.macro(for: "~G2")?.replacement == "global")
+    }
+
+    @Test
+    func macro_forTrigger_missingReturnsNil() {
+        let ctx = ABCParseContext()
+
+        #expect(ctx.macro(for: "~G2") == nil)
+    }
+
+    @Test
+    func resetTuneScope_clearsTuneMacrosAndUserSymbols() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .macro(makeMacro("~G2", "global")))
+        ctx.update(with: .userDefined(makeUserSymbol(.hUpper, makeDecoration("trill"))))
+        ctx.inTune = true
+        ctx.update(with: .macro(makeMacro("~A2", "tune")))
+        ctx.update(with: .userDefined(makeUserSymbol(.hLower, makeDecoration("trill"))))
+
+        ctx.resetTuneScope()
+
+        #expect(ctx.macro(for: "~A2") == nil)
+        #expect(ctx.macro(for: "~G2") != nil)
+        #expect(ctx.userSymbolDefinition(for: .hLower) == nil)
+        #expect(ctx.userSymbolDefinition(for: .hUpper) != nil)
+    }
+
+    @Test
+    func resetTuneScope_revertsAccidentalsInKey() {
+        var ctx = ABCParseContext()
+
+        ctx.inTune = true
+        ctx.update(with: .key(makeKeySignature(.g, .major)))
+
+        ctx.resetTuneScope()
+
+        #expect(ctx.accidentalsInKey.isEmpty)
+    }
+
+    @Test
+    func resetTuneScope_revertsDecorationDialect() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: makeDirective(.decoration, "+"))   // file-header default: plus
+        ctx.inTune = true
+        ctx.update(with: makeDirective(.decoration, "!"))   // tune override: bang
+
+        ctx.resetTuneScope()
+
+        #expect(ctx.decorationDialect == .plus)
+    }
+
+    @Test
+    func resetTuneScope_revertsIsCompoundMeter() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .meter(makeTimeSignature(4, 4)))  // file-header default: simple
+        ctx.inTune = true
+        ctx.update(with: .meter(makeTimeSignature(6, 8)))  // tune override: compound
+
+        ctx.resetTuneScope()
+
+        #expect(!ctx.isCompoundMeter)
+    }
+
+    @Test
+    func resetTuneScope_revertsBaseDuration() {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .unitNoteLength(makeDuration(1, 4)))  // file-header default
+        ctx.inTune = true
+        ctx.update(with: .unitNoteLength(makeDuration(1, 16))) // tune override
+
+        ctx.resetTuneScope()
+
+        #expect(ctx.baseDuration == makeDuration(1, 4))
     }
 }
