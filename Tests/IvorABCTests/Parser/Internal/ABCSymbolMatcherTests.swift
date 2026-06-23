@@ -14,7 +14,23 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_barRepeat() throws {
         let symbols = try matchSymbols("|")
 
-        #expect(symbols == [.barRepeat(ABCBarRepeat(mark: "|"))])
+        #expect(symbols == [.barRepeat(makeBarRepeat())])
+    }
+
+    @Test
+    func matchSymbols_barRepeat_abbreviatedEnding_decomposes() throws {
+        let symbols = try matchSymbols(":|2")
+
+        #expect(symbols == [.barRepeat(makeBarRepeat(.repeat, precedingPlayCount: 2)),
+                            .variantEnding(makeVariantEnding([2...2]))])
+    }
+
+    @Test
+    func matchSymbols_barRepeat_abbreviatedEndingList_decomposes() throws {
+        let symbols = try matchSymbols("|1,3-5")
+
+        #expect(symbols == [.barRepeat(makeBarRepeat()),
+                            .variantEnding(makeVariantEnding([1...1, 3...5]))])
     }
 
     @Test

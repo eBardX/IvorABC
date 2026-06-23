@@ -36,4 +36,14 @@ extension ABCVariantEndingTests {
     func init_withEmptyEndingsReturnsNil() {
         #expect(ABCVariantEnding(endings: []) == nil)
     }
+
+    @Test
+    func init_withZeroEndingReturnsNil() {
+        #expect(ABCVariantEnding(endings: [0...0]) == nil)
+    }
+
+    @Test
+    func init_withRangeStartingAtZeroReturnsNil() {
+        #expect(ABCVariantEnding(endings: [1...2, 0...3]) == nil)
+    }
 }

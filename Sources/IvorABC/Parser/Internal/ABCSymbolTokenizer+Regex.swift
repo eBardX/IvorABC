@@ -20,16 +20,25 @@ extension ABCSymbolTokenizer {
             "."
         }
         ChoiceOf {
-            ":||:"
-            ":|:"
-            "[|]"
-            "::"
-            ":|"
-            "[|"
-            "|:"
-            "|]"
-            "||"
-            "|"
+            Regex {
+                OneOrMore {
+                    ":"
+                }
+                ZeroOrMore {
+                    barGlyph
+                }
+                ZeroOrMore {
+                    ":"
+                }
+            }
+            Regex {
+                OneOrMore {
+                    barGlyph
+                }
+                ZeroOrMore {
+                    ":"
+                }
+            }
         }
         Optionally {
             repeatRangeList
@@ -183,6 +192,16 @@ extension ABCSymbolTokenizer {
                 }
                 CharacterClass.anyOf("\n\r\\\"").inverted
             }
+        }
+    }
+
+    private nonisolated(unsafe) static let barGlyph = Regex {
+        ChoiceOf {
+            "[|]"
+            "[|"
+            "|]"
+            "||"
+            "|"
         }
     }
 

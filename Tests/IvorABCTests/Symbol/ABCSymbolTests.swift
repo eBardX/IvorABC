@@ -19,7 +19,7 @@ extension ABCSymbolTests {
 
     @Test
     func equality_barRepeat() {
-        let bar = ABCBarRepeat(mark: "|")
+        let bar = makeBarRepeat()
         #expect(ABCSymbol.barRepeat(bar) == .barRepeat(bar))
     }
 

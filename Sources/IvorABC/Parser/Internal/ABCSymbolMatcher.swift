@@ -15,6 +15,10 @@ internal struct ABCSymbolMatcher {
 
     // MARK: Private Instance Properties
 
+    // Symbols produced as a side effect of matching the current token, emitted
+    // after it. Used to decompose an abbreviated bar mark (e.g. `:|2`) into a
+    // bar repeat followed by a separate variant ending.
+    private var pendingSymbols: [ABCSymbol] = []
     private var tokenMatcher: TokenMatcher<[Tokenizer.Token]>
 }
 
@@ -31,6 +35,10 @@ extension ABCSymbolMatcher {
             if let symbol = try _matchSymbol(&context) {
                 symbols.append(symbol)
             }
+
+            symbols.append(contentsOf: pendingSymbols)
+
+            pendingSymbols.removeAll()
         }
 
         // Strip leading and trailing beam-break markers: whitespace at the
@@ -75,10 +83,6 @@ extension ABCSymbolMatcher {
                  octave: result.octave)
     }
 
-    private mutating func _matchBeamBreak() -> ABCSymbol? {
-        tokenMatcher.readIfMatches(.whitespace) != nil ? .beamBreak : nil
-    }
-
     private mutating func _matchAnnotation() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.annotation)
 
@@ -91,10 +95,18 @@ extension ABCSymbolMatcher {
     private mutating func _matchBarRepeat() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.barRepeat)
 
-        guard let barRepeat = parseBarRepeat(token.value)
+        guard let result = parseBarRepeat(token.value)
         else { throw ABCParser.Error.invalidSymbols(token.value) }
 
-        return .barRepeat(barRepeat)
+        if let variantEnding = result.variantEnding {
+            pendingSymbols.append(.variantEnding(variantEnding))
+        }
+
+        return .barRepeat(result.barRepeat)
+    }
+
+    private mutating func _matchBeamBreak() -> ABCSymbol? {
+        tokenMatcher.readIfMatches(.whitespace) != nil ? .beamBreak : nil
     }
 
     private mutating func _matchBrokenRhythm() throws -> ABCSymbol? {

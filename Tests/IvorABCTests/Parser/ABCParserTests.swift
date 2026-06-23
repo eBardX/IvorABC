@@ -663,7 +663,7 @@ extension ABCParserTests {
                             .note(fNote),
                             .note(gNote),
                             .slur(.endRegular),
-                            .barRepeat(ABCBarRepeat(mark: "|"))])
+                            .barRepeat(makeBarRepeat())])
     }
 
     @Test

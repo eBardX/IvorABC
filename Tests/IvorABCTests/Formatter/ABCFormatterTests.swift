@@ -122,7 +122,7 @@ extension ABCFormatterTests {
     @Test
     func barRepeat_emitsVerbatim() throws {
         let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.barRepeat(ABCBarRepeat(mark: "|:")), .note(note)]))
+        let output = try format(minimalTunebook(symbols: [.barRepeat(makeBarRepeat(.repeat, followingPlayCount: 2)), .note(note)]))
 
         #expect(output.contains("|:"))
     }
@@ -937,6 +937,15 @@ extension ABCFormatterTests {
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
+    }
+
+    @Test
+    func variantEnding_abbreviatedForm_normalizesToCanonical() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n|:CDEF:|2 cdef|]\n"
+        let book = try ABCParser().parse(Data(input.utf8))
+        let formatted = try format(book)
+
+        #expect(formatted.contains(":|[2"))
     }
 
     @Test

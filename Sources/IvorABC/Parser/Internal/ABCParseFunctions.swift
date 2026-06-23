@@ -131,41 +131,39 @@ internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
                           parenthesized: parenthesized)
 }
 
-internal func parseBarRepeat(_ tidyInput: Substring) -> ABCBarRepeat? {
+internal func parseBarRepeat(_ tidyInput: Substring) -> (barRepeat: ABCBarRepeat, variantEnding: ABCVariantEnding?)? {
     var rest = tidyInput
 
-    let isEditorial = rest.hasPrefix(".")
+    let isDotted = rest.hasPrefix(".")
 
-    if isEditorial {
+    if isDotted {
         rest = rest.dropFirst()
     }
 
-    let markStrings = [":||:", ":|:", "[|]", "::", ":|", "[|", "|:", "|]", "||", "|"]
+    let markRun = rest.prefix { ":|[]".contains($0) }
 
-    guard let markString = markStrings.first(where: { rest.hasPrefix($0) }),
-          let mark = ABCBarRepeat.Mark(stringValue: String(markString))
+    guard let (barLine, preceding, following) = _parseBarRepeatBarLine(markRun)
     else { return nil }
 
-    rest = rest.dropFirst(markString.count)
+    rest = rest.dropFirst(markRun.count)
 
-    var endings: [ClosedRange<UInt>] = []
+    guard let barRepeat = ABCBarRepeat(barLine: barLine,
+                                       precedingPlayCount: preceding,
+                                       followingPlayCount: following,
+                                       isDotted: isDotted)
+    else { return nil }
 
-    for part in rest.split(separator: ",") {
-        if let dashIdx = part.firstIndex(of: "-") {
-            guard let lo = UInt(part[..<dashIdx]),
-                  let hi = UInt(part[part.index(after: dashIdx)...])
-            else { return nil }
+    // A trailing range list (e.g. `:|2` or `|1,3`) is the abbreviated form of
+    // a bar mark immediately followed by a variant ending (§4.9). Decompose it
+    // into a separate variant ending.
+    guard !rest.isEmpty
+    else { return (barRepeat, nil) }
 
-            endings.append(lo...hi)
-        } else {
-            guard let n = UInt(part)
-            else { return nil }
+    guard let endings = _parseRepeatRangeList(rest),
+          let variantEnding = ABCVariantEnding(endings: endings)
+    else { return nil }
 
-            endings.append(n...n)
-        }
-    }
-
-    return ABCBarRepeat(isEditorial: isEditorial, mark: mark, endings: endings)
+    return (barRepeat, variantEnding)
 }
 
 internal func parseBrokenRhythm(_ tidyInput: Substring) -> ABCBrokenRhythm? {
@@ -841,22 +839,8 @@ internal func parseVariantEnding(_ tidyInput: Substring) -> ABCVariantEnding? {
     guard tidyInput.hasPrefix("[")
     else { return nil }
 
-    var ranges: [ClosedRange<UInt>] = []
-
-    for part in tidyInput.dropFirst().split(separator: ",") {
-        if let dashIdx = part.firstIndex(of: "-") {
-            guard let lo = UInt(part[..<dashIdx]),
-                  let hi = UInt(part[part.index(after: dashIdx)...])
-            else { return nil }
-
-            ranges.append(lo...hi)
-        } else {
-            guard let n = UInt(part)
-            else { return nil }
-
-            ranges.append(n...n)
-        }
-    }
+    guard let ranges = _parseRepeatRangeList(tidyInput.dropFirst())
+    else { return nil }
 
     return ABCVariantEnding(endings: ranges)
 }
@@ -990,6 +974,12 @@ private let annotationPlacements: [Substring: ABCAnnotation.Placement] = ["^": .
                                                                           "_": .below,
                                                                           "<": .left,
                                                                           ">": .right]
+
+private let barRepeatBarLines: [Substring: ABCBarRepeat.BarLine] = ["[|": .double,
+                                                                    "[|]": .invisible,
+                                                                    "|": .standard,
+                                                                    "|]": .end,
+                                                                    "||": .double]
 
 private let brokenRhythms: [Substring: ABCBrokenRhythm] = ["<": .reverseDotted,
                                                            "<<": .reverseDoubleDotted,
@@ -1147,9 +1137,9 @@ private func _consumePositiveUInt(_ input: Substring,
     return (value, rest)
 }
 
-// Consumes a leading `"text"` token and returns `(text, remainingInput)`, or
-// `nil` if the input does not start with a closing-quotable segment.
 private func _consumeTempoText(_ input: Substring) -> (String, Substring)? {
+    // Consumes a leading `"text"` token and returns `(text, remainingInput)`, or
+    // `nil` if the input does not start with a closing-quotable segment.
     guard input.first == "\""
     else { return nil }
 
@@ -1176,8 +1166,87 @@ private func _isBareClefNameToken(_ token: Substring) -> Bool {
     return clefNamePrefixes.contains(String(t))
 }
 
+private func _normalizeBarGlyph(_ glyph: Substring) -> ABCBarRepeat.BarLine? {
+    // Maps a non-canonical bar glyph (one not in barRepeatBarLines) to the
+    // nearest bar line. Receives only the bar-character portion of the input
+    // with colons already stripped, so the glyph contains only '|', '[', ']'.
+    guard !glyph.isEmpty,
+          glyph.allSatisfy({ "|[]".contains($0) })
+    else { return nil }
+
+    if glyph.hasPrefix("[") && glyph.hasSuffix("]") {
+        return .invisible
+    }
+
+    if glyph.hasPrefix("[") {
+        return .double
+    }
+
+    if glyph.hasSuffix("]") {
+        return .end
+    }
+
+    let pipeCount = glyph.filter { $0 == "|" }.count
+
+    return pipeCount >= 2 ? .double : .standard
+}
+
 private func _parseAnnotationPlacement(_ tidyInput: Substring) -> ABCAnnotation.Placement? {
     annotationPlacements[tidyInput]
+}
+
+private func _parseBarRepeatBarLine(_ tidyInput: Substring)
+    -> (ABCBarRepeat.BarLine, ABCBarRepeat.PlayCount, ABCBarRepeat.PlayCount)? {
+    guard !tidyInput.isEmpty,
+          tidyInput.allSatisfy({ ":|[]".contains($0) })
+    else { return nil }
+
+    let leadingColonCount = tidyInput.prefix { $0 == ":" }.count
+    let body = tidyInput.dropFirst(leadingColonCount)
+    let trailingColonCount = body.reversed().prefix { $0 == ":" }.count
+    let glyph = body.dropLast(trailingColonCount)
+
+    switch (leadingColonCount, trailingColonCount) {
+    case (0, 0):
+        // Plain bar lines: try canonical lookup first, then liberal normalization.
+        if let barLine = barRepeatBarLines[glyph] {
+            return (barLine, 1, 1)
+        }
+
+        guard let barLine = _normalizeBarGlyph(glyph)
+        else { return nil }
+
+        return (barLine, 1, 1)
+
+    case let (0, n) where n >= 1:
+        // |: (n=1, standard 2x), |:: (n=2, 3x), |::: (n=3, 4x), etc.
+        // Liberal: any non-empty bar glyph is accepted as the bar component.
+        guard !glyph.isEmpty
+        else { return nil }
+
+        return (.repeat, 1, ABCBarRepeat.PlayCount(UInt(n + 1)))
+
+    case let (n, 0) where n >= 1:
+        if glyph.isEmpty {
+            // The collapsed `::` form: greedy colon-stripping leaves both
+            // colons leading. Only the 2-colon case has a defined meaning.
+            return n == 2 ? (.repeat, 2, 2) : nil
+        }
+
+        // ::| (n=2, end 3x), :::| (n=3, end 4x), etc.
+        // Liberal: any non-empty bar glyph is accepted.
+        return (.repeat, ABCBarRepeat.PlayCount(UInt(n + 1)), 1)
+
+    case let (n, m) where n >= 1 && m >= 1:
+        // :|: (1,1 standard), :||: (1,1 liberal), ::|: (2,1), :|:: (1,2), etc.
+        // glyph may be empty (pure colon sequence), |, ||, or a liberal sequence.
+        return (.repeat,
+                ABCBarRepeat.PlayCount(UInt(n + 1)),
+                ABCBarRepeat.PlayCount(UInt(m + 1)))
+
+    default:
+        return nil
+    }
 }
 
 private func _parseChordSymbolKind(_ input: inout Substring) -> String? {
@@ -1601,6 +1670,29 @@ private func _parsePartItems(_ input: inout Substring,
             return nil
         }
     }
+}
+
+private func _parseRepeatRangeList(_ tidyInput: Substring) -> [ClosedRange<UInt>]? {
+    // Parses a comma-separated list of ending numbers and ranges, shared by
+    // variant endings (`[1,3-5`) and the abbreviated bar-mark forms (`:|2`).
+    var ranges: [ClosedRange<UInt>] = []
+
+    for part in tidyInput.split(separator: ",") {
+        if let dashIdx = part.firstIndex(of: "-") {
+            guard let lo = UInt(part[..<dashIdx]),
+                  let hi = UInt(part[part.index(after: dashIdx)...])
+            else { return nil }
+
+            ranges.append(lo...hi)
+        } else {
+            guard let n = UInt(part)
+            else { return nil }
+
+            ranges.append(n...n)
+        }
+    }
+
+    return ranges
 }
 
 private func _parseStandardMeter(_ tidyInput: Substring) -> ABCTimeSignature.StandardMeter? {

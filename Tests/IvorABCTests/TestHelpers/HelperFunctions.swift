@@ -314,6 +314,16 @@ func makeAnnotation(_ placement: ABCAnnotation.Placement,
                   text: text).require()
 }
 
+func makeBarRepeat(_ barLine: ABCBarRepeat.BarLine = .standard,
+                   precedingPlayCount: ABCBarRepeat.PlayCount = 1,
+                   followingPlayCount: ABCBarRepeat.PlayCount = 1,
+                   isDotted: Bool = false) -> ABCBarRepeat {
+    ABCBarRepeat(barLine: barLine,
+                 precedingPlayCount: precedingPlayCount,
+                 followingPlayCount: followingPlayCount,
+                 isDotted: isDotted).require()
+}
+
 func makeChord(_ notes: [ABCNote],
                _ duration: ABCDuration,
                _ tie: ABCTie? = nil) -> ABCChord {

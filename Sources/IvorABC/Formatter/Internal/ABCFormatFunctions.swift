@@ -174,6 +174,11 @@ private let annotationPlacements: [ABCAnnotation.Placement: String] = [.above: "
                                                                        .left: "<",
                                                                        .right: ">"]
 
+private let barRepeatBarLines: [ABCBarRepeat.BarLine: String] = [.double: "||",
+                                                                 .end: "|]",
+                                                                 .invisible: "[|]",
+                                                                 .standard: "|"]
+
 private let brokenRhythms: [ABCBrokenRhythm: String] = [.dotted: ">",
                                                         .doubleDotted: ">>",
                                                         .reverseDotted: "<",
@@ -398,16 +403,43 @@ private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
 }
 
 private func _formatBarRepeat(_ barRepeat: ABCBarRepeat) -> String {
-    var result = barRepeat.isEditorial ? "." : ""
+    var result = ""
 
-    result += barRepeat.mark.stringValue
+    if barRepeat.isDotted {
+        result += "."
+    }
 
-    if !barRepeat.endings.isEmpty {
-        result += barRepeat.endings.map { range in
-            range.lowerBound == range.upperBound
-            ? "\(range.lowerBound)"
-            : "\(range.lowerBound)-\(range.upperBound)"
-        }.joined(separator: ",")
+    switch barRepeat.barLine {
+    case .repeat:
+        switch (barRepeat.precedingPlayCount, barRepeat.followingPlayCount) {
+        case let (1, fpCount):
+            result += "|"
+            result += String(repeating: ":",
+                             count: Int(fpCount.uintValue) - 1)
+
+        case let (ppCount, 1):
+            result += String(repeating: ":",
+                             count: Int(ppCount.uintValue) - 1)
+            result += "|"
+
+        case (2, 2):
+            // Standard 2x/2x uses the compact `::` form.
+            result += "::"
+
+        case let (ppCount, fpCount):
+            // Asymmetric or n-fold counts use explicit form so colon counts are
+            // unambiguous.
+            result += String(repeating: ":",
+                             count:
+                                Int(ppCount.uintValue) - 1)
+            result += "|"
+            result += String(repeating: ":",
+                             count:
+                                Int(fpCount.uintValue) - 1)
+        }
+
+    default:
+        result += barRepeatBarLines[barRepeat.barLine].require()
     }
 
     return result
