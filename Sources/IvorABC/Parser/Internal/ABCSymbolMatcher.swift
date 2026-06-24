@@ -292,12 +292,15 @@ extension ABCSymbolMatcher {
         return .rest(rest)
     }
 
-    private mutating func _matchShorthand() throws -> ABCSymbol? {
+    private mutating func _matchShorthand(_ context: ABCParseContext) throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.shorthand)
         let value = token.value
 
         guard let shorthand = parseShorthand(value)
         else { throw ABCParser.Error.invalidSymbols(value) }
+
+        guard !context.isShorthandDeassigned(shorthand)
+        else { throw ABCParser.Error.undefinedShorthand(value) }
 
         return .shorthand(shorthand)
     }
@@ -381,7 +384,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.shorthand) {
-            return try _matchShorthand()
+            return try _matchShorthand(context)
         }
 
         if tokenMatcher.nextMatches([.dottedSlurBegin, .dottedSlurEnd, .slurBegin, .slurEnd]) {

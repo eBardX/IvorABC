@@ -19,9 +19,10 @@ public struct ABCUserSymbol {
     /// be redefined).
     ///
     /// - Parameter shorthand:   The shorthand character being mapped.
-    /// - Parameter definition:  The decoration or annotation the shorthand maps to.
+    /// - Parameter definition:  The decoration or annotation the shorthand maps to,
+    ///                          or `nil` to de-assign the shorthand (making it undefined).
     public init?(shorthand: ABCShorthand,
-                 definition: Definition) {
+                 definition: Definition?) {
         guard Self._isValid(shorthand, definition)
         else { return nil }
 
@@ -31,8 +32,8 @@ public struct ABCUserSymbol {
 
     // MARK: Public Instance Properties
 
-    /// What this shorthand maps to.
-    public let definition: Definition
+    /// What this shorthand maps to, or `nil` if the shorthand has been de-assigned.
+    public let definition: Definition?
 
     /// The shorthand character being mapped.
     public let shorthand: ABCShorthand
@@ -40,7 +41,7 @@ public struct ABCUserSymbol {
     // MARK: Private Type Methods
 
     private static func _isValid(_ shorthand: ABCShorthand,
-                                 _ definition: Definition) -> Bool {
+                                 _ definition: Definition?) -> Bool {
         shorthand != .dot   // not allowed to redefine `.`
     }
 }

@@ -468,6 +468,18 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
+    func parseUserSymbol_deassignment() {
+        #expect(parseUserSymbol("T=!nil!") == makeUserSymbol(.tUpper))
+        #expect(parseUserSymbol("T = !nil!") == makeUserSymbol(.tUpper))
+        #expect(parseUserSymbol("~=!none!") == makeUserSymbol(.tilde))
+        #expect(parseUserSymbol("~ = !none!") == makeUserSymbol(.tilde))
+        #expect(parseUserSymbol("T=+nil+") == makeUserSymbol(.tUpper))
+        #expect(parseUserSymbol("T = +nil+") == makeUserSymbol(.tUpper))
+        #expect(parseUserSymbol("~=+none+") == makeUserSymbol(.tilde))
+        #expect(parseUserSymbol("~ = +none+") == makeUserSymbol(.tilde))
+    }
+
+    @Test
     func parseUserSymbol_success() {
         #expect(parseUserSymbol("T=!trill!") == makeUserSymbol(.tUpper, makeDecoration("trill")))
         #expect(parseUserSymbol("T = !trill!") == makeUserSymbol(.tUpper, makeDecoration("trill")))

@@ -9,13 +9,17 @@ internal struct ABCParseContext {
     internal init() {
         self.accidentalsInKey = [:]
         self.decorationDialect = .bang
+        self.globalDeassignedShorthands = []
         self.globalDecorationDialect = .bang
         self.globalDurationFromMeter = nil
         self.globalDurationFromUnitNoteLength = nil
         self.globalIsCompoundMeter = false
-        self.globalUserSymbolDefinitions = [:]
+        self.globalUserSymbolDefinitions = Self.defaultUserSymbolDefinitions
         self.inTune = false
         self.isCompoundMeter = false
+        self.tuneDeassignedShorthands = []
+        self.tuneDurationFromMeter = nil
+        self.tuneDurationFromUnitNoteLength = nil
         self.tuneUserSymbolDefinitions = [:]
     }
 
@@ -27,22 +31,20 @@ internal struct ABCParseContext {
     internal var isCompoundMeter: Bool
 
     internal var baseDuration: ABCDuration {
-        durationFromUnitNoteLength ?? durationFromMeter ?? Self.durationEighths
+        tuneDurationFromUnitNoteLength ?? tuneDurationFromMeter ?? Self.durationEighths
     }
 
     // MARK: Private Instance Properties
 
-    // Global (file-header) snapshots: kept in sync with the live fields while
-    // !inTune, then held fixed so resetTuneScope() can restore them.
+    private var globalDeassignedShorthands: Set<ABCShorthand>
     private var globalDecorationDialect: ABCDecoration.Dialect
     private var globalDurationFromMeter: ABCDuration?
     private var globalDurationFromUnitNoteLength: ABCDuration?
     private var globalIsCompoundMeter: Bool
     private var globalUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
-
-    // Live working values for meter/unit-note-length (tune may override these).
-    private var durationFromMeter: ABCDuration?
-    private var durationFromUnitNoteLength: ABCDuration?
+    private var tuneDeassignedShorthands: Set<ABCShorthand>
+    private var tuneDurationFromMeter: ABCDuration?
+    private var tuneDurationFromUnitNoteLength: ABCDuration?
     private var tuneUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 }
 
@@ -52,12 +54,23 @@ extension ABCParseContext {
 
     // MARK: Internal Instance Methods
 
+    internal func isShorthandDeassigned(_ shorthand: ABCShorthand) -> Bool {
+        guard !tuneDeassignedShorthands.contains(shorthand)
+        else { return true }
+
+        guard tuneUserSymbolDefinitions[shorthand] == nil
+        else { return false }
+
+        return globalDeassignedShorthands.contains(shorthand)
+    }
+
     internal mutating func resetTuneScope() {
         accidentalsInKey = [:]   // K: is never valid in the file header
         decorationDialect = globalDecorationDialect
-        durationFromMeter = globalDurationFromMeter
-        durationFromUnitNoteLength = globalDurationFromUnitNoteLength
+        tuneDurationFromMeter = globalDurationFromMeter
+        tuneDurationFromUnitNoteLength = globalDurationFromUnitNoteLength
         isCompoundMeter = globalIsCompoundMeter
+        tuneDeassignedShorthands = []
         tuneUserSymbolDefinitions = [:]
     }
 
@@ -97,7 +110,7 @@ extension ABCParseContext {
             let duration = Self._determineDuration(from: timeSignature)
             let compound = timeSignature.isCompound
 
-            durationFromMeter = duration
+            tuneDurationFromMeter = duration
             isCompoundMeter = compound
 
             if !inTune {
@@ -106,16 +119,32 @@ extension ABCParseContext {
             }
 
         case let .unitNoteLength(duration):
-            durationFromUnitNoteLength = duration
+            tuneDurationFromUnitNoteLength = duration
             if !inTune {
                 globalDurationFromUnitNoteLength = duration
             }
 
         case let .userDefined(userSymbol):
-            if inTune {
-                tuneUserSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
+            if let definition = userSymbol.definition {
+                if inTune {
+                    tuneUserSymbolDefinitions[userSymbol.shorthand] = definition
+
+                    tuneDeassignedShorthands.remove(userSymbol.shorthand)
+                } else {
+                    globalUserSymbolDefinitions[userSymbol.shorthand] = definition
+
+                    globalDeassignedShorthands.remove(userSymbol.shorthand)
+                }
             } else {
-                globalUserSymbolDefinitions[userSymbol.shorthand] = userSymbol.definition
+                if inTune {
+                    tuneDeassignedShorthands.insert(userSymbol.shorthand)
+
+                    tuneUserSymbolDefinitions[userSymbol.shorthand] = nil
+                } else {
+                    globalDeassignedShorthands.insert(userSymbol.shorthand)
+
+                    globalUserSymbolDefinitions[userSymbol.shorthand] = nil
+                }
             }
 
         default:
@@ -124,10 +153,39 @@ extension ABCParseContext {
     }
 
     internal func userSymbolDefinition(for shorthand: ABCShorthand) -> ABCUserSymbol.Definition? {
-        tuneUserSymbolDefinitions[shorthand] ?? globalUserSymbolDefinitions[shorthand]
+        if tuneDeassignedShorthands.contains(shorthand) {
+            return nil
+        }
+
+        if let def = tuneUserSymbolDefinitions[shorthand] {
+            return def
+        }
+
+        if globalDeassignedShorthands.contains(shorthand) {
+            return nil
+        }
+
+        return globalUserSymbolDefinitions[shorthand]
     }
 
     // MARK: Private Type Properties
+
+    private static let defaultUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition] = {
+        func def(_ name: String) -> ABCUserSymbol.Definition {
+            .decoration(ABCDecoration(name: ABCDecoration.Name(name)).require())
+        }
+
+        return [.hUpper: def("fermata"),
+                .lUpper: def("accent"),
+                .mUpper: def("lowermordent"),
+                .oUpper: def("coda"),
+                .pUpper: def("uppermordent"),
+                .sUpper: def("segno"),
+                .tilde: def("roll"),
+                .tUpper: def("trill"),
+                .uLower: def("upbow"),
+                .vLower: def("downbow")]
+    }()
 
     private static let durationEighths = ABCDuration(numerator: 1,
                                                      denominator: 8).require()

@@ -109,6 +109,10 @@ extension ABCParser {
         /// to merge it into.
         case orphanedContinuation
 
+        /// The parser encountered a shorthand that has been explicitly de-assigned
+        /// via `U: X = !nil!` or `U: X = !none!` and is therefore undefined.
+        case undefinedShorthand(Substring)
+
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
 
@@ -215,6 +219,9 @@ extension ABCParser.Error: EnhancedError {
 
         case .orphanedContinuation:
             "Continuation (+:) line has no preceding field to merge with"
+
+        case let .undefinedShorthand(value):
+            "Shorthand '\(value)' has been de-assigned and is undefined"
 
         case let .unmatchedBeginDirective(name):
             "'%%begin\(name)' has no matching '%%end\(name)'"

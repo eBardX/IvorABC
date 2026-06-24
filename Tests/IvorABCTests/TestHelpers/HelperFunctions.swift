@@ -505,14 +505,19 @@ func makeTuplet(_ noteCount: UInt,
 }
 
 func makeUserSymbol(_ shorthand: ABCShorthand,
-                    _ definition: ABCUserSymbol.Definition) -> ABCUserSymbol {
-    ABCUserSymbol(shorthand: shorthand,
-                  definition: definition).require()
+                    _ annotation: ABCAnnotation) -> ABCUserSymbol {
+    makeUserSymbol(shorthand, .annotation(annotation))
 }
 
 func makeUserSymbol(_ shorthand: ABCShorthand,
                     _ decoration: ABCDecoration) -> ABCUserSymbol {
     makeUserSymbol(shorthand, .decoration(decoration))
+}
+
+func makeUserSymbol(_ shorthand: ABCShorthand,
+                    _ definition: ABCUserSymbol.Definition? = nil) -> ABCUserSymbol {
+    ABCUserSymbol(shorthand: shorthand,
+                  definition: definition).require()
 }
 
 func makeVariantEnding(_ endings: [ClosedRange<UInt>]) -> ABCVariantEnding {

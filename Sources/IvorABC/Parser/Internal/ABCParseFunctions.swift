@@ -806,6 +806,11 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
     guard !raw.isEmpty
     else { return nil }
 
+    if ["!nil!", "!none!", "+nil+", "+none+"].contains(raw) {
+        return ABCUserSymbol(shorthand: shorthand,
+                             definition: nil)
+    }
+
     let definition: ABCUserSymbol.Definition? = if raw.first == "\"" {
         parseAnnotation(Substring(raw)).map { .annotation($0) }
     } else if raw.count >= 2, raw.first == "!", raw.last == "!" {

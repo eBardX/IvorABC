@@ -46,7 +46,8 @@ extension ABCFieldTests {
                                        .source(""),
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
-                                       .userDefined(makeUserSymbol(.tilde, makeDecoration("roll")))]
+                                       .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
+                                       .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata")))]
 
         for field in validFields {
             #expect(field.isValidInFileHeader)
@@ -90,6 +91,7 @@ extension ABCFieldTests {
                                        .tuneTitle(""),
                                        .unitNoteLength(makeDuration(1, 8)),
                                        .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
+                                       .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {
@@ -133,6 +135,7 @@ extension ABCFieldTests {
                                        .transcription(""),
                                        .unitNoteLength(makeDuration(1, 8)),
                                        .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
+                                       .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))),
                                        .voice(makeVoice("1"))]
 
         for field in validFields {

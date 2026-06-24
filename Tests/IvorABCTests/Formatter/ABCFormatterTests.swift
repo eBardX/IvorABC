@@ -380,6 +380,22 @@ extension ABCFormatterTests {
     }
 
     @Test
+    func field_userSymbol_annotation_emitsUField() throws {
+        let book = makeTunebook([.field(.userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))))],
+                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+
+        #expect(try format(book).contains("U:H=\"^fermata\"\n"))
+    }
+
+    @Test
+    func field_userSymbol_deassignment_emitsNilSentinel() throws {
+        let book = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper)))],
+                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+
+        #expect(try format(book).contains("U:T=!nil!\n"))
+    }
+
+    @Test
     func fileHeader_beginEndDirective_emitsBlockForm() throws {
         let book = makeTunebook([.directive(makeDirective("text",
                                                           "",

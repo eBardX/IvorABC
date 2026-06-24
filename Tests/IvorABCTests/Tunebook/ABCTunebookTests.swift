@@ -124,6 +124,106 @@ extension ABCTunebookTests {
     }
 
     @Test
+    func validate_undefinedShorthand_returnsError() {
+        // N has no predefined meaning and no U: definition
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.nUpper)])])])
+
+        #expect(tunebook.validate() == [.undefinedUserSymbol(tuneIndex: 0)])
+    }
+
+    @Test
+    func validate_predefinedShorthand_noExplicitDefinition_returnsNoError() {
+        // Standard shorthands (~, H, L, M, O, P, S, T, u, v) are valid without U:
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.tUpper),
+                                                               .shorthand(.tilde),
+                                                               .shorthand(.hUpper)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
+    func validate_definedShorthand_returnsNoError() {
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeDecoration("trill"))))],
+                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.nUpper)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
+    func validate_annotationDefinedShorthand_returnsNoError() {
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))],
+                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.nUpper)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
+    func validate_deassignedPredefinedShorthand_withoutExplicitDefinition_returnsError() {
+        // ~ is predefined as !roll!; de-assigning it at file-header level makes it undefined
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tilde)))],
+                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.tilde)])])])
+
+        #expect(tunebook.validate() == [.undefinedUserSymbol(tuneIndex: 0)])
+    }
+
+    @Test
+    func validate_tuneScope_override_revertsForSubsequentTune() {
+        // Tune 1 overrides T; Tune 2 sees the predefined default restored
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Tune1")),
+                                                       .field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("mordent"))))],
+                                              body: []),
+                                     makeTune(header: [.field(.tuneTitle("Tune2"))],
+                                              body: [.symbols([.shorthand(.tUpper)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
+    func validate_deassignedShorthand_globalScope_returnsError() {
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill")))),
+                                     .field(.userDefined(makeUserSymbol(.tUpper)))],
+                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.tUpper)])])])
+
+        #expect(tunebook.validate() == [.undefinedUserSymbol(tuneIndex: 0)])
+    }
+
+    @Test
+    func validate_deassignedShorthand_tuneScope_returnsError() {
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
+                                    [makeTune(header: [.field(.tuneTitle("Test")),
+                                                       .field(.userDefined(makeUserSymbol(.tUpper)))],
+                                              body: [.symbols([.shorthand(.tUpper)])])])
+
+        #expect(tunebook.validate() == [.undefinedUserSymbol(tuneIndex: 0)])
+    }
+
+    @Test
+    func validate_deassignedShorthand_tuneScope_doesNotAffectSubsequentTune() {
+        let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
+                                    [makeTune(header: [.field(.tuneTitle("Tune1")),
+                                                       .field(.userDefined(makeUserSymbol(.tUpper)))],
+                                              body: []),
+                                     makeTune(header: [.field(.tuneTitle("Tune2"))],
+                                              body: [.symbols([.shorthand(.tUpper)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
+    func validate_dotShorthand_alwaysValid() {
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+                                              body: [.symbols([.shorthand(.dot)])])])
+
+        #expect(tunebook.validate().isEmpty)
+    }
+
+    @Test
     func init_withEmptyTunes_returnsNil() {
         #expect(ABCTunebook(version: makeVersion(2, 1), fileHeader: [], tunes: []) == nil)
     }

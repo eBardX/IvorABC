@@ -21,57 +21,53 @@ extension ABCTunebook {
         for header in fileHeader {
             switch header {
             case let .directive(directive):
-                _updateState(&state,
-                             from: directive)
+                _updateState(&state, directive)
 
             case let .field(field):
                 _checkField(field,
-                            tuneIndex: nil,
+                            nil,
                             state,
                             &issues)
 
-                _updateState(&state,
-                             from: field)
+                _updateState(&state, field)
             }
         }
 
         for (tuneIndex, tune) in tunes.enumerated() {
+            state.resetTuneScope()
+
             for entry in tune.header {
                 switch entry {
                 case let .directive(directive):
-                    _updateState(&state,
-                                 from: directive)
+                    _updateState(&state, directive)
 
                 case let .field(field):
                     _checkField(field,
-                                tuneIndex: tuneIndex,
+                                tuneIndex,
                                 state,
                                 &issues)
 
-                    _updateState(&state,
-                                 from: field)
+                    _updateState(&state, field, true)
                 }
             }
 
             for entry in tune.body {
                 switch entry {
                 case let .directive(directive):
-                    _updateState(&state,
-                                 from: directive)
+                    _updateState(&state, directive)
 
                 case let .field(field):
                     _checkField(field,
-                                tuneIndex: tuneIndex,
+                                tuneIndex,
                                 state,
                                 &issues)
 
-                    _updateState(&state,
-                                 from: field)
+                    _updateState(&state, field, true)
 
                 case let .symbols(symbols):
                     for symbol in symbols {
                         _checkSymbol(symbol,
-                                     tuneIndex: tuneIndex,
+                                     tuneIndex,
                                      &state,
                                      &issues)
                     }
@@ -86,7 +82,7 @@ extension ABCTunebook {
 // MARK: - Private Functions
 
 private func _checkDecoration(_ decoration: ABCDecoration,
-                              tuneIndex: Int?,
+                              _ tuneIndex: Int?,
                               _ state: _ValidationState,
                               _ issues: inout [ABCValidationIssue]) {
     if decoration.dialect == .plus, state.activeDialect == .bang {
@@ -97,14 +93,15 @@ private func _checkDecoration(_ decoration: ABCDecoration,
 }
 
 private func _checkField(_ field: ABCField,
-                         tuneIndex: Int?,
+                         _ tuneIndex: Int?,
                          _ state: _ValidationState,
                          _ issues: inout [ABCValidationIssue]) {
     switch field {
     case let .userDefined(userSymbol):
-        if case let .decoration(decoration) = userSymbol.definition {
+        if let definition = userSymbol.definition,
+           case let .decoration(decoration) = definition {
             _checkDecoration(decoration,
-                             tuneIndex: tuneIndex,
+                             tuneIndex,
                              state,
                              &issues)
         }
@@ -113,7 +110,7 @@ private func _checkField(_ field: ABCField,
         for element in symbolLine.elements {
             if case let .decoration(decoration) = element {
                 _checkDecoration(decoration,
-                                 tuneIndex: tuneIndex,
+                                 tuneIndex,
                                  state,
                                  &issues)
             }
@@ -125,22 +122,27 @@ private func _checkField(_ field: ABCField,
 }
 
 private func _checkSymbol(_ symbol: ABCSymbol,
-                          tuneIndex: Int,
+                          _ tuneIndex: Int,
                           _ state: inout _ValidationState,
                           _ issues: inout [ABCValidationIssue]) {
     switch symbol {
     case let .decoration(decoration):
         _checkDecoration(decoration,
-                         tuneIndex: tuneIndex,
+                         tuneIndex,
                          state,
                          &issues)
 
     case let .inlineField(field):
         _checkField(field,
-                    tuneIndex: tuneIndex,
+                    tuneIndex,
                     state,
                     &issues)
-        _updateState(&state, from: field)
+        _updateState(&state, field, true)
+
+    case let .shorthand(shorthand):
+        if shorthand != .dot, !state.isShorthandDefined(shorthand) {
+            issues.append(.undefinedUserSymbol(tuneIndex: tuneIndex))
+        }
 
     default:
         break
@@ -148,7 +150,7 @@ private func _checkSymbol(_ symbol: ABCSymbol,
 }
 
 private func _updateState(_ state: inout _ValidationState,
-                          from directive: ABCDirective) {
+                          _ directive: ABCDirective) {
     guard directive.name == .decoration
     else { return }
 
@@ -165,13 +167,30 @@ private func _updateState(_ state: inout _ValidationState,
 }
 
 private func _updateState(_ state: inout _ValidationState,
-                          from field: ABCField) {
+                          _ field: ABCField,
+                          _ inTune: Bool = false) {
     switch field {
     case let .instruction(directive):
-        _updateState(&state, from: directive)
+        _updateState(&state, directive)
 
     case let .userDefined(userSymbol):
-        state.definedUserSymbols.insert(userSymbol.shorthand)
+        if userSymbol.definition != nil {
+            if inTune {
+                state.tuneDefinedShorthands.insert(userSymbol.shorthand)
+                state.tuneDeassignedShorthands.remove(userSymbol.shorthand)
+            } else {
+                state.globalDefinedShorthands.insert(userSymbol.shorthand)
+                state.globalDeassignedShorthands.remove(userSymbol.shorthand)
+            }
+        } else {
+            if inTune {
+                state.tuneDeassignedShorthands.insert(userSymbol.shorthand)
+                state.tuneDefinedShorthands.remove(userSymbol.shorthand)
+            } else {
+                state.globalDeassignedShorthands.insert(userSymbol.shorthand)
+                state.globalDefinedShorthands.remove(userSymbol.shorthand)
+            }
+        }
 
     default:
         break
@@ -182,5 +201,38 @@ private func _updateState(_ state: inout _ValidationState,
 
 private struct _ValidationState {
     var activeDialect: ABCDecoration.Dialect = .bang
-    var definedUserSymbols: Set<ABCShorthand> = []
+    var globalDefinedShorthands: Set<ABCShorthand> = [.tilde,
+                                                      .hUpper,
+                                                      .lUpper,
+                                                      .mUpper,
+                                                      .oUpper,
+                                                      .pUpper,
+                                                      .sUpper,
+                                                      .tUpper,
+                                                      .uLower,
+                                                      .vLower]
+    var globalDeassignedShorthands: Set<ABCShorthand> = []
+    var tuneDefinedShorthands: Set<ABCShorthand> = []
+    var tuneDeassignedShorthands: Set<ABCShorthand> = []
+
+    func isShorthandDefined(_ shorthand: ABCShorthand) -> Bool {
+        if tuneDeassignedShorthands.contains(shorthand) {
+            return false
+        }
+
+        if tuneDefinedShorthands.contains(shorthand) {
+            return true
+        }
+
+        if globalDeassignedShorthands.contains(shorthand) {
+            return false
+        }
+
+        return globalDefinedShorthands.contains(shorthand)
+    }
+
+    mutating func resetTuneScope() {
+        tuneDefinedShorthands = []
+        tuneDeassignedShorthands = []
+    }
 }

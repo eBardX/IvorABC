@@ -147,6 +147,41 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
+    func matchSymbols_shorthand_annotationDefinedSymbol_emitsShorthand() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))
+
+        let symbols = try matchSymbols("N", context: &ctx)
+
+        #expect(symbols == [.shorthand(.nUpper)])
+    }
+
+    @Test
+    func matchSymbols_shorthand_deassigned_throwsUndefinedShorthand() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign T
+
+        #expect(throws: ABCParser.Error.undefinedShorthand("T")) {
+            try matchSymbols("T", context: &ctx)
+        }
+    }
+
+    @Test
+    func matchSymbols_shorthand_globalDeassignment_shadowedByTuneDefinition_succeeds() throws {
+        var ctx = ABCParseContext()
+
+        ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign globally
+        ctx.inTune = true
+        ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))  // re-assign at tune scope
+
+        let symbols = try matchSymbols("T", context: &ctx)
+
+        #expect(symbols == [.shorthand(.tUpper)])
+    }
+
+    @Test
     func matchSymbols_decoration_legacyPlusSyntax() throws {
         let symbols = try matchSymbols("+trill+")
 

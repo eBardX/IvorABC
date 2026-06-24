@@ -843,10 +843,13 @@ private func _formatUserSymbol(_ userSymbol: ABCUserSymbol) -> String {
     result += "="
 
     switch userSymbol.definition {
-    case let .annotation(annotation):
+    case nil:
+        result += "!nil!"
+
+    case let .annotation(annotation)?:
         result += _formatAnnotation(annotation)
 
-    case let .decoration(decoration):
+    case let .decoration(decoration)?:
         result += _formatDecoration(decoration)
     }
 
