@@ -13,11 +13,9 @@ internal struct ABCParseContext {
         self.globalDurationFromMeter = nil
         self.globalDurationFromUnitNoteLength = nil
         self.globalIsCompoundMeter = false
-        self.globalMacros = [:]
         self.globalUserSymbolDefinitions = [:]
         self.inTune = false
         self.isCompoundMeter = false
-        self.tuneMacros = [:]
         self.tuneUserSymbolDefinitions = [:]
     }
 
@@ -32,10 +30,6 @@ internal struct ABCParseContext {
         durationFromUnitNoteLength ?? durationFromMeter ?? Self.durationEighths
     }
 
-    internal var hasMacros: Bool {
-        !globalMacros.isEmpty || !tuneMacros.isEmpty
-    }
-
     // MARK: Private Instance Properties
 
     // Global (file-header) snapshots: kept in sync with the live fields while
@@ -44,13 +38,11 @@ internal struct ABCParseContext {
     private var globalDurationFromMeter: ABCDuration?
     private var globalDurationFromUnitNoteLength: ABCDuration?
     private var globalIsCompoundMeter: Bool
-    private var globalMacros: [String: ABCMacro]
     private var globalUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 
     // Live working values for meter/unit-note-length (tune may override these).
     private var durationFromMeter: ABCDuration?
     private var durationFromUnitNoteLength: ABCDuration?
-    private var tuneMacros: [String: ABCMacro]
     private var tuneUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 }
 
@@ -60,17 +52,12 @@ extension ABCParseContext {
 
     // MARK: Internal Instance Methods
 
-    internal func macro(for trigger: String) -> ABCMacro? {
-        tuneMacros[trigger] ?? globalMacros[trigger]
-    }
-
     internal mutating func resetTuneScope() {
         accidentalsInKey = [:]   // K: is never valid in the file header
         decorationDialect = globalDecorationDialect
         durationFromMeter = globalDurationFromMeter
         durationFromUnitNoteLength = globalDurationFromUnitNoteLength
         isCompoundMeter = globalIsCompoundMeter
-        tuneMacros = [:]
         tuneUserSymbolDefinitions = [:]
     }
 
@@ -105,13 +92,6 @@ extension ABCParseContext {
 
         case let .key(keySignature):
             accidentalsInKey = keySignature.accidentals
-
-        case let .macro(macro):
-            if inTune {
-                tuneMacros[macro.trigger] = macro
-            } else {
-                globalMacros[macro.trigger] = macro
-            }
 
         case let .meter(timeSignature):
             let duration = Self._determineDuration(from: timeSignature)

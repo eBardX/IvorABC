@@ -384,16 +384,10 @@ func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
                                        clef: clef).require())
 }
 
-func makeMacro(_ trigger: String,
+func makeMacro(_ target: String,
                _ replacement: String) -> ABCMacro {
-    ABCMacro(trigger: trigger,
-             replacement: replacement)
-}
-
-func makeMacroCall(_ trigger: String,
-                   _ expansion: [ABCSymbol]) -> ABCMacroCall {
-    ABCMacroCall(trigger: trigger,
-                 expansion: expansion)
+    ABCMacro(target: target,
+             replacement: replacement).require()
 }
 
 func makeNote(_ pitch: ABCPitch,

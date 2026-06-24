@@ -124,37 +124,6 @@ extension ABCTunebookTests {
     }
 
     @Test
-    func validate_undefinedMacro_returnsError() {
-        let call = ABCMacroCall(trigger: "~G2", expansion: [])
-        let tunebook = minimalTunebook(symbols: [.macroCall(call)])
-        let issues = tunebook.validate()
-
-        #expect(issues == [.undefinedMacro(tuneIndex: 0)])
-        #expect(issues[0].severity == .error)
-        #expect(!issues[0].message.isEmpty)
-    }
-
-    @Test
-    func validate_definedMacro_returnsNoIssues() {
-        let macro = makeMacro("~G2", "{A}G{F}G")
-        let call = ABCMacroCall(trigger: "~G2", expansion: [])
-        let tunebook = makeTunebook([makeTune(header: [.field(.macro(macro))],
-                                              body: [.symbols([.macroCall(call)])])])
-
-        #expect(tunebook.validate().isEmpty)
-    }
-
-    @Test
-    func validate_transposingMacro_returnsNoIssues() {
-        let macro = makeMacro("~n2", "{A}n{B}n")
-        let call = ABCMacroCall(trigger: "~G2", expansion: [])
-        let tunebook = makeTunebook([makeTune(header: [.field(.macro(macro))],
-                                              body: [.symbols([.macroCall(call)])])])
-
-        #expect(tunebook.validate().isEmpty)
-    }
-
-    @Test
     func init_withEmptyTunes_returnsNil() {
         #expect(ABCTunebook(version: makeVersion(2, 1), fileHeader: [], tunes: []) == nil)
     }

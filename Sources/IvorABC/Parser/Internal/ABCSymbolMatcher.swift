@@ -56,15 +56,6 @@ extension ABCSymbolMatcher {
 
     // MARK: Private Type Methods
 
-    private func _expandMacroReplacement(_ replacement: String,
-                                         _ context: inout ABCParseContext) throws -> [ABCSymbol] {
-        let tokens = try ABCSymbolTokenizer(tracing: .silent).tokenize(replacement)
-
-        var matcher = ABCSymbolMatcher(tokens: tokens)
-
-        return try matcher.matchSymbols(&context)
-    }
-
     private func _makeDuration(_ duration: ABCDuration?,
                                _ context: inout ABCParseContext) -> ABCDuration {
         let baseDuration = context.baseDuration
@@ -251,60 +242,6 @@ extension ABCSymbolMatcher {
         return .inlineField(field)
     }
 
-    private mutating func _matchMacroCall(_ context: inout ABCParseContext) throws -> ABCSymbol? {
-        guard context.hasMacros
-        else { return nil }
-
-        let savedMatcher = tokenMatcher
-        let decorToken = try tokenMatcher.readMustMatch(.shorthand)
-        let decorValue = String(decorToken.value)
-        let afterDecorMatcher = tokenMatcher
-
-        if let noteToken = tokenMatcher.readIfMatches(.note) {
-            let noteValue = String(noteToken.value)
-            let fullTrigger = decorValue + noteValue
-
-            if let macro = context.macro(for: fullTrigger) {
-                let expansion = try _expandMacroReplacement(macro.replacement, &context)
-
-                return .macroCall(ABCMacroCall(trigger: fullTrigger,
-                                               expansion: expansion))
-            }
-
-            if let transposedKey = _transposedTriggerKey(decorValue, noteValue),
-               let macro = context.macro(for: transposedKey),
-               let letter = _notePitchLetter(noteValue) {
-                let replacement = macro.replacement.replacingOccurrences(of: "n",
-                                                                         with: String(letter))
-                let expansion = try _expandMacroReplacement(replacement, &context)
-
-                return .macroCall(ABCMacroCall(trigger: fullTrigger,
-                                               expansion: expansion))
-            }
-        }
-
-        tokenMatcher = afterDecorMatcher
-
-        if let macro = context.macro(for: decorValue) {
-            let expansion = try _expandMacroReplacement(macro.replacement, &context)
-
-            return .macroCall(ABCMacroCall(trigger: decorValue,
-                                           expansion: expansion))
-        }
-
-        tokenMatcher = savedMatcher
-
-        return nil
-    }
-
-    private func _notePitchLetter(_ noteValue: String) -> Character? {
-        for ch in noteValue where ("A"..."G").contains(ch) || ("a"..."g").contains(ch) {
-            return ch
-        }
-
-        return nil
-    }
-
     private mutating func _matchOverlay() throws -> ABCSymbol? {
         try tokenMatcher.readMustMatch(.overlay)
 
@@ -444,7 +381,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.shorthand) {
-            return try _matchMacroCall(&context) ?? _matchShorthand()
+            return try _matchShorthand()
         }
 
         if tokenMatcher.nextMatches([.dottedSlurBegin, .dottedSlurEnd, .slurBegin, .slurEnd]) {
@@ -487,25 +424,5 @@ extension ABCSymbolMatcher {
         else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .variantEnding(variantEnding)
-    }
-
-    private func _transposedTriggerKey(_ decorValue: String,
-                                       _ noteValue: String) -> String? {
-        guard let letter = _notePitchLetter(noteValue)
-        else { return nil }
-
-        var result = decorValue
-        var replaced = false
-
-        for ch in noteValue {
-            if !replaced, ch == letter {
-                result.append("n")
-                replaced = true
-            } else {
-                result.append(ch)
-            }
-        }
-
-        return result
     }
 }

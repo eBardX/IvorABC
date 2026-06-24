@@ -137,9 +137,6 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .inlineField(field):
         try _formatInlineField(field)
 
-    case let .macroCall(macroCall):
-        macroCall.trigger
-
     case let .note(note):
         _formatNote(note, unitNoteLength, meter)
 
@@ -666,7 +663,7 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
 }
 
 private func _formatMacro(_ macro: ABCMacro) -> String {
-    "\(macro.trigger)=\(macro.replacement)"
+    "\(macro.target)=\(macro.replacement)"
 }
 
 private func _formatNote(_ note: ABCNote,

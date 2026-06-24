@@ -124,15 +124,6 @@ private func _checkField(_ field: ABCField,
     }
 }
 
-private func _checkMacroCall(_ call: ABCMacroCall,
-                             tuneIndex: Int,
-                             _ state: _ValidationState,
-                             _ issues: inout [ABCValidationIssue]) {
-    if !state.definedMacros.contains(where: { _macroTriggerMatches($0.trigger, call.trigger) }) {
-        issues.append(.undefinedMacro(tuneIndex: tuneIndex))
-    }
-}
-
 private func _checkSymbol(_ symbol: ABCSymbol,
                           tuneIndex: Int,
                           _ state: inout _ValidationState,
@@ -151,24 +142,8 @@ private func _checkSymbol(_ symbol: ABCSymbol,
                     &issues)
         _updateState(&state, from: field)
 
-    case let .macroCall(call):
-        _checkMacroCall(call,
-                        tuneIndex: tuneIndex,
-                        state,
-                        &issues)
-
     default:
         break
-    }
-}
-
-private func _macroTriggerMatches(_ pattern: String,
-                                  _ trigger: String) -> Bool {
-    guard pattern.count == trigger.count
-    else { return false }
-
-    return zip(pattern, trigger).allSatisfy { patternChar, triggerChar in
-        patternChar == "n" ? "abcdefgABCDEFG".contains(triggerChar) : patternChar == triggerChar
     }
 }
 
@@ -195,9 +170,6 @@ private func _updateState(_ state: inout _ValidationState,
     case let .instruction(directive):
         _updateState(&state, from: directive)
 
-    case let .macro(macro):
-        state.definedMacros.append(macro)
-
     case let .userDefined(userSymbol):
         state.definedUserSymbols.insert(userSymbol.shorthand)
 
@@ -210,6 +182,5 @@ private func _updateState(_ state: inout _ValidationState,
 
 private struct _ValidationState {
     var activeDialect: ABCDecoration.Dialect = .bang
-    var definedMacros: [ABCMacro] = []
     var definedUserSymbols: Set<ABCShorthand> = []
 }

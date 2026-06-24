@@ -2,28 +2,28 @@
 
 /// An ABC macro definition (`m:`).
 ///
-/// Maps a trigger pattern to a replacement string, for example:
+/// Maps a target pattern to a replacement string, for example:
 /// ```
 /// m: ~G2 = {A}G{F}G
 /// m: ~n = !trill!n
 /// ```
 ///
-/// When a macro trigger is matched in the tune body the parser emits an
-/// ``ABCSymbol/macroCall(_:)`` symbol whose ``ABCMacroCall`` carries the
-/// concrete trigger text and the pre-parsed expansion. The `ABCMacro`
-/// definition itself is preserved in ``ABCField/macro(_:)``.
+/// The definition is preserved in ``ABCField/macro(_:)``.
 public struct ABCMacro {
 
     // MARK: Public Initializers
 
-    /// Creates a new macro definition.
+    /// Creates a new macro definition, or `nil` if any parameter is invalid.
     ///
-    /// - Parameter trigger:     The trigger pattern (left-hand side of `=`).
-    /// - Parameter replacement: The replacement string (right-hand side of `=`).
-    public init(trigger: String,
-                replacement: String) {
-        self.replacement = replacement  // validate ???
-        self.trigger = trigger          // validate ???
+    /// - Parameter target:      The target pattern (left-hand side of `=`); must be 1–31 characters.
+    /// - Parameter replacement: The replacement string (right-hand side of `=`); must be 1–200 characters.
+    public init?(target: String,
+                 replacement: String) {
+        guard Self._isValid(target, replacement)
+        else { return nil }
+
+        self.replacement = replacement
+        self.target = target
     }
 
     // MARK: Public Instance Properties
@@ -31,8 +31,21 @@ public struct ABCMacro {
     /// The replacement string (right-hand side of `=`).
     public let replacement: String
 
-    /// The trigger pattern (left-hand side of `=`).
-    public let trigger: String
+    /// The target pattern (left-hand side of `=`).
+    public let target: String
+}
+
+// MARK: -
+
+extension ABCMacro {
+
+    // MARK: Private Type Methods
+
+    private static func _isValid(_ target: String,
+                                 _ replacement: String) -> Bool {
+        (1...31).contains(target.count)
+        && (1...200).contains(replacement.count)
+    }
 }
 
 // MARK: - Equatable

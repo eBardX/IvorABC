@@ -16,10 +16,6 @@ public enum ABCValidationIssue {
     /// The `+…+` delimiter form requires the `+` dialect to be in effect.
     case plusDialectDecorationWithoutDirective(tuneIndex: Int?)
 
-    /// A macro call was encountered with no preceding `m:` definition whose
-    /// trigger pattern matches it.
-    case undefinedMacro(tuneIndex: Int?)
-
     /// A shorthand decoration was encountered that is neither a builtin
     /// shorthand nor defined by a preceding `U:` field.
     case undefinedUserSymbol(tuneIndex: Int?)
@@ -40,9 +36,6 @@ extension ABCValidationIssue {
         case let .plusDialectDecorationWithoutDirective(tuneIndex):
             "\(_tuneLabel(tuneIndex)) contains a +name+ decoration without a preceding I:decoration + instruction"
 
-        case let .undefinedMacro(tuneIndex):
-            "\(_tuneLabel(tuneIndex)) contains a macro call with no preceding m: definition"
-
         case let .undefinedUserSymbol(tuneIndex):
             "\(_tuneLabel(tuneIndex)) contains a shorthand decoration with no preceding U: definition and no builtin shorthand"
         }
@@ -53,7 +46,6 @@ extension ABCValidationIssue {
         switch self {
         case .bangDialectDecorationInPlusMode,
              .plusDialectDecorationWithoutDirective,
-             .undefinedMacro,
              .undefinedUserSymbol:
             .error
         }
@@ -65,7 +57,6 @@ extension ABCValidationIssue {
         switch self {
         case let .bangDialectDecorationInPlusMode(tuneIndex),
              let .plusDialectDecorationWithoutDirective(tuneIndex),
-             let .undefinedMacro(tuneIndex),
              let .undefinedUserSymbol(tuneIndex):
             tuneIndex
         }

@@ -32,7 +32,6 @@ extension ABCParseContextTests {
         let ctx = ABCParseContext()
 
         #expect(ctx.accidentalsInKey.isEmpty)
-        #expect(!ctx.hasMacros)
         #expect(!ctx.inTune)
         #expect(!ctx.isCompoundMeter)
     }
@@ -66,31 +65,6 @@ extension ABCParseContextTests {
         #expect(ctx.accidentalsInKey[.c] == .sharp)
         #expect(ctx.accidentalsInKey[.f] == .sharp)
         #expect(ctx.accidentalsInKey[.g] == .natural)
-    }
-
-    @Test
-    func update_macro_notInTune_persistsAfterReset() {
-        var ctx = ABCParseContext()
-
-        ctx.update(with: .macro(makeMacro("~G2", "GHG")))
-        ctx.inTune = true
-        ctx.resetTuneScope()
-
-        #expect(ctx.macro(for: "~G2") != nil)
-    }
-
-    @Test
-    func update_macro_inTune_clearedByReset() {
-        var ctx = ABCParseContext()
-
-        ctx.inTune = true
-        ctx.update(with: .macro(makeMacro("~G2", "GHG")))
-
-        #expect(ctx.hasMacros)
-
-        ctx.resetTuneScope()
-
-        #expect(ctx.macro(for: "~G2") == nil)
     }
 
     @Test
@@ -141,47 +115,15 @@ extension ABCParseContextTests {
     }
 
     @Test
-    func macro_forTrigger_tuneOverridesGlobal() {
+    func resetTuneScope_clearsTuneUserSymbols() {
         var ctx = ABCParseContext()
 
-        ctx.update(with: .macro(makeMacro("~G2", "global")))
-        ctx.inTune = true
-        ctx.update(with: .macro(makeMacro("~G2", "tune")))
-
-        #expect(ctx.macro(for: "~G2")?.replacement == "tune")
-    }
-
-    @Test
-    func macro_forTrigger_fallsBackToGlobal() {
-        var ctx = ABCParseContext()
-
-        ctx.update(with: .macro(makeMacro("~G2", "global")))
-        ctx.inTune = true
-
-        #expect(ctx.macro(for: "~G2")?.replacement == "global")
-    }
-
-    @Test
-    func macro_forTrigger_missingReturnsNil() {
-        let ctx = ABCParseContext()
-
-        #expect(ctx.macro(for: "~G2") == nil)
-    }
-
-    @Test
-    func resetTuneScope_clearsTuneMacrosAndUserSymbols() {
-        var ctx = ABCParseContext()
-
-        ctx.update(with: .macro(makeMacro("~G2", "global")))
         ctx.update(with: .userDefined(makeUserSymbol(.hUpper, makeDecoration("trill"))))
         ctx.inTune = true
-        ctx.update(with: .macro(makeMacro("~A2", "tune")))
         ctx.update(with: .userDefined(makeUserSymbol(.hLower, makeDecoration("trill"))))
 
         ctx.resetTuneScope()
 
-        #expect(ctx.macro(for: "~A2") == nil)
-        #expect(ctx.macro(for: "~G2") != nil)
         #expect(ctx.userSymbolDefinition(for: .hLower) == nil)
         #expect(ctx.userSymbolDefinition(for: .hUpper) != nil)
     }

@@ -465,14 +465,10 @@ internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
     guard let eqIdx = tidyInput.firstIndex(of: "=")
     else { return nil }
 
-    let trigger = String(trim(tidyInput[..<eqIdx]))
+    let target = String(trim(tidyInput[..<eqIdx]))
     let replacement = String(trim(tidyInput[tidyInput.index(after: eqIdx)...]))
 
-    guard !trigger.isEmpty,
-          !replacement.isEmpty
-    else { return nil }
-
-    return ABCMacro(trigger: trigger,
+    return ABCMacro(target: target,
                     replacement: replacement)
 }
 
