@@ -12,27 +12,24 @@ struct ABCTunebookTests {
 extension ABCTunebookTests {
     @Test
     func equality() {
-        let version = makeVersion(2, 1)
         let tune = makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])
-        let a = makeTunebook(version, [tune])
-        let b = makeTunebook(version, [tune])
+        let a = makeTunebook(.v2_1, [tune])
+        let b = makeTunebook(.v2_1, [tune])
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        let v21 = makeVersion(2, 1)
-        let v20 = makeVersion(2, 0)
         let tune = makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])
 
-        #expect(makeTunebook(v21, [tune]) !=
-                makeTunebook(v20, [tune]))
+        #expect(makeTunebook(.v2_1, [tune]) !=
+                makeTunebook(.v2_0, [tune]))
 
         let header = ABCHeaderEntry.field(.composer("Bach"))
 
-        #expect(makeTunebook(v21, [tune]) !=
-                makeTunebook(v21, [header], [tune]))
+        #expect(makeTunebook(.v2_1, [tune]) !=
+                makeTunebook(.v2_1, [header], [tune]))
     }
 
     @Test
@@ -225,17 +222,18 @@ extension ABCTunebookTests {
 
     @Test
     func init_withEmptyTunes_returnsNil() {
-        #expect(ABCTunebook(version: makeVersion(2, 1), fileHeader: [], tunes: []) == nil)
+        #expect(ABCTunebook(version: .v2_1,
+                            fileHeader: [],
+                            tunes: []) == nil)
     }
 
     @Test
     func init_storesValues() {
-        let version = makeVersion(2, 1)
         let header = ABCHeaderEntry.field(.composer("J.S. Bach"))
         let tune = makeTune(header: [.field(.tuneTitle("Test"))])
-        let tunebook = makeTunebook(version, [header], [tune])
+        let tunebook = makeTunebook(.v2_1, [header], [tune])
 
-        #expect(tunebook.version == version)
+        #expect(tunebook.version == .v2_1)
         #expect(tunebook.fileHeader == [header])
         #expect(tunebook.tunes == [tune])
     }

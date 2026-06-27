@@ -6,11 +6,14 @@ extension ABCParser {
 
     /// A diagnostic message produced by ``ABCParser`` when parsing in lenient mode.
     public enum Diagnostic {
+        /// A deprecated field was accepted in loose parsing stance. The
+        /// associated value is the field that was accepted.
+        case deprecatedField(ABCField)
 
-        /// A `Q:` field used the bare-integer form (e.g. `Q:120`) with no beat
-        /// unit specified; the beat unit is implied by the active `L:` value.
-        /// The associated value is the tempo rate that was parsed.
-        case bareTempoRate(UInt)
+        /// A `Q:` field used a deprecated tempo form — either a bare-integer
+        /// (e.g. `Q:120`) or the `Q:C=rate` / `Q:Cn=rate` beat-unit form. The
+        /// associated value is the tempo that was parsed from the deprecated form.
+        case deprecatedTempo(ABCTempo)
 
         /// A subsequent `%%abc-charset` or `I:abc-charset` directive was ignored
         /// because an earlier directive (or a UTF-8 BOM) already established the
@@ -65,8 +68,11 @@ extension ABCParser.Diagnostic {
     /// A human-readable description of this diagnostic.
     public var message: String {
         switch self {
-        case let .bareTempoRate(rate):
-            "Bare tempo '\(rate)' has no beat unit; beat unit is implied by L:"
+        case let .deprecatedField(field):
+            "Deprecated field '\(field)' accepted in loose parsing stance"
+
+        case let .deprecatedTempo(tempo):
+            "Deprecated tempo form; rate '\(tempo.rate.map { "\($0)" } ?? "unspecified")' was accepted"
 
         case let .duplicateCharset(name):
             "Charset '\(name)' was ignored; an earlier charset directive takes precedence"

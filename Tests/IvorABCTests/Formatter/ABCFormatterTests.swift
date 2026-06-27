@@ -1151,11 +1151,11 @@ extension ABCFormatterTests {
 
     @Test
     func unsupportedVersion_throws() {
-        let book = makeTunebook(makeVersion(1, 6),
+        let book = makeTunebook(.v1_6,
                                 [],
                                 [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(throws: ABCFormatter.Error.unsupportedVersion(makeVersion(1, 6))) {
+        #expect(throws: ABCFormatter.Error.unsupportedVersion(.v1_6)) {
             try format(book)
         }
     }

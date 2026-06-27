@@ -47,8 +47,7 @@ internal func joinContinuationLines(_ rawLines: [Substring]) -> [Substring] {
     return result
 }
 
-internal func preprocess(_ data: Data,
-                         strictness: ABCParser.Strictness = .strict) throws -> PreprocessResult {
+internal func preprocess(_ data: Data) throws -> PreprocessResult {
     let (strippedData, hadUTF8BOM, hadOtherBOM) = _stripBOM(data)
 
     var diagnostics: [ABCParser.Diagnostic] = []
@@ -93,8 +92,10 @@ internal func preprocess(_ data: Data,
     } else if let decoded = String(data: strippedData, encoding: encoding) {
         finalString = decoded
     } else {
-        guard strictness != .strict
-        else { throw ABCParser.Error.dataConversionFailed }
+        if let version,
+           version >= .v2_1 {
+            throw ABCParser.Error.dataConversionFailed
+        }
 
         diagnostics.append(.invalidUTF8)
         finalString = provisional
@@ -133,6 +134,8 @@ private struct _PreScanResult {
     var fileIDRawVersionString: String?
     var fileIDVersion: ABCVersion?
 }
+
+// MARK: Private Constants
 
 // MARK: Private Functions
 
@@ -215,7 +218,8 @@ private func _parseVersionString(_ str: Substring) -> ABCVersion? {
           let minor = UInt(parts[1])
     else { return nil }
 
-    return ABCVersion(major: major, minor: minor)
+    return ABCVersion(major: major,
+                      minor: minor)
 }
 
 private func _preScanLines(_ lines: [Substring]) -> _PreScanResult {
@@ -281,8 +285,7 @@ private func _resolveCharset(hadUTF8BOM: Bool,
     }
 
     if let version,
-       version >= ABCVersion(major: 2,
-                             minor: 1) {
+       version >= .v2_1 {
         return .utf8
     }
 

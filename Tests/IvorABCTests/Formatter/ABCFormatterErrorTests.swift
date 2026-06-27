@@ -103,7 +103,7 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_unsupportedVersion() {
-        let error = ABCFormatter.Error.unsupportedVersion(makeVersion(1, 6))
+        let error = ABCFormatter.Error.unsupportedVersion(.v1_6)
 
         #expect(error.message.contains("1.6"))
     }

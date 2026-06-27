@@ -11,14 +11,12 @@ struct ABCVersionTests {
 extension ABCVersionTests {
     @Test
     func current() {
-        #expect(ABCVersion.current == makeVersion(2, 1))
+        #expect(ABCVersion.current == .v2_1)
     }
 
     @Test
     func supported() {
-        #expect(ABCVersion.supported == [makeVersion(1, 6),
-                                         makeVersion(2, 0),
-                                         makeVersion(2, 1)])
+        #expect(ABCVersion.supported == [.v1_6, .v2_0, .v2_1])
     }
 
     @Test
@@ -31,47 +29,41 @@ extension ABCVersionTests {
 
     @Test
     func lessThan_sameMajorLesserMinor_returnsTrue() {
-        #expect(makeVersion(2, 0) < makeVersion(2, 1))
+        #expect(makeVersion(2, 0) < .v2_1)
     }
 
     @Test
     func lessThan_sameMajorGreaterMinor_returnsFalse() {
-        #expect(!(makeVersion(2, 1) < makeVersion(2, 0)))
+        #expect(!(makeVersion(2, 1) < .v2_0))
     }
 
     @Test
     func lessThan_equalVersions_returnsFalse() {
-        let v = makeVersion(2, 1)
-
-        #expect(!(v < makeVersion(2, 1)))
+        #expect(!(makeVersion(2, 1) < .v2_1))
     }
 
     @Test
     func lessThan_lesserMajorHigherMinor_returnsTrue() {
-        #expect(makeVersion(1, 6) < makeVersion(2, 0))
+        #expect(makeVersion(1, 6) < .v2_0)
     }
 
     @Test
     func lessThan_greaterMajorLowerMinor_returnsFalse() {
-        #expect(!(makeVersion(2, 0) < makeVersion(1, 6)))
+        #expect(!(makeVersion(2, 0) < .v1_6))
     }
 
     @Test
     func greaterThan_greaterMinor_returnsTrue() {
-        #expect(makeVersion(2, 1) > makeVersion(2, 0))
+        #expect(makeVersion(2, 1) > .v2_0)
     }
 
     @Test
     func lessThanOrEqual_equalVersions_returnsTrue() {
-        let v = makeVersion(2, 1)
-
-        #expect(v <= makeVersion(2, 1))
+        #expect(makeVersion(2, 1) <= .v2_1)
     }
 
     @Test
     func greaterThanOrEqual_equalVersions_returnsTrue() {
-        let v = makeVersion(2, 1)
-
-        #expect(v >= makeVersion(2, 1))
+        #expect(makeVersion(2, 1) >= .v2_1)
     }
 }

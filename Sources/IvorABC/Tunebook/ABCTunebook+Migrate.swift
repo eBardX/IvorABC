@@ -20,7 +20,7 @@ extension ABCTunebook {
     ///
     /// - Returns: A new ``ABCTunebook`` whose ``version`` is ``ABCVersion/current``.
     public func migrate() -> ABCTunebook {
-        ABCTunebook(version: ABCVersion.current,
+        ABCTunebook(version: .current,
                     fileHeader: fileHeader.map { _migrateHeaderEntry($0) },
                     tunes: tunes.map { _migrateTune($0) }).require()
     }

@@ -466,13 +466,13 @@ func makeTune(header: [ABCHeaderEntry],
 
 func makeTunebook(_ fileHeaders: [ABCHeaderEntry],
                   _ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: makeVersion(2, 1),
+    ABCTunebook(version: .v2_1,
                 fileHeader: fileHeaders,
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: makeVersion(2, 1),
+    ABCTunebook(version: .v2_1,
                 fileHeader: [],
                 tunes: tunes).require()
 }

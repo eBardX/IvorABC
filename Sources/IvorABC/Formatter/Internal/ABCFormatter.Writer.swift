@@ -37,7 +37,7 @@ extension ABCFormatter.Writer {
 
     internal mutating func writeTunebook() throws -> Data {
         guard let version = tunebook.version,
-              version == ABCVersion.current
+              version == .current
         else { throw ABCFormatter.Error.unsupportedVersion(tunebook.version) }
 
         buffer.append("%abc-\(version.major).\(version.minor)\n")

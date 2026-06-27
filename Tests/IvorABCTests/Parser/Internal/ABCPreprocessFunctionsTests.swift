@@ -22,7 +22,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(bytes)
         let (lines, version, diagnostics) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 1))
+        #expect(version == .v2_1)
         #expect(diagnostics.isEmpty)
 
         let titleLine = lines.first { $0.hasPrefix("T:") }
@@ -108,7 +108,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(bytes)
         let (lines, version, diagnostics) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 1))
+        #expect(version == .v2_1)
         #expect(diagnostics.isEmpty)
 
         let titleLine = lines.first { $0.hasPrefix("T:") }
@@ -190,7 +190,8 @@ extension ABCPreprocessFunctionsTests {
     // MARK: - Decode failure
 
     @Test
-    func preprocess_v21_invalidUTF8_strict_throwsDataConversionFailed() {
+    func preprocess_v21_invalidUTF8_throwsDataConversionFailed() {
+        // 2.1 derives strict stance → invalid UTF-8 throws
         var bytes = [UInt8]("%abc-2.1\nX:1\nT:".utf8)
 
         bytes.append(0xff)  // invalid UTF-8 byte
@@ -200,20 +201,22 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(bytes)
 
         #expect(throws: ABCParser.Error.dataConversionFailed) {
-            try preprocess(data, strictness: .strict)
+            try preprocess(data)
         }
     }
 
     @Test
-    func preprocess_v21_invalidUTF8_lenient_emitsInvalidUTF8DiagnosticAndFallsBack() throws {
-        var bytes = [UInt8]("%abc-2.1\nX:1\nT:".utf8)
+    func preprocess_v20_explicitUTF8_invalidUTF8_emitsInvalidUTF8DiagnosticAndFallsBack() throws {
+        // 2.0 with explicit utf-8 charset derives loose stance →
+        // invalid UTF-8 falls back to ISO-8859-1 with diagnostic
+        var bytes = [UInt8]("%abc-2.0\n%%abc-charset utf-8\nX:1\nT:".utf8)
 
         bytes.append(0xff)  // invalid UTF-8 byte
 
         bytes += "\nK:C\nCDEF|\n".utf8
 
         let data = Data(bytes)
-        let (_, _, diagnostics) = try preprocess(data, strictness: .lenient)
+        let (_, _, diagnostics) = try preprocess(data)
 
         #expect(diagnostics.contains(.invalidUTF8))
     }
@@ -226,7 +229,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(input.utf8)
         let (_, version, _) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 1))
+        #expect(version == .v2_1)
     }
 
     @Test
@@ -235,7 +238,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(input.utf8)
         let (_, version, _) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 0))
+        #expect(version == .v2_0)
     }
 
     @Test
@@ -244,7 +247,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(input.utf8)
         let (_, version, _) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 0))
+        #expect(version == .v2_0)
     }
 
     // MARK: - File-ID line stripping
@@ -345,7 +348,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(input.utf8)
         let (_, version, diagnostics) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 1))
+        #expect(version == .v2_1)
         #expect(!diagnostics.contains { if case .unrecognizedVersion = $0 { true } else { false } })
     }
 
@@ -367,7 +370,7 @@ extension ABCPreprocessFunctionsTests {
         let data = Data(input.utf8)
         let (_, version, diagnostics) = try preprocess(data)
 
-        #expect(version == ABCVersion(major: 2, minor: 0))
+        #expect(version == .v2_0)
         #expect(diagnostics.contains(.malformedVersion("x.y")))
         #expect(!diagnostics.contains { if case .unrecognizedVersion = $0 { true } else { false } })
     }
