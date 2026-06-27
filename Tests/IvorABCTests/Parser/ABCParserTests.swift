@@ -428,14 +428,14 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_missingFileID_throws() {
+    func parse_missingFileID_strict_succeeds() throws {
         let input = "X:1\nT:Test\nK:C\nabc\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.self) {
-            try parser.parse(data)
-        }
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test
@@ -729,14 +729,15 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_unsupportedVersion_throws() {
+    func parse_unsupportedVersion_strict_succeeds() throws {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nabc\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.self) {
-            try parser.parse(data)
-        }
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.version == makeVersion(3, 0))
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test

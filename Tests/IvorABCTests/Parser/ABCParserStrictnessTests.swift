@@ -45,14 +45,14 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parseWithDiagnostics_missingFileID_emitsDiagnostic() throws {
+    func parseWithDiagnostics_missingFileID_noMissingFileIDDiagnostic() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(diagnostics.contains(.missingFileID))
+        #expect(!diagnostics.contains(.missingFileID))
     }
 
     @Test
@@ -78,14 +78,14 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parseWithDiagnostics_unsupportedVersion_emitsDiagnostic() throws {
+    func parseWithDiagnostics_unsupportedVersion_noUnsupportedVersionDiagnostic() throws {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(diagnostics.contains(.unsupportedVersion(makeVersion(3, 0))))
+        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(3, 0))))
     }
 
     @Test
@@ -163,14 +163,14 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parse_missingFileID_strict_throws() {
+    func parse_missingFileID_strict_succeeds() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.missingFileID) {
-            try parser.parse(data)
-        }
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test
@@ -198,14 +198,15 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parse_unknownVersion_strict_throws() {
+    func parse_unknownVersion_strict_succeeds() throws {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
 
-        #expect(throws: ABCParser.Error.unsupportedVersion(makeVersion(3, 0))) {
-            try parser.parse(data)
-        }
+        let tunebook = try parser.parse(data)
+
+        #expect(tunebook.version == makeVersion(3, 0))
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test

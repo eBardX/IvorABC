@@ -117,72 +117,23 @@ extension ABCParser {
         return rest.isEmpty || rest.allSatisfy { $0.isABCWhitespace }
     }
 
-    private func _joinContinuationLines(_ rawLines: [Substring]) -> [Substring] {
-        var result: [Substring] = []
-        var pending: String?
-
-        for line in rawLines {
-            let stripped = String(trimSuffix(uncomment(line)))
-
-            //
-            // Field lines (letter: or +:) are never folded into a pending music
-            // accumulation. When a field line appears in the middle of a music
-            // continuation (e.g. a w: lyric or M: meter change between two
-            // backslash-continued music lines), flush the pending music first,
-            // then emit the field line on its own — stripping any trailing \
-            // that was acting as the continuation signal rather than field content.
-            //
-            let isFieldLine = (stripped.first?.isABCLetter == true || stripped.first == "+")
-                              && stripped.dropFirst().first == ":"
-
-            if isFieldLine {
-                if let buf = pending {
-                    result.append(Substring(buf))
-                    pending = nil
-                }
-
-                let fieldText = stripped.hasSuffix("\\")
-                                ? String(stripped.dropLast())
-                                : String(stripped)
-
-                result.append(Substring(fieldText))
-            } else if stripped.hasSuffix("\\") {
-                pending = (pending ?? "") + stripped.dropLast()
-            } else if let buf = pending {
-                result.append(Substring(buf + String(line)))
-                pending = nil
-            } else {
-                result.append(line)
-            }
-        }
-
-        if let buf = pending {
-            result.append(Substring(buf))
-        }
-
-        return result
-    }
-
     private func _parse(_ data: Data,
                         _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
-        guard let input = String(data: data,
-                                 encoding: .utf8)
-        else { throw Error.dataConversionFailed }
+        let (lines, optVersion, preprocDiagnostics) = try preprocess(data, strictness: strictness)
 
-        let rawLines = input.split(separator: /\n|(?:\r\n?)/,
-                                   omittingEmptySubsequences: false)
-        let lines = _joinContinuationLines(rawLines)
+        diagnostics.append(contentsOf: preprocDiagnostics)
+
+        // Phase 1 bridge: nil → .current (removed in Phase 2)
+        let version = optVersion ?? .current
 
         var context = ABCParseContext()
         var inFileHeader = true
 
-        let (version, bodyLines) = try _resolveFileID(lines, &diagnostics)
-
-        var idx = bodyLines.startIndex
+        var idx = lines.startIndex
         var restLines: [Line] = []
 
-        while idx < bodyLines.endIndex {
-            let text = bodyLines[idx]
+        while idx < lines.endIndex {
+            let text = lines[idx]
 
             idx += 1
 
@@ -192,8 +143,8 @@ extension ABCParser {
                 var contentLines: [String] = []
                 var foundEnd = false
 
-                while idx < bodyLines.endIndex {
-                    let contentText = bodyLines[idx]
+                while idx < lines.endIndex {
+                    let contentText = lines[idx]
 
                     idx += 1
 
@@ -476,65 +427,5 @@ extension ABCParser {
 
         return ABCVersion(major: major,
                           minor: minor)
-    }
-
-    private func _resolveFileID(_ lines: [Substring],
-                                _ diagnostics: inout [Diagnostic]) throws -> (ABCVersion, [Substring]) {
-        var version = ABCVersion.current
-
-        guard let firstText = lines.first,
-              firstText.hasPrefix(Self.expectedFileIDPrefix)
-        else {
-            //
-            // No "%abc" prefix on the first line.  In strict mode the file ID is
-            // required; in lenient mode assume version 2.1 and include all lines
-            // in the body.
-            //
-            if strictness == .strict {
-                throw Error.missingFileID
-            }
-
-            diagnostics.append(.missingFileID)
-
-            return (version, Array(lines))
-        }
-
-        //
-        // First line starts with "%abc" — consume it regardless of validity.
-        //
-        do {
-            if let line = try _parseFileIDLine(firstText),
-               case let .fileID(fileID) = line {
-                let v = fileID.version
-
-                if !ABCVersion.supported.contains(v) {
-                    if strictness == .strict {
-                        throw Error.unsupportedVersion(v)
-                    }
-
-                    diagnostics.append(.unsupportedVersion(v))
-                }
-
-                version = v
-            } else {
-                //
-                // "%abc" prefix but parsed to nil or a non-fileID line (should
-                // not happen in practice but handled defensively).
-                //
-                if strictness == .strict {
-                    throw Error.missingFileID
-                }
-
-                diagnostics.append(.missingFileID)
-            }
-        } catch {
-            if strictness == .strict {
-                throw error
-            }
-
-            diagnostics.append(.missingFileID)
-        }
-
-        return (version, Array(lines.dropFirst()))
     }
 }
