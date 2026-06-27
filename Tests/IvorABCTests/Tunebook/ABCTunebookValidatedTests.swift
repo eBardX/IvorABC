@@ -1,5 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+import Foundation
 @testable import IvorABC
 import Testing
 import XestiTools
@@ -182,5 +183,121 @@ extension ABCTunebookValidatedTests {
         let (_, issues) = try tunebook.normalized().validated()
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 1)])
+    }
+
+    @Test
+    func validated_preservesIsNormalized() throws {
+        let normalized = minimalTunebook().normalized()
+        let (validated, _) = try normalized.validated()
+
+        #expect(validated.isNormalized)
+        #expect(validated.isValidated)
+    }
+
+    @Test
+    func validated_canonicalPipeline_parse_normalized_validated_yieldsTT() throws {
+        // parse → normalized() → validated() must reach (T,T) for a clean input
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let parsed = try ABCParser().parse(Data(input.utf8))
+        let (validated, issues) = try parsed.normalized().validated()
+
+        #expect(validated.isNormalized)
+        #expect(validated.isValidated)
+        #expect(!issues.contains { $0.severity == .error })
+    }
+
+    // MARK: - Defensive legacy-construct re-check
+
+    @Test
+    func validated_legacyElemskipField_returnsError() throws {
+        let tune = ABCTune(header: [.field(.elemskip(.integer(3)))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyElemskipField(tuneIndex: 0)])
+        #expect(issues[0].severity == .error)
+    }
+
+    @Test
+    func validated_legacyInformationField_returnsError() throws {
+        let tune = ABCTune(header: [.field(.information("some info"))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyInformationField(tuneIndex: 0)])
+    }
+
+    @Test
+    func validated_legacyTempoForm_returnsError() throws {
+        let legacyTempo = ABCTempo(durations: [makeDuration(1, 4)],
+                                   rate: 120,
+                                   text: nil,
+                                   legacyBeatMultiple: 1).require()
+        let tune = ABCTune(header: [.field(.tempo(legacyTempo))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyTempoForm(tuneIndex: 0)])
+    }
+
+    @Test
+    func validated_legacyCharsetDirective_returnsError() throws {
+        let directive = makeDirective("abc-charset", "utf-8")
+        let tune = ABCTune(header: [.field(.key(makeKeySignature(.c, .major)))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [.directive(directive)],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyCharsetDirective(tuneIndex: nil)])
+    }
+
+    @Test
+    func validated_legacyVersionDirective_returnsError() throws {
+        let directive = makeDirective("abc-version", "2.1")
+        let tune = ABCTune(header: [.field(.key(makeKeySignature(.c, .major)))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [.directive(directive)],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyVersionDirective(tuneIndex: nil)])
+    }
+
+    @Test
+    func validated_legacyDecorationDirective_returnsError() throws {
+        let directive = makeDirective("decoration", "+")
+        let tune = ABCTune(header: [.directive(directive),
+                                    .field(.key(makeKeySignature(.c, .major)))],
+                           body: []).require()
+        let tunebook = ABCTunebook(version: .current,
+                                   fileHeader: [],
+                                   tunes: [tune],
+                                   isNormalized: true,
+                                   isValidated: false)
+        let (_, issues) = try tunebook.validated()
+
+        #expect(issues == [.legacyDecorationDirective(tuneIndex: 0)])
     }
 }

@@ -29,6 +29,7 @@ extension ABCTunebook {
         for header in fileHeader {
             switch header {
             case let .directive(directive):
+                _checkForLegacyDirective(directive, nil, &issues)
                 _updateState(&state, directive)
 
             case let .field(field):
@@ -36,7 +37,7 @@ extension ABCTunebook {
                             nil,
                             state,
                             &issues)
-
+                _checkForLegacyField(field, nil, &issues)
                 _updateState(&state, field)
             }
         }
@@ -47,6 +48,7 @@ extension ABCTunebook {
             for entry in tune.header {
                 switch entry {
                 case let .directive(directive):
+                    _checkForLegacyDirective(directive, tuneIndex, &issues)
                     _updateState(&state, directive)
 
                 case let .field(field):
@@ -54,7 +56,7 @@ extension ABCTunebook {
                                 tuneIndex,
                                 state,
                                 &issues)
-
+                    _checkForLegacyField(field, tuneIndex, &issues)
                     _updateState(&state, field, true)
                 }
             }
@@ -62,6 +64,7 @@ extension ABCTunebook {
             for entry in tune.body {
                 switch entry {
                 case let .directive(directive):
+                    _checkForLegacyDirective(directive, tuneIndex, &issues)
                     _updateState(&state, directive)
 
                 case let .field(field):
@@ -69,7 +72,7 @@ extension ABCTunebook {
                                 tuneIndex,
                                 state,
                                 &issues)
-
+                    _checkForLegacyField(field, tuneIndex, &issues)
                     _updateState(&state, field, true)
 
                 case let .symbols(symbols):
@@ -155,12 +158,46 @@ private func _checkSymbol(_ symbol: ABCSymbol,
                     tuneIndex,
                     state,
                     &issues)
+        _checkForLegacyField(field, tuneIndex, &issues)
         _updateState(&state, field, true)
 
     case let .shorthand(shorthand):
         if shorthand != .dot, !state.isShorthandDefined(shorthand) {
             issues.append(.undefinedUserSymbol(tuneIndex: tuneIndex))
         }
+
+    default:
+        break
+    }
+}
+
+private func _checkForLegacyDirective(_ directive: ABCDirective,
+                                      _ tuneIndex: Int?,
+                                      _ issues: inout [ABCValidationIssue]) {
+    if directive.name == .abcCharset {
+        issues.append(.legacyCharsetDirective(tuneIndex: tuneIndex))
+    } else if directive.name == .abcVersion {
+        issues.append(.legacyVersionDirective(tuneIndex: tuneIndex))
+    } else if directive.name == .decoration, directive.value == "+" {
+        issues.append(.legacyDecorationDirective(tuneIndex: tuneIndex))
+    }
+}
+
+private func _checkForLegacyField(_ field: ABCField,
+                                  _ tuneIndex: Int?,
+                                  _ issues: inout [ABCValidationIssue]) {
+    switch field {
+    case .elemskip:
+        issues.append(.legacyElemskipField(tuneIndex: tuneIndex))
+
+    case .information:
+        issues.append(.legacyInformationField(tuneIndex: tuneIndex))
+
+    case let .tempo(tempo) where tempo.legacyBeatMultiple != nil:
+        issues.append(.legacyTempoForm(tuneIndex: tuneIndex))
+
+    case let .instruction(directive):
+        _checkForLegacyDirective(directive, tuneIndex, &issues)
 
     default:
         break

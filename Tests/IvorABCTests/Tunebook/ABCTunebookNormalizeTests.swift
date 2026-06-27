@@ -1,5 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
+import Foundation
 @testable import IvorABC
 import Testing
 import XestiTools
@@ -179,5 +180,23 @@ extension ABCTunebookNormalizeTests {
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(tunebook.normalized().fileHeader.isEmpty)
+    }
+
+    @Test
+    func normalized_deprecatedTempo_v21_thenValidated_returnsNoErrors() throws {
+        // Q:120 in 2.1 → deprecated tempo (legacyBeatMultiple=1), normalized away,
+        // then validated → no error-severity issues
+        let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+
+        let normalized = tunebook.normalized()
+
+        #expect(normalized.isNormalized)
+
+        let (_, issues) = try normalized.validated()
+
+        #expect(!issues.contains { $0.severity == .error })
     }
 }

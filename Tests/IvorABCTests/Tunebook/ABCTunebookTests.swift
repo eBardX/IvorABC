@@ -29,6 +29,14 @@ extension ABCTunebookTests {
     }
 
     @Test
+    func equality_ignoresIsValidated() throws {
+        let normalized = minimalTunebook().normalized()
+        let (validated, _) = try normalized.validated()
+
+        #expect(normalized == validated)
+    }
+
+    @Test
     func inequality() {
         let tune = makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])
 
