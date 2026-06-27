@@ -68,6 +68,18 @@ internal func preprocess(_ data: Data,
     let prescan = _preScanLines(rawLines)
     let version = prescan.fileIDVersion ?? prescan.directiveVersion
 
+    if let raw = prescan.fileIDRawVersionString {
+        diagnostics.append(.malformedVersion(raw))
+    } else if prescan.fileIDVersion == nil,
+              let raw = prescan.directiveRawVersionString {
+        diagnostics.append(.malformedVersion(raw))
+    }
+
+    if let version,
+       !ABCVersion.supported.contains(version) {
+        diagnostics.append(.unrecognizedVersion(version))
+    }
+
     let encoding = _resolveCharset(hadUTF8BOM: hadUTF8BOM,
                                    charsetName: prescan.charsetName,
                                    duplicateCharsetNames: prescan.duplicateCharsetNames,
@@ -107,14 +119,18 @@ internal func preprocess(_ data: Data,
 private struct _PreScanResult {
     init() {
         self.charsetName = nil
+        self.directiveRawVersionString = nil
         self.directiveVersion = nil
         self.duplicateCharsetNames = []
+        self.fileIDRawVersionString = nil
         self.fileIDVersion = nil
     }
 
     var charsetName: String?
+    var directiveRawVersionString: String?
     var directiveVersion: ABCVersion?
     var duplicateCharsetNames: [String]
+    var fileIDRawVersionString: String?
     var fileIDVersion: ABCVersion?
 }
 
@@ -167,7 +183,12 @@ private func _parseDirectiveContent(_ rest: Substring,
     switch name {
     case "abc-version":
         if result.directiveVersion == nil {
-            result.directiveVersion = _parseVersionString(Substring(value))
+            if let parsed = _parseVersionString(Substring(value)) {
+                result.directiveVersion = parsed
+            } else if !value.isEmpty,
+                      result.directiveRawVersionString == nil {
+                result.directiveRawVersionString = value
+            }
         }
 
     case "abc-charset":
@@ -207,7 +228,11 @@ private func _preScanLines(_ lines: [Substring]) -> _PreScanResult {
         if index == 0, line.hasPrefix("%abc-") {
             let versionStr = line.dropFirst(5).prefix { !$0.isABCWhitespace && $0 != "%" }
 
-            result.fileIDVersion = _parseVersionString(versionStr)
+            if let parsed = _parseVersionString(versionStr) {
+                result.fileIDVersion = parsed
+            } else {
+                result.fileIDRawVersionString = String(versionStr)
+            }
         }
 
         _handleDirectiveContent(line, &result)

@@ -6,9 +6,7 @@ private import XestiTools
 
 /// A parser for ABC notation.
 ///
-/// By default the parser operates in ``Strictness/strict`` mode, which requires
-/// a valid `%abc-M.m` file identifier (where `M.m` is a known supported
-/// version — currently 1.6, 2.0, or 2.1) on the first line and throws
+/// By default the parser operates in ``Strictness/strict`` mode, which throws
 /// ``Error`` on any deviation from the standard. Pass `strictness: .lenient`
 /// to ``init(strictness:)`` for a mode that tolerates common real-world
 /// deviations and emits ``Diagnostic`` values in place of errors.
@@ -83,7 +81,6 @@ extension ABCParser {
     private static let expectedBeginDirectivePrefix = "%%begin"
     private static let expectedDirectivePrefix      = "%%"
     private static let expectedEndDirectivePrefix   = "%%end"
-    private static let expectedFileIDPrefix         = "%abc"
 
     // MARK: Private Instance Methods
 
@@ -119,12 +116,9 @@ extension ABCParser {
 
     private func _parse(_ data: Data,
                         _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
-        let (lines, optVersion, preprocDiagnostics) = try preprocess(data, strictness: strictness)
+        let (lines, version, preprocDiagnostics) = try preprocess(data, strictness: strictness)
 
         diagnostics.append(contentsOf: preprocDiagnostics)
-
-        // Phase 1 bridge: nil → .current (removed in Phase 2)
-        let version = optVersion ?? .current
 
         var context = ABCParseContext()
         var inFileHeader = true
@@ -248,7 +242,7 @@ extension ABCParser {
 
     // swiftlint:disable:next cyclomatic_complexity
     private func _parseFieldLine(_ input: Substring,
-                                 _ version: ABCVersion,
+                                 _ version: ABCVersion?,
                                  _ context: inout ABCParseContext,
                                  _ diagnostics: inout [Diagnostic]) throws -> Line? {
         guard let letter = input.first,
@@ -354,34 +348,11 @@ extension ABCParser {
         return .directive(ABCDirective(name: name, value: value))
     }
 
-    private func _parseFileID(_ tidyInput: Substring) throws -> ABCFileID {
-        guard tidyInput.first == "-"
-        else { throw Error.invalidFileID(Self.expectedFileIDPrefix + tidyInput) }
-
-        let version = try _parseVersion(tidyInput.dropFirst())
-
-        return ABCFileID(version: version)
-    }
-
-    private func _parseFileIDLine(_ input: Substring) throws -> Line? {
-        let prefix = Self.expectedFileIDPrefix
-
-        guard input.hasPrefix(prefix)
-        else { return nil }
-
-        let tidyInput = trimSuffix(uncomment(input.dropFirst(prefix.count)))
-
-        let fileID = try _parseFileID(tidyInput)
-
-        return .fileID(fileID)
-    }
-
     private func _parseLine(_ input: Substring,
-                            _ version: ABCVersion,
+                            _ version: ABCVersion?,
                             _ context: inout ABCParseContext,
                             _ diagnostics: inout [Diagnostic]) throws -> Line? {
         try _parseEmptyLine(input)
-        ?? _parseFileIDLine(input)
         ?? _parseDirectiveLine(input)
         ?? _parseFieldLine(input, version, &context, &diagnostics)
         ?? _parseSymbolsLine(input, &context)
@@ -413,19 +384,5 @@ extension ABCParser {
         else { return nil }
 
         return .symbols(symbols)
-    }
-
-    private func _parseVersion(_ tidyInput: Substring) throws -> ABCVersion {
-        let parts = tidyInput.split(separator: ".",
-                                    maxSplits: 1,
-                                    omittingEmptySubsequences: false)
-
-        guard parts.count == 2,
-              let major = UInt(parts[0]),
-              let minor = UInt(parts[1])
-        else { throw Error.invalidVersion(tidyInput) }
-
-        return ABCVersion(major: major,
-                          minor: minor)
     }
 }

@@ -45,25 +45,27 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parseWithDiagnostics_missingFileID_noMissingFileIDDiagnostic() throws {
+    func parseWithDiagnostics_missingFileID_nilVersion() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
-        let (_, diagnostics) = try parser.parseWithDiagnostics(data)
+        let (tunebook, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.missingFileID))
+        #expect(tunebook.version == nil)
+        #expect(!diagnostics.contains { if case .malformedVersion = $0 { true } else { false } })
+        #expect(!diagnostics.contains { if case .unrecognizedVersion = $0 { true } else { false } })
     }
 
     @Test
-    func parseWithDiagnostics_presentFileID_noMissingFileIDDiagnostic() throws {
+    func parseWithDiagnostics_presentFileID_setsVersion() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
-        let (_, diagnostics) = try parser.parseWithDiagnostics(data)
+        let (tunebook, _) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.missingFileID))
+        #expect(tunebook.version == makeVersion(2, 1))
     }
 
     @Test
@@ -78,25 +80,25 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parseWithDiagnostics_unsupportedVersion_noUnsupportedVersionDiagnostic() throws {
+    func parseWithDiagnostics_unrecognizedVersion_emitsUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(3, 0))))
+        #expect(diagnostics.contains(.unrecognizedVersion(makeVersion(3, 0))))
     }
 
     @Test
-    func parseWithDiagnostics_v20_lenient_noUnsupportedVersionDiagnostic() throws {
+    func parseWithDiagnostics_v20_noUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(2, 0))))
+        #expect(!diagnostics.contains(.unrecognizedVersion(makeVersion(2, 0))))
     }
 
     @Test
@@ -331,14 +333,14 @@ extension ABCParserStrictnessTests {
     }
 
     @Test
-    func parseWithDiagnostics_v16_noUnsupportedVersionDiagnostic() throws {
+    func parseWithDiagnostics_v16_noUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-1.6\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
         let parser = ABCParser(strictness: .lenient)
 
         let (_, diagnostics) = try parser.parseWithDiagnostics(data)
 
-        #expect(!diagnostics.contains(.unsupportedVersion(makeVersion(1, 6))))
+        #expect(!diagnostics.contains(.unrecognizedVersion(makeVersion(1, 6))))
     }
 
     // MARK: - Header/body structure

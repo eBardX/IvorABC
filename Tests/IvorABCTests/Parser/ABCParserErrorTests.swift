@@ -47,13 +47,6 @@ extension ABCParserErrorTests {
     }
 
     @Test
-    func message_invalidFileID() {
-        let error = ABCParser.Error.invalidFileID("%abc-3.0")
-
-        #expect(error.message.contains("%abc-3.0"))
-    }
-
-    @Test
     func message_invalidKeySignature() {
         let error = ABCParser.Error.invalidKeySignature("B##")
 
@@ -145,13 +138,6 @@ extension ABCParserErrorTests {
     }
 
     @Test
-    func message_invalidVersion() {
-        let error = ABCParser.Error.invalidVersion("abc")
-
-        #expect(error.message.contains("abc"))
-    }
-
-    @Test
     func message_invalidVoice() {
         let error = ABCParser.Error.invalidVoice("")
 
@@ -163,13 +149,6 @@ extension ABCParserErrorTests {
         let error = ABCParser.Error.misplacedField(.area("test"))
 
         #expect(error.message.contains("Misplaced"))
-    }
-
-    @Test
-    func message_missingFileID() {
-        let error = ABCParser.Error.missingFileID
-
-        #expect(error.message.contains("Missing"))
     }
 
     @Test
@@ -206,13 +185,5 @@ extension ABCParserErrorTests {
 
         #expect(error.message.contains("%%begintext"))
         #expect(error.message.contains("%%endtext"))
-    }
-
-    @Test
-    func message_unsupportedVersion() {
-        let version = makeVersion(3, 0)
-        let error = ABCParser.Error.unsupportedVersion(version)
-
-        #expect(error.message.contains("3.0"))
     }
 }

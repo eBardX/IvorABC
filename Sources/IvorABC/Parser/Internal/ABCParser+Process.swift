@@ -6,7 +6,7 @@ extension ABCParser {
 
     // MARK: Internal Instance Methods
 
-    internal func makeTunebook(_ version: ABCVersion,
+    internal func makeTunebook(_ version: ABCVersion?,
                                _ restLines: [Line],
                                _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
         var lineReader = SequenceReader(restLines)

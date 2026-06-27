@@ -352,10 +352,6 @@ func makeDuration(_ numerator: UInt,
                 denominator: denominator).require()
 }
 
-func makeFileID(_ version: ABCVersion) -> ABCFileID {
-    ABCFileID(version: version)
-}
-
 func makeGraceNotes(_ notes: [ABCNote],
                     _ isSlashed: Bool) -> ABCGraceNotes {
     ABCGraceNotes(notes: notes,

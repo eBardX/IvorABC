@@ -56,8 +56,8 @@ extension ABCFormatter {
         /// The formatted buffer could not be converted to UTF-8 data.
         case stringConversionFailed
 
-        /// The tunebook specifies an ABC version other than 2.1.
-        case unsupportedVersion(ABCVersion)
+        /// The tunebook specifies an ABC version other than 2.1, or has no version.
+        case unsupportedVersion(ABCVersion?)
     }
 }
 
@@ -115,7 +115,11 @@ extension ABCFormatter.Error: EnhancedError {
             "Failed to convert string to UTF-8 data"
 
         case let .unsupportedVersion(version):
-            "Unsupported ABC version: \(version.major).\(version.minor)"
+            if let version {
+                "Unsupported ABC version: \(version.major).\(version.minor)"
+            } else {
+                "ABC version is unspecified"
+            }
         }
     }
 }

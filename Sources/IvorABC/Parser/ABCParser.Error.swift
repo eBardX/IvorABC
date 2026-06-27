@@ -19,9 +19,6 @@ extension ABCParser {
         /// The associated `Bool` value is `true` if the field was inline.
         case invalidField(Bool, Substring)
 
-        /// The parser encountered an invalid file identifier.
-        case invalidFileID(Substring)
-
         /// The parser encountered an invalid key signature.
         case invalidKeySignature(Substring)
 
@@ -73,9 +70,6 @@ extension ABCParser {
         /// The parser encountered an invalid user-defined symbol mapping.
         case invalidUserSymbol(Substring)
 
-        /// The parser encountered an invalid version string.
-        case invalidVersion(Substring)
-
         /// The parser encountered an invalid voice specification.
         case invalidVoice(Substring)
 
@@ -84,12 +78,6 @@ extension ABCParser {
         /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
         /// instead and reported as ``ABCParser/Diagnostic/misplacedField(_:)``.
         case misplacedField(ABCField)
-
-        /// The input is missing the required file identifier on the first line.
-        ///
-        /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
-        /// instead and reported as ``ABCParser/Diagnostic/missingFileID``.
-        case missingFileID
 
         /// A tune is missing its required ``ABCField/key(_:)`` field, which must
         /// be the last entry in the tune header.
@@ -115,12 +103,6 @@ extension ABCParser {
 
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
-
-        /// The file identifier specifies an unsupported ABC version.
-        ///
-        /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
-        /// instead and reported as ``ABCParser/Diagnostic/unsupportedVersion(_:)``.
-        case unsupportedVersion(ABCVersion)
     }
 }
 
@@ -147,9 +129,6 @@ extension ABCParser.Error: EnhancedError {
             } else {
                 "Invalid field: '\(value)'"
             }
-
-        case let .invalidFileID(value):
-            "Invalid file identifier: '\(value)'"
 
         case let .invalidKeySignature(value):
             "Invalid key signature: '\(value)'"
@@ -196,17 +175,11 @@ extension ABCParser.Error: EnhancedError {
         case let .invalidUserSymbol(value):
             "Invalid user-defined symbol: '\(value)'"
 
-        case let .invalidVersion(value):
-            "Invalid version: '\(value)'"
-
         case let .invalidVoice(value):
             "Invalid voice: '\(value)'"
 
         case let .misplacedField(field):
             "Misplaced field: \(field)"
-
-        case .missingFileID:
-            "Missing required file ID"
 
         case .missingKeyField:
             "Tune is missing required K: field"
@@ -225,9 +198,6 @@ extension ABCParser.Error: EnhancedError {
 
         case let .unmatchedBeginDirective(name):
             "'%%begin\(name)' has no matching '%%end\(name)'"
-
-        case let .unsupportedVersion(version):
-            "Unsupported ABC version: \(version.major).\(version.minor)"
         }
     }
 }

@@ -11,11 +11,6 @@ extension ABCParser {
         /// recovered.
         ///
         /// Specifically, lenient mode accepts:
-        /// - A missing `%abc` file identifier (assumes ABC 2.1; emits
-        ///   ``Diagnostic/missingFileID``).
-        /// - A `%abc` identifier with an unsupported version (parses with
-        ///   the declared version; emits
-        ///   ``Diagnostic/unsupportedVersion(_:)``).
         /// - A bare-integer tempo such as `Q:120` with no beat unit (the beat
         ///   unit is implied by the active `L:` value; emits
         ///   ``Diagnostic/bareTempoRate(_:)``).
@@ -29,14 +24,12 @@ extension ABCParser {
         /// any deviation throws an ``Error``. This is the default.
         ///
         /// Specifically, strict mode requires:
-        /// - A `%abc-M.m` file identifier on the first line, where `M.m`
-        ///   is a known supported version (currently 1.6, 2.0, or 2.1).
         /// - All fields in their permitted sections.
         /// - Tempo in the `note=rate` form (e.g. `Q:1/4=120`) when parsing
-        ///   an ABC 2.1 file. ABC 2.0 and 1.6 files may use the bare-integer
-        ///   form (e.g. `Q:120`). ABC 1.6 files additionally accept the
-        ///   `Q:C=rate` and `Q:Cn=rate` forms where `C` represents the
-        ///   active default note length.
+        ///   an ABC 2.1 or unversioned file. ABC 2.0 and 1.6 files may use
+        ///   the bare-integer form (e.g. `Q:120`). ABC 1.6 files additionally
+        ///   accept the `Q:C=rate` and `Q:Cn=rate` forms where `C` represents
+        ///   the active default note length.
         ///
         /// ABC 1.6 differences accepted in strict mode:
         /// - `I:` is treated as a free-text information field (not a 2.x

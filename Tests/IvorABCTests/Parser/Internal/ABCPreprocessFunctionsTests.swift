@@ -294,4 +294,81 @@ extension ABCPreprocessFunctionsTests {
 
         #expect(contLine == "+:Second line")
     }
+
+    // MARK: - Version diagnostics
+
+    @Test
+    func preprocess_malformedFileIDVersion_emitsMalformedVersionAndNilVersion() throws {
+        let input = "%abc-2.x\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == nil)
+        #expect(diagnostics.contains(.malformedVersion("2.x")))
+    }
+
+    @Test
+    func preprocess_malformedFileIDVersion_dashOnly_emitsMalformedVersionDiagnostic() throws {
+        // %abc- with no version string is malformed
+        let input = "%abc-\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == nil)
+        #expect(diagnostics.contains(.malformedVersion("")))
+    }
+
+    @Test
+    func preprocess_bareFileID_noVersion_nilVersionNoDiagnostic() throws {
+        // %abc with no dash is "unversioned" — not malformed
+        let input = "%abc\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == nil)
+        #expect(!diagnostics.contains { if case .malformedVersion = $0 { true } else { false } })
+    }
+
+    @Test
+    func preprocess_unrecognizedVersion_emitsUnrecognizedVersionDiagnostic() throws {
+        let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == ABCVersion(major: 3, minor: 0))
+        #expect(diagnostics.contains(.unrecognizedVersion(ABCVersion(major: 3, minor: 0))))
+    }
+
+    @Test
+    func preprocess_recognizedVersion_noUnrecognizedVersionDiagnostic() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == ABCVersion(major: 2, minor: 1))
+        #expect(!diagnostics.contains { if case .unrecognizedVersion = $0 { true } else { false } })
+    }
+
+    @Test
+    func preprocess_malformedDirectiveVersion_fallsBackToNil_emitsMalformedDiagnostic() throws {
+        // No %abc line; %%abc-version has bad value → malformed, version nil
+        let input = "%%abc-version x.y\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == nil)
+        #expect(diagnostics.contains(.malformedVersion("x.y")))
+    }
+
+    @Test
+    func preprocess_malformedFileIDVersion_validDirective_usesDirectiveVersion() throws {
+        // %abc-x.y is malformed; %%abc-version 2.0 is valid fallback
+        let input = "%abc-x.y\n%%abc-version 2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let data = Data(input.utf8)
+        let (_, version, diagnostics) = try preprocess(data)
+
+        #expect(version == ABCVersion(major: 2, minor: 0))
+        #expect(diagnostics.contains(.malformedVersion("x.y")))
+        #expect(!diagnostics.contains { if case .unrecognizedVersion = $0 { true } else { false } })
+    }
 }

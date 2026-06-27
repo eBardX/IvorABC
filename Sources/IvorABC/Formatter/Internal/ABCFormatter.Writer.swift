@@ -36,10 +36,11 @@ extension ABCFormatter.Writer {
     // MARK: Internal Instance Methods
 
     internal mutating func writeTunebook() throws -> Data {
-        guard tunebook.version == ABCVersion.current
+        guard let version = tunebook.version,
+              version == ABCVersion.current
         else { throw ABCFormatter.Error.unsupportedVersion(tunebook.version) }
 
-        buffer.append("%abc-\(tunebook.version.major).\(tunebook.version.minor)\n")
+        buffer.append("%abc-\(version.major).\(version.minor)\n")
 
         try _writeFileHeaders()
 

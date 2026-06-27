@@ -26,12 +26,14 @@ extension ABCParser {
         /// was re-decoded as ISO-8859-1.
         case invalidUTF8
 
+        /// The version string in a `%abc-M.m`, `%%abc-version`, or `I:abc-version`
+        /// line could not be parsed as a valid `M.m` version number. The associated
+        /// value is the raw version string that was encountered.
+        case malformedVersion(String)
+
         /// A field appeared outside its permitted tune header or body section and
         /// was skipped. The associated value is the field that was skipped.
         case misplacedField(ABCField)
-
-        /// The input had no `%abc` file identifier line; ABC version 2.1 was assumed.
-        case missingFileID
 
         /// A tune had no ``ABCField/key(_:)`` field terminating its header; the
         /// tune body was started at the first music symbols line.
@@ -46,10 +48,11 @@ extension ABCParser {
         /// the text of the skipped line.
         case unrecognizedLine(String)
 
-        /// The file identifier specified an unsupported ABC version; parsing
-        /// continued with the declared version. The associated value is the
-        /// version that was declared.
-        case unsupportedVersion(ABCVersion)
+        /// The file identifier or `%%abc-version` directive declared a version not
+        /// known to the parser; parsing continued with the declared version. The
+        /// associated value is the version that was declared. This diagnostic is
+        /// emitted regardless of strictness mode.
+        case unrecognizedVersion(ABCVersion)
     }
 }
 
@@ -74,11 +77,11 @@ extension ABCParser.Diagnostic {
         case .invalidUTF8:
             "Declared encoding could not decode the file content; falling back to ISO-8859-1"
 
+        case let .malformedVersion(raw):
+            "Malformed version string '\(raw)'; version is treated as unspecified"
+
         case let .misplacedField(field):
             "Misplaced field '\(field)' was skipped"
-
-        case .missingFileID:
-            "Missing file identifier; assumed ABC 2.1"
 
         case .missingKeyField:
             "Tune has no K: field; tune body assumed to start at first music line"
@@ -89,8 +92,8 @@ extension ABCParser.Diagnostic {
         case let .unrecognizedLine(line):
             "Unrecognized line skipped: '\(line)'"
 
-        case let .unsupportedVersion(version):
-            "Unsupported ABC version \(version.major).\(version.minor); parsing continued"
+        case let .unrecognizedVersion(version):
+            "Unrecognized ABC version \(version.major).\(version.minor); parsing continued with declared version"
         }
     }
 }
