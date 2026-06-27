@@ -7,14 +7,22 @@ extension ABCTunebook {
     /// Validates this tunebook against the ABC specification and returns
     /// any issues found.
     ///
-    /// Error-severity issues indicate structural violations that will cause
-    /// ``ABCFormatter`` to emit invalid ABC. Warning-severity issues indicate
-    /// deviations from "should" rules in the specification that may cause
-    /// interoperability problems.
+    /// - Throws: ``ABCValidationError/notNormalized`` if ``isNormalized`` is
+    ///           `false`. Call ``normalized()`` before calling this method.
     ///
-    /// - Returns: An array of ``ABCValidationIssue`` values. An empty array
-    ///            means the tunebook is fully conformant.
-    public func validate() -> [ABCValidationIssue] {
+    /// - Returns: A tuple of the validated tunebook and an array of
+    ///            ``ABCValidationIssue`` values. The tunebook in the tuple is a
+    ///            copy of `self` with ``isValidated`` set to `true` when no
+    ///            error-severity issues are found; otherwise `self` is returned
+    ///            unchanged (re-validating after fixing issues is required).
+    ///            An empty issues array means the tunebook is fully conformant.
+    public func validated() throws -> (ABCTunebook, [ABCValidationIssue]) {
+        guard isNormalized
+        else { throw ABCValidationError.notNormalized }
+
+        guard !isValidated
+        else { return (self, []) }
+
         var issues: [ABCValidationIssue] = []
         var state = _ValidationState()
 
@@ -75,7 +83,17 @@ extension ABCTunebook {
             }
         }
 
-        return issues
+        let hasErrors = issues.contains { $0.severity == .error }
+
+        if hasErrors {
+            return (self, issues)
+        }
+
+        return (ABCTunebook(version: version,
+                            fileHeader: fileHeader,
+                            tunes: tunes,
+                            isNormalized: isNormalized,
+                            isValidated: true), issues)
     }
 }
 
@@ -201,6 +219,7 @@ private func _updateState(_ state: inout _ValidationState,
 
 private struct _ValidationState {
     var activeDialect: ABCDecoration.Dialect = .bang
+    var globalDeassignedShorthands: Set<ABCShorthand> = []
     var globalDefinedShorthands: Set<ABCShorthand> = [.tilde,
                                                       .hUpper,
                                                       .lUpper,
@@ -211,9 +230,8 @@ private struct _ValidationState {
                                                       .tUpper,
                                                       .uLower,
                                                       .vLower]
-    var globalDeassignedShorthands: Set<ABCShorthand> = []
-    var tuneDefinedShorthands: Set<ABCShorthand> = []
     var tuneDeassignedShorthands: Set<ABCShorthand> = []
+    var tuneDefinedShorthands: Set<ABCShorthand> = []
 
     func isShorthandDefined(_ shorthand: ABCShorthand) -> Bool {
         if tuneDeassignedShorthands.contains(shorthand) {
@@ -232,7 +250,7 @@ private struct _ValidationState {
     }
 
     mutating func resetTuneScope() {
-        tuneDefinedShorthands = []
         tuneDeassignedShorthands = []
+        tuneDefinedShorthands = []
     }
 }

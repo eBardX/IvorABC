@@ -10,6 +10,10 @@ extension ABCParser {
                                _ interpretation: ABCInterpretation,
                                _ restLines: [Line],
                                _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
+        let parserIsNormalized = version == .current
+            && !diagnostics.contains { if case .deprecatedTempo = $0 { true } else { false } }
+            && !_containsLegacyConstructs(restLines)
+
         var lineReader = SequenceReader(restLines)
 
         let fileHeaders = _processFileHeaderLines(&lineReader)
@@ -17,15 +21,76 @@ extension ABCParser {
                                    &lineReader,
                                    &diagnostics)
 
-        guard let tunebook = ABCTunebook(version: version,
-                                         fileHeader: fileHeaders,
-                                         tunes: tunes)
+        guard !tunes.isEmpty
         else { throw ABCParser.Error.missingTunes }
 
-        return tunebook
+        return ABCTunebook(version: version,
+                           fileHeader: fileHeaders,
+                           tunes: tunes,
+                           isNormalized: parserIsNormalized,
+                           isValidated: false)
     }
 
     // MARK: Private Instance Methods
+
+    private func _bodyPart(from partSequence: ABCPartSequence) -> ABCPart? {
+        guard partSequence.items.count == 1,
+              case let .part(part, 1) = partSequence.items[0]
+        else { return nil }
+
+        return part
+    }
+
+    private func _containsLegacyConstructs(_ lines: [Line]) -> Bool {
+        for line in lines {
+            switch line {
+            case let .directive(directive):
+                if directive.name == .abcCharset || directive.name == .abcVersion {
+                    return true
+                }
+
+                if directive.name == .decoration, directive.value == "+" {
+                    return true
+                }
+
+            case let .field(.tempo(tempo)):
+                if tempo.legacyBeatMultiple != nil {
+                    return true
+                }
+
+            case .field(.elemskip):
+                return true
+
+            case .field(.information):
+                return true
+
+            case let .symbols(symbols):
+                for symbol in symbols {
+                    switch symbol {
+                    case let .decoration(d) where d.dialect == .plus:
+                        return true
+
+                    case let .inlineField(.instruction(d)):
+                        if d.name == .abcCharset || d.name == .abcVersion {
+                            return true
+                        }
+
+                        if d.name == .decoration, d.value == "+" {
+                            return true
+                        }
+
+                    default:
+                        break
+                    }
+                }
+
+            default:
+                break
+            }
+        }
+
+        return false
+    }
 
     private func _handleMissingKeyField(_ interpretation: ABCInterpretation,
                                         _ inTuneBody: Bool,
@@ -149,6 +214,7 @@ extension ABCParser {
                 }
 
                 reader.skip()
+
                 continue
             }
 
@@ -156,6 +222,7 @@ extension ABCParser {
 
             if result.empty {
                 reader.skip()
+
                 break
             }
 
@@ -209,22 +276,16 @@ extension ABCParser {
             }
 
         case .symbols:
-            if interpretation.stance == .strict {
-                throw Error.missingKeyField
-            } else {
+            if interpretation.stance == .loose {
                 diagnostics.append(.missingKeyField)
+
                 inTuneBody = true
+
                 tuneBody.append(entry)
+            } else {
+                throw Error.missingKeyField
             }
         }
-    }
-
-    private func _bodyPart(from ps: ABCPartSequence) -> ABCPart? {
-        guard ps.items.count == 1,
-              case let .part(abcPart, 1) = ps.items[0]
-        else { return nil }
-
-        return abcPart
     }
 
     private func _processTuneBodyLine(_ line: Line,
@@ -240,8 +301,8 @@ extension ABCParser {
         case let .field(field):
             let effectiveField: ABCField
 
-            if case let .parts(ps) = field {
-                if let abcPart = _bodyPart(from: ps) {
+            if case let .parts(partSequence) = field {
+                if let abcPart = _bodyPart(from: partSequence) {
                     effectiveField = .part(abcPart)
                 } else if interpretation.stance == .loose {
                     diagnostics.append(.misplacedField(field))
@@ -262,35 +323,6 @@ extension ABCParser {
                 return (nil, false)
             } else {
                 throw Error.misplacedField(effectiveField)
-            }
-
-        case let .symbols(symbols):
-            return (.symbols(symbols), false)
-
-        default:
-            return (nil, false)
-        }
-    }
-
-    private func _processTuneHeaderLine(_ line: Line,
-                                        _ interpretation: ABCInterpretation,
-                                        _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
-        switch line {
-        case let .directive(directive):
-            return (.directive(directive), false)
-
-        case .empty:
-            return (nil, true)
-
-        case let .field(field):
-            if field.isValidInTuneHeader {
-                return (.field(field), false)
-            } else if interpretation.stance == .loose {
-                diagnostics.append(.misplacedField(field))
-
-                return (nil, false)
-            } else {
-                throw Error.misplacedField(field)
             }
 
         case let .symbols(symbols):
@@ -336,6 +368,35 @@ extension ABCParser {
             tuneBody.append(entry)
 
             reader.skip()
+        }
+    }
+
+    private func _processTuneHeaderLine(_ line: Line,
+                                        _ interpretation: ABCInterpretation,
+                                        _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
+        switch line {
+        case let .directive(directive):
+            return (.directive(directive), false)
+
+        case .empty:
+            return (nil, true)
+
+        case let .field(field):
+            if field.isValidInTuneHeader {
+                return (.field(field), false)
+            } else if interpretation.stance == .loose {
+                diagnostics.append(.misplacedField(field))
+
+                return (nil, false)
+            } else {
+                throw Error.misplacedField(field)
+            }
+
+        case let .symbols(symbols):
+            return (.symbols(symbols), false)
+
+        default:
+            return (nil, false)
         }
     }
 

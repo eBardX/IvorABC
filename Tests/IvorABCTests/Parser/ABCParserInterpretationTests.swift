@@ -537,4 +537,62 @@ extension ABCParserInterpretationTests {
 
         #expect(tunebook.tunes.count == 1)
     }
+
+    // MARK: - isNormalized optimization
+
+    @Test
+    func parse_cleanV21_isNormalized() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_cleanV20_isNotNormalized() throws {
+        let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_nilVersion_isNotNormalized() throws {
+        let input = "X:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_v21_withDeprecatedTempo_isNotNormalized() throws {
+        let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_v21_withAbcCharsetDirective_isNotNormalized() throws {
+        let input = "%abc-2.1\n%%abc-charset utf-8\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_v21_withAbcVersionDirective_isNotNormalized() throws {
+        let input = "%abc-2.1\n%%abc-version 2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
+
+    @Test
+    func parse_v21_withDecorationPlusDirective_isNotNormalized() throws {
+        let input = "%abc-2.1\n%%decoration +\nX:1\nT:Test\nK:C\nCDEF|\n"
+        let tunebook = try ABCParser().parse(Data(input.utf8))
+
+        #expect(!tunebook.isNormalized)
+    }
 }

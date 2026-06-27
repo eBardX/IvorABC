@@ -1,7 +1,5 @@
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
-internal import XestiTools
-
 /// An ABC file containing one or more tunes.
 ///
 /// In the ABC 2.1 specification, a file with a single tune is an *abc file*;
@@ -25,6 +23,8 @@ public struct ABCTunebook {
         else { return nil }
 
         self.fileHeader = fileHeader
+        self.isNormalized = false
+        self.isValidated = false
         self.tunes = tunes
         self.version = version
     }
@@ -33,6 +33,20 @@ public struct ABCTunebook {
 
     /// The entries that make up the file header of this tunebook.
     public let fileHeader: [ABCHeaderEntry]
+
+    /// Whether this tunebook has been normalized to ABC 2.1 via ``normalized()``.
+    ///
+    /// `false` for tunebooks produced by ``init(version:fileHeader:tunes:)``
+    /// until ``normalized()`` is called; `true` for tunebooks returned by the
+    /// parser for clean `%abc-2.1` input, and for all tunebooks returned by
+    /// ``normalized()``.
+    public let isNormalized: Bool
+
+    /// Whether this tunebook has been validated via ``validated()``.
+    ///
+    /// `false` until a successful ``validated()`` call returns a copy with this
+    /// flag set to `true`.
+    public let isValidated: Bool
 
     /// The tunes contained in this tunebook.
     public let tunes: [ABCTune]
@@ -44,6 +58,20 @@ public struct ABCTunebook {
 // MARK: -
 
 extension ABCTunebook {
+
+    // MARK: Internal Initializers
+
+    internal init(version: ABCVersion?,
+                  fileHeader: [ABCHeaderEntry],
+                  tunes: [ABCTune],
+                  isNormalized: Bool,
+                  isValidated: Bool) {
+        self.fileHeader = fileHeader
+        self.isNormalized = isNormalized
+        self.isValidated = isValidated
+        self.tunes = tunes
+        self.version = version
+    }
 
     // MARK: Private Type Methods
 
@@ -57,6 +85,18 @@ extension ABCTunebook {
 // MARK: - Equatable
 
 extension ABCTunebook: Equatable {
+
+    // MARK: Public Type Methods
+
+    /// Two tunebooks are equal when their ``version``, ``fileHeader``, and
+    /// ``tunes`` match; ``isNormalized`` and ``isValidated`` are intentionally
+    /// excluded because they are metadata, not content.
+    public static func == (lhs: Self,
+                           rhs: Self) -> Bool {
+        lhs.fileHeader == rhs.fileHeader
+        && lhs.tunes == rhs.tunes
+        && lhs.version == rhs.version
+    }
 }
 
 // MARK: - Sendable
