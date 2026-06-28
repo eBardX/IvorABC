@@ -303,7 +303,8 @@ extension ABCFormatterTests {
     @Test
     func field_area_emitsAField() throws {
         let book = makeTunebook([.field(.area("Ireland"))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("A:Ireland\n"))
     }
@@ -311,7 +312,8 @@ extension ABCFormatterTests {
     @Test
     func field_book_emitsBField() throws {
         let book = makeTunebook([.field(.book("My Book"))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("B:My Book\n"))
     }
@@ -319,7 +321,8 @@ extension ABCFormatterTests {
     @Test
     func field_composer_emitsCField() throws {
         let book = makeTunebook([.field(.composer("Bach"))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("C:Bach\n"))
     }
@@ -334,7 +337,8 @@ extension ABCFormatterTests {
     @Test
     func field_macro_emitsMacroField() throws {
         let book = makeTunebook([.field(.macro(makeMacro("~G2", "{A}G{F}G")))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("m:~G2={A}G{F}G\n"))
     }
@@ -366,7 +370,8 @@ extension ABCFormatterTests {
     @Test
     func field_unitNoteLength_emitsLField() throws {
         let book = makeTunebook([.field(.unitNoteLength(makeDuration(1, 8)))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("L:1/8\n"))
     }
@@ -374,7 +379,8 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_emitsUField() throws {
         let book = makeTunebook([.field(.userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("U:~=!roll!\n"))
     }
@@ -382,7 +388,8 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_annotation_emitsUField() throws {
         let book = makeTunebook([.field(.userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("U:H=\"^fermata\"\n"))
     }
@@ -390,7 +397,8 @@ extension ABCFormatterTests {
     @Test
     func field_userSymbol_deassignment_emitsNilSentinel() throws {
         let book = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper)))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("U:T=!nil!\n"))
     }
@@ -400,7 +408,8 @@ extension ABCFormatterTests {
         let book = makeTunebook([.directive(makeDirective("text",
                                                           "",
                                                           ["Line one", "Line two"]))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
         let output = try format(book)
 
         #expect(output.contains("%%begintext\nLine one\nLine two\n%%endtext\n"))
@@ -411,7 +420,8 @@ extension ABCFormatterTests {
         let book = makeTunebook([.directive(makeDirective("text",
                                                           "justify",
                                                           ["Some text"]))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
         let output = try format(book)
 
         #expect(output.contains("%%begintext justify\nSome text\n%%endtext\n"))
@@ -421,7 +431,8 @@ extension ABCFormatterTests {
     func fileHeader_directive_emitsPercentPercent() throws {
         let book = makeTunebook([.directive(makeDirective("midi",
                                                           "program 40"))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
         let output = try format(book)
 
         #expect(output.contains("%%midi program 40\n"))
@@ -430,36 +441,26 @@ extension ABCFormatterTests {
     @Test
     func fileHeader_meterField_emitsMField() throws {
         let book = makeTunebook([.field(.meter(makeTimeSignature(4, 4)))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
         let output = try format(book)
 
         #expect(output.contains("M:4/4\n"))
     }
 
     @Test
-    func fileHeader_misplacedField_throws() throws {
-        let book = makeTunebook([.field(.tuneTitle("Bad"))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+    func format_unvalidatedTunebook_throwsNotValidated() {
+        let book = makeTunebook([makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(throws: ABCFormatter.Error.misplacedFileHeaderField(.tuneTitle("Bad"))) {
+        #expect(throws: ABCFormatter.Error.notValidated) {
             try ABCFormatter().format(book)
         }
     }
 
     @Test
-    func fileIDLine_customVersion_throws() {
-        let book = makeTunebook(makeVersion(3, 0),
-                                [],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
-
-        #expect(throws: ABCFormatter.Error.unsupportedVersion(makeVersion(3, 0))) {
-            try format(book)
-        }
-    }
-
-    @Test
     func fileIDLine_version21_emitsCorrectHeader() throws {
-        let book = makeTunebook([makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
         let output = try format(book)
 
         #expect(output.hasPrefix("%abc-2.1\n"))
@@ -487,9 +488,11 @@ extension ABCFormatterTests {
     func idempotence_simpleTune_formatsIdentically() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nM:4/4\nL:1/8\nK:G\nGABc defe|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted1 = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted1 = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted1)
-        let formatted2 = try ABCFormatter().format(book2)
+        let (validatedBook2, _) = try book2.validated()
+        let formatted2 = try ABCFormatter().format(validatedBook2)
 
         #expect(formatted1 == formatted2)
     }
@@ -675,7 +678,8 @@ extension ABCFormatterTests {
     @Test
     func meter_common_emitsC() throws {
         let book = makeTunebook([.field(.meter(.common))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("M:C\n"))
     }
@@ -683,7 +687,8 @@ extension ABCFormatterTests {
     @Test
     func meter_complex_emitsParenthesizedForm() throws {
         let book = makeTunebook([.field(.meter(makeTimeSignature([2, 3, 2], 8)))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("M:(2+3+2)/8\n"))
     }
@@ -691,7 +696,8 @@ extension ABCFormatterTests {
     @Test
     func meter_cut_emitsCPipe() throws {
         let book = makeTunebook([.field(.meter(.cut))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("M:C|\n"))
     }
@@ -699,7 +705,8 @@ extension ABCFormatterTests {
     @Test
     func meter_empty_emitsNone() throws {
         let book = makeTunebook([.field(.meter(.empty))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("M:none\n"))
     }
@@ -707,7 +714,8 @@ extension ABCFormatterTests {
     @Test
     func meter_standard_emitsFraction() throws {
         let book = makeTunebook([.field(.meter(makeTimeSignature(3, 4)))],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
+                                [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(try format(book).contains("M:3/4\n"))
     }
@@ -849,7 +857,8 @@ extension ABCFormatterTests {
     func roundTrip_beamBreak_preservedAfterFormat() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -859,7 +868,8 @@ extension ABCFormatterTests {
     func roundTrip_beginEndBlock_producesEqualModel() throws {
         let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\nX:1\nT:Test\nK:C\nCDEF|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -869,7 +879,8 @@ extension ABCFormatterTests {
     func roundTrip_brokenRhythm_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nC>>D<E|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -879,7 +890,8 @@ extension ABCFormatterTests {
     func roundTrip_fileHeaderDirective_producesEqualModel() throws {
         let input = "%abc-2.1\n%%midi program 40\nX:1\nT:Test\nK:C\nCDEF|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -889,7 +901,8 @@ extension ABCFormatterTests {
     func roundTrip_keyWithAccidentals_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:G ^F\nGABc|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -899,7 +912,8 @@ extension ABCFormatterTests {
     func roundTrip_multipleVoices_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nV:V1\nV:V2\nK:C\nV:V1\nCDEF|\nV:V2\nGABc|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -909,7 +923,8 @@ extension ABCFormatterTests {
     func roundTrip_overlay_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/4\nK:C\nCG&EG|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -919,7 +934,8 @@ extension ABCFormatterTests {
     func roundTrip_simpleTune_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nM:4/4\nL:1/8\nK:G\nGABc defe|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -929,7 +945,8 @@ extension ABCFormatterTests {
     func roundTrip_slur_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n(C(DE)F)|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -939,7 +956,8 @@ extension ABCFormatterTests {
     func roundTrip_spacer_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\ny2C|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -949,7 +967,8 @@ extension ABCFormatterTests {
     func roundTrip_variantEnding_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n|:CDEF|[1 GABc:|[2 cdef|]\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let formatted = try ABCFormatter().format(book1)
+        let (validatedBook1, _) = try book1.validated()
+        let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
         #expect(book1 == book2)
@@ -1054,29 +1073,6 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func tune_allMissingRefNumbers_assignedSequentially() throws {
-        let tune = makeTune(header: [.field(.tuneTitle("Test")),
-                                     .field(.key(makeKeySignature(.c, .major)))],
-                            body: [.symbols([])])
-        let book = makeTunebook([tune, tune])
-        let output = try format(book)
-
-        #expect(output.contains("X:1\n"))
-        #expect(output.contains("X:2\n"))
-    }
-
-    @Test
-    func tune_misplacedBodyFieldInHeader_throws() throws {
-        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.wordsAligned(makeAlignedWords())),
-                                                   .field(.key(makeKeySignature(.c, .major)))])])
-
-        #expect(throws: ABCFormatter.Error.misplacedTuneField(.wordsAligned(makeAlignedWords()))) {
-            try ABCFormatter().format(book)
-        }
-    }
-
-    @Test
     func tune_missingKeySignature_outputsWithoutKeyField() throws {
         let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
@@ -1085,47 +1081,6 @@ extension ABCFormatterTests {
         let output = try format(book)
 
         #expect(!output.contains("K:"))
-    }
-
-    @Test
-    func tune_missingRefNumber_throws() throws {
-        // X: is present but misplaced (not first field) — still throws.
-        let book = makeTunebook([makeTune(header: [.field(.tuneTitle("Bad")),
-                                                   .field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.key(makeKeySignature(.c, .major)))])])
-
-        #expect(throws: ABCFormatter.Error.missingReferenceNumber) {
-            try ABCFormatter().format(book)
-        }
-    }
-
-    @Test
-    func tune_noRefNumber_autoAssigns1() throws {
-        let book = makeTunebook([makeTune(header: [.field(.tuneTitle("Test")),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([])])])
-
-        #expect(try format(book).contains("X:1\n"))
-    }
-
-    @Test
-    func tune_partialMissingRefNumbers_skipsExistingNumbers() throws {
-        // Tunes with X:3 and X:5 intermixed with tunes missing X:.
-        // Missing tunes should be assigned X:1 and X:2, skipping 3 and 5.
-        let withX3 = makeTune(header: [.field(.referenceNumber(makeReferenceNumber(3))),
-                                       .field(.key(makeKeySignature(.c, .major)))],
-                              body: [.symbols([])])
-        let withX5 = makeTune(header: [.field(.referenceNumber(makeReferenceNumber(5))),
-                                       .field(.key(makeKeySignature(.c, .major)))],
-                              body: [.symbols([])])
-        let noX = makeTune(header: [.field(.tuneTitle("Test")),
-                                    .field(.key(makeKeySignature(.c, .major)))],
-                           body: [.symbols([])])
-        let book = makeTunebook([withX3, noX, withX5, noX])
-        let output = try format(book)
-        let xLines = output.components(separatedBy: "\n").filter { $0.hasPrefix("X:") }
-
-        #expect(xLines == ["X:3", "X:1", "X:5", "X:2"])
     }
 
     @Test
@@ -1147,17 +1102,6 @@ extension ABCFormatterTests {
         let output = try format(minimalTunebook(symbols: [.tuplet(makeTuplet(3, 2, 3))]))
 
         #expect(output.contains("(3:2:3\n"))
-    }
-
-    @Test
-    func unsupportedVersion_throws() {
-        let book = makeTunebook(.v1_6,
-                                [],
-                                [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
-
-        #expect(throws: ABCFormatter.Error.unsupportedVersion(.v1_6)) {
-            try format(book)
-        }
     }
 
     @Test

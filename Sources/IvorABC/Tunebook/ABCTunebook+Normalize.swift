@@ -58,7 +58,7 @@ private func _normalizeBodyEntry(_ entry: ABCBodyEntry) -> ABCBodyEntry? {
 }
 
 private func _normalizeDecoration(_ decoration: ABCDecoration) -> ABCDecoration {
-    guard decoration.dialect == .plus   // ???
+    guard decoration.dialect == .plus
     else { return decoration }
 
     return ABCDecoration(name: decoration.name,
@@ -80,6 +80,23 @@ private func _normalizeField(_ field: ABCField) -> ABCField {
 
     case let .information(text):
         return .remark(text)
+
+    case let .symbolLine(symbolLine):
+        let normalized = symbolLine.elements.map { element -> ABCSymbolLine.Element in
+            guard case let .decoration(decoration) = element
+            else { return element }
+
+            return .decoration(_normalizeDecoration(decoration))
+        }
+
+        return .symbolLine(ABCSymbolLine(elements: normalized))
+
+    case let .userDefined(userSymbol):
+        guard case let .decoration(decoration) = userSymbol.definition
+        else { break }
+
+        return .userDefined(ABCUserSymbol(shorthand: userSymbol.shorthand,
+                                          definition: .decoration(_normalizeDecoration(decoration))).require())
 
     default:
         break

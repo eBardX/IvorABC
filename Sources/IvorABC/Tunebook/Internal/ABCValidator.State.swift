@@ -5,38 +5,43 @@ extension ABCValidator {
     // MARK: Internal Nested Types
 
     internal struct State {
-        var activeDialect: ABCDecoration.Dialect = .bang
-        var globalDeassignedShorthands: Set<ABCShorthand> = []
-        var globalDefinedShorthands: Set<ABCShorthand> = [.tilde,
-                                                          .hUpper,
-                                                          .lUpper,
-                                                          .mUpper,
-                                                          .oUpper,
-                                                          .pUpper,
-                                                          .sUpper,
-                                                          .tUpper,
-                                                          .uLower,
-                                                          .vLower]
-        var tuneDeassignedShorthands: Set<ABCShorthand> = []
-        var tuneDefinedShorthands: Set<ABCShorthand> = []
 
-        func isShorthandDefined(_ shorthand: ABCShorthand) -> Bool {
-            if tuneDeassignedShorthands.contains(shorthand) {
-                return false
-            }
+        // MARK: Internal Initializers
 
-            if tuneDefinedShorthands.contains(shorthand) {
-                return true
-            }
-
-            if globalDeassignedShorthands.contains(shorthand) {
-                return false
-            }
-
-            return globalDefinedShorthands.contains(shorthand)
+        internal init() {
+            self.activeDialect = .bang
+            self.globalDeassignedShorthands = []
+            self.globalDefinedShorthands = [.tilde,
+                                            .hUpper,
+                                            .lUpper,
+                                            .mUpper,
+                                            .oUpper,
+                                            .pUpper,
+                                            .sUpper,
+                                            .tUpper,
+                                            .uLower,
+                                            .vLower]
+            self.tuneDeassignedShorthands = []
+            self.tuneDefinedShorthands = []
         }
 
-        mutating func resetTuneScope() {
+        // MARK: Internal Intance Properties
+
+        internal var activeDialect: ABCDecoration.Dialect
+        internal var globalDeassignedShorthands: Set<ABCShorthand>
+        internal var globalDefinedShorthands: Set<ABCShorthand>
+        internal var tuneDeassignedShorthands: Set<ABCShorthand>
+        internal var tuneDefinedShorthands: Set<ABCShorthand>
+
+        // MARK: Internal Instance Methods
+
+        internal func isShorthandDefined(_ shorthand: ABCShorthand) -> Bool {
+            tuneDefinedShorthands.contains(shorthand)
+            || (!tuneDeassignedShorthands.contains(shorthand)
+                && globalDefinedShorthands.contains(shorthand))
+        }
+
+        internal mutating func resetTuneScope() {
             tuneDeassignedShorthands = []
             tuneDefinedShorthands = []
         }

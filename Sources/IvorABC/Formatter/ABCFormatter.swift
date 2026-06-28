@@ -24,12 +24,18 @@ extension ABCFormatter {
     ///
     /// - Returns:  The UTF-8 encoded ABC representation of the tunebook.
     ///
+    /// - Throws:   ``ABCFormatter/Error/notValidated`` if the tunebook has not
+    ///             been validated. Call ``ABCTunebook/validated()`` first.
+    ///
     /// - Throws:   ``ABCFormatter/Error`` if the tunebook cannot be formatted
     ///             compliantly.
     public func format(_ tunebook: ABCTunebook) throws -> Data {
+        guard tunebook.isValidated
+        else { throw Error.notValidated }
+
         var writer = Writer(tunebook: tunebook)
 
-        return try writer.writeTunebook()
+        return writer.writeTunebook()
     }
 }
 

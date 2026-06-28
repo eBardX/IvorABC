@@ -41,7 +41,8 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let outputData = try formatter.format(tunebook)
+        let (validatedTunebook, _) = try tunebook.validated()
+        let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 
         #expect(output.contains("w:fó ü-zy foo\\%bar\n"))
@@ -551,7 +552,8 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let outputData = try formatter.format(tunebook)
+        let (validatedTunebook, _) = try tunebook.validated()
+        let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 
         #expect(output.contains("T:Foo \\% Bar\n"))
@@ -581,7 +583,8 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let outputData = try formatter.format(tunebook)
+        let (validatedTunebook, _) = try tunebook.validated()
+        let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 
         #expect(output.contains("H:Foo \\% Bar\n"))

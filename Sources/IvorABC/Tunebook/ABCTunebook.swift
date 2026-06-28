@@ -70,8 +70,8 @@ extension ABCTunebook {
     /// - Returns: A tuple of the validated tunebook and an array of
     ///            ``ABCValidationIssue`` values. The tunebook in the tuple is a
     ///            copy of `self` with ``isValidated`` set to `true` when no
-    ///            error-severity issues are found; otherwise `self` is returned
-    ///            unchanged (re-validating after fixing issues is required).
+    ///            issues are found; otherwise `self` is returned unchanged
+    ///            (re-validating after fixing issues is required).
     ///            An empty issues array means the tunebook is fully conformant.
     public func validated() throws -> (Self, [ABCValidationIssue]) {
         guard isNormalized
@@ -82,9 +82,8 @@ extension ABCTunebook {
 
         var validator = ABCValidator()
         let issues = validator.validate(self)
-        let hasErrors = issues.contains { $0.severity == .error }
 
-        if hasErrors {
+        if !issues.isEmpty {
             return (self, issues)
         }
 

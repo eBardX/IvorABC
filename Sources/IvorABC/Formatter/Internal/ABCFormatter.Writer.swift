@@ -35,72 +35,25 @@ extension ABCFormatter.Writer {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func writeTunebook() throws -> Data {
-        guard let version = tunebook.version, // should never happen ???
-              version == .current
-        else { throw ABCFormatter.Error.unsupportedVersion(tunebook.version) }
+    internal mutating func writeTunebook() -> Data {
+        let version = tunebook.version.require()
 
         buffer.append("%abc-\(version.major).\(version.minor)\n")
 
-        try _writeFileHeaders()
-
-        let autoRefs = _computeAutoReferenceNumbers() // should never happen ???
+        _writeFileHeaders()
 
         for (index, tune) in tunebook.tunes.enumerated() {
             if index > 0 {
                 buffer.append("\n")
             }
 
-            try _writeTune(tune, autoRefs[index])
+            _writeTune(tune)
         }
 
-        guard let data = buffer.data(using: .utf8)
-        else { throw ABCFormatter.Error.stringConversionFailed }
-
-        return data
+        return buffer.data(using: .utf8).require()
     }
 
     // MARK: Private Instance Methods
-
-    private func _computeAutoReferenceNumbers() -> [Int: ABCReferenceNumber] {
-        var usedNumbers = Set<UInt>()
-
-        for tune in tunebook.tunes {
-            for entry in tune.header {
-                if case let .field(.referenceNumber(rn)) = entry {
-                    usedNumbers.insert(rn.uintValue)
-                }
-            }
-        }
-
-        var result: [Int: ABCReferenceNumber] = [:]
-        var nextCandidate: UInt = 1
-
-        for (index, tune) in tunebook.tunes.enumerated() {
-            let hasRefNumber = tune.header.contains {
-                if case .field(.referenceNumber) = $0 {
-                    return true
-                }
-
-                return false
-            }
-
-            guard !hasRefNumber
-            else { continue }
-
-            while usedNumbers.contains(nextCandidate) {
-                nextCandidate += 1
-            }
-
-            result[index] = ABCReferenceNumber(nextCandidate)
-
-            usedNumbers.insert(nextCandidate)
-
-            nextCandidate += 1
-        }
-
-        return result
-    }
 
     private mutating func _writeDirective(_ directive: ABCDirective) {
         if let content = directive.content {
@@ -155,22 +108,19 @@ extension ABCFormatter.Writer {
         }
     }
 
-    private mutating func _writeFileHeaders() throws {
+    private mutating func _writeFileHeaders() {
         for entry in tunebook.fileHeader {
             switch entry {
             case let .directive(directive):
                 _writeDirective(directive)
 
             case let .field(field):
-                guard field.isValidInFileHeader // should never happen ???
-                else { throw ABCFormatter.Error.misplacedFileHeaderField(field) }
-
                 _writeField(field)
             }
         }
     }
 
-    private mutating func _writeSymbolsLine(_ symbols: [ABCSymbol]) throws {
+    private mutating func _writeSymbolsLine(_ symbols: [ABCSymbol]) {
         var line = ""
 
         for symbol in symbols {
@@ -194,32 +144,13 @@ extension ABCFormatter.Writer {
         buffer.append("\n")
     }
 
-    private mutating func _writeTune(_ tune: ABCTune,
-                                     _ autoReferenceNumber: ABCReferenceNumber?) throws {
-        var seenReferenceNumber = false
-
-        if let refereneceNumber = autoReferenceNumber {
-            _writeField(.referenceNumber(refereneceNumber))
-
-            seenReferenceNumber = true
-        }
-
+    private mutating func _writeTune(_ tune: ABCTune) {
         for entry in tune.header {
             switch entry {
             case let .directive(directive):
                 _writeDirective(directive)
 
             case let .field(field):
-                if !seenReferenceNumber {
-                    guard case .referenceNumber = field // should never happen ???
-                    else { throw ABCFormatter.Error.missingReferenceNumber }
-
-                    seenReferenceNumber = true
-                } else {
-                    guard field.isValidInTuneHeader // should never happen ???
-                    else { throw ABCFormatter.Error.misplacedTuneField(field) }
-                }
-
                 _writeField(field)
             }
         }
@@ -230,13 +161,10 @@ extension ABCFormatter.Writer {
                 _writeDirective(directive)
 
             case let .field(field):
-                guard field.isValidInTuneBody // should never happen ???
-                else { throw ABCFormatter.Error.misplacedTuneField(field) }
-
                 _writeField(field)
 
             case let .symbols(symbols):
-                try _writeSymbolsLine(symbols)
+                _writeSymbolsLine(symbols)
             }
         }
     }

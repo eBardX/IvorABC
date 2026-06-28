@@ -60,18 +60,19 @@ extension ABCTunebookValidatedTests {
 
     @Test
     func validated_undefinedShorthand_returnsError() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
-        #expect(issues[0].severity == .error)
         #expect(!issues[0].message.isEmpty)
     }
 
     @Test
     func validated_predefinedShorthand_noExplicitDefinition_returnsNoError() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.tUpper),
                                                                .shorthand(.tilde),
                                                                .shorthand(.hUpper)])])])
@@ -83,7 +84,8 @@ extension ABCTunebookValidatedTests {
     @Test
     func validated_definedShorthand_returnsNoError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeDecoration("trill"))))],
-                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -93,7 +95,8 @@ extension ABCTunebookValidatedTests {
     @Test
     func validated_annotationDefinedShorthand_returnsNoError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))],
-                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -103,7 +106,8 @@ extension ABCTunebookValidatedTests {
     @Test
     func validated_deassignedPredefinedShorthand_withoutExplicitDefinition_returnsError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tilde)))],
-                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.tilde)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -112,10 +116,12 @@ extension ABCTunebookValidatedTests {
 
     @Test
     func validated_tuneScope_override_revertsForSubsequentTune() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Tune1")),
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Tune1")),
                                                        .field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("mordent"))))],
                                               body: []),
-                                     makeTune(header: [.field(.tuneTitle("Tune2"))],
+                                     makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
+                                                       .field(.tuneTitle("Tune2"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -126,7 +132,8 @@ extension ABCTunebookValidatedTests {
     func validated_deassignedShorthand_globalScope_returnsError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill")))),
                                      .field(.userDefined(makeUserSymbol(.tUpper)))],
-                                    [makeTune(header: [.field(.tuneTitle("Test"))],
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -136,7 +143,8 @@ extension ABCTunebookValidatedTests {
     @Test
     func validated_deassignedShorthand_tuneScope_returnsError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
-                                    [makeTune(header: [.field(.tuneTitle("Test")),
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
                                                        .field(.userDefined(makeUserSymbol(.tUpper)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
@@ -147,10 +155,12 @@ extension ABCTunebookValidatedTests {
     @Test
     func validated_deassignedShorthand_tuneScope_doesNotAffectSubsequentTune() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
-                                    [makeTune(header: [.field(.tuneTitle("Tune1")),
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Tune1")),
                                                        .field(.userDefined(makeUserSymbol(.tUpper)))],
                                               body: []),
-                                     makeTune(header: [.field(.tuneTitle("Tune2"))],
+                                     makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
+                                                       .field(.tuneTitle("Tune2"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -159,7 +169,8 @@ extension ABCTunebookValidatedTests {
 
     @Test
     func validated_dotShorthand_alwaysValid() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.dot)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -177,8 +188,10 @@ extension ABCTunebookValidatedTests {
 
     @Test
     func validated_tuneIndex_isCorrect() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("First Tune"))]),
-                                     makeTune(header: [.field(.tuneTitle("Second Tune"))],
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("First Tune"))]),
+                                     makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
+                                                       .field(.tuneTitle("Second Tune"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try tunebook.normalized().validated()
 
@@ -203,101 +216,51 @@ extension ABCTunebookValidatedTests {
 
         #expect(validated.isNormalized)
         #expect(validated.isValidated)
-        #expect(!issues.contains { $0.severity == .error })
+        #expect(issues.isEmpty)
     }
 
-    // MARK: - Defensive legacy-construct re-check
+    // MARK: - Field placement and reference number checks
 
     @Test
-    func validated_legacyElemskipField_returnsError() throws {
-        let tune = ABCTune(header: [.field(.elemskip(.integer(3)))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
+    func validated_misplacedFileHeaderField_returnsError() throws {
+        let tunebook = makeTunebook([.field(.tuneTitle("Bad"))],
+                                    [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try tunebook.normalized().validated()
 
-        #expect(issues == [.legacyElemskipField(tuneIndex: 0)])
-        #expect(issues[0].severity == .error)
+        #expect(issues == [.misplacedFileHeaderField(.tuneTitle("Bad"))])
+        #expect(!issues[0].message.isEmpty)
     }
 
     @Test
-    func validated_legacyInformationField_returnsError() throws {
-        let tune = ABCTune(header: [.field(.information("some info"))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
+    func validated_misplacedTuneField_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.wordsAligned(makeAlignedWords())),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try tunebook.normalized().validated()
 
-        #expect(issues == [.legacyInformationField(tuneIndex: 0)])
+        #expect(issues == [.misplacedTuneField(.wordsAligned(makeAlignedWords()), tuneIndex: 0)])
+        #expect(!issues[0].message.isEmpty)
     }
 
     @Test
-    func validated_legacyTempoForm_returnsError() throws {
-        let legacyTempo = ABCTempo(durations: [makeDuration(1, 4)],
-                                   rate: 120,
-                                   text: nil,
-                                   legacyBeatMultiple: 1).require()
-        let tune = ABCTune(header: [.field(.tempo(legacyTempo))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
+    func validated_missingReferenceNumber_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("No X")),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try tunebook.normalized().validated()
 
-        #expect(issues == [.legacyTempoForm(tuneIndex: 0)])
+        #expect(issues == [.missingReferenceNumber(tuneIndex: 0)])
+        #expect(!issues[0].message.isEmpty)
     }
 
     @Test
-    func validated_legacyCharsetDirective_returnsError() throws {
-        let directive = makeDirective("abc-charset", "utf-8")
-        let tune = ABCTune(header: [.field(.key(makeKeySignature(.c, .major)))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [.directive(directive)],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
+    func validated_misplacedReferenceNumber_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Bad")),
+                                                       .field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try tunebook.normalized().validated()
 
-        #expect(issues == [.legacyCharsetDirective(tuneIndex: nil)])
-    }
-
-    @Test
-    func validated_legacyVersionDirective_returnsError() throws {
-        let directive = makeDirective("abc-version", "2.1")
-        let tune = ABCTune(header: [.field(.key(makeKeySignature(.c, .major)))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [.directive(directive)],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
-
-        #expect(issues == [.legacyVersionDirective(tuneIndex: nil)])
-    }
-
-    @Test
-    func validated_legacyDecorationDirective_returnsError() throws {
-        let directive = makeDirective("decoration", "+")
-        let tune = ABCTune(header: [.directive(directive),
-                                    .field(.key(makeKeySignature(.c, .major)))],
-                           body: []).require()
-        let tunebook = ABCTunebook(version: .current,
-                                   fileHeader: [],
-                                   tunes: [tune],
-                                   isNormalized: true,
-                                   isValidated: false)
-        let (_, issues) = try tunebook.validated()
-
-        #expect(issues == [.legacyDecorationDirective(tuneIndex: 0)])
+        #expect(issues == [.misplacedReferenceNumber(tuneIndex: 0)])
+        #expect(!issues[0].message.isEmpty)
     }
 }

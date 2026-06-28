@@ -185,7 +185,7 @@ extension ABCTunebookNormalizeTests {
     @Test
     func normalized_deprecatedTempo_v21_thenValidated_returnsNoErrors() throws {
         // Q:120 in 2.1 → deprecated tempo (legacyBeatMultiple=1), normalized away,
-        // then validated → no error-severity issues
+        // then validated → no issues
         let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
         let tunebook = try ABCParser().parse(Data(input.utf8))
 
@@ -197,6 +197,6 @@ extension ABCTunebookNormalizeTests {
 
         let (_, issues) = try normalized.validated()
 
-        #expect(!issues.contains { $0.severity == .error })
+        #expect(issues.isEmpty)
     }
 }

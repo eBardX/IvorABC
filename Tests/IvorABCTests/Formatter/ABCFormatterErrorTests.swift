@@ -12,99 +12,21 @@ struct ABCFormatterErrorTests {
 extension ABCFormatterErrorTests {
     @Test
     func category_isIvorABC() {
-        let error = ABCFormatter.Error.missingKeySignature
+        let error = ABCFormatter.Error.notValidated
 
         #expect(error.category?.description == "IvorABC")
     }
 
     @Test
     func equality() {
-        let a = ABCFormatter.Error.missingKeySignature
-        let b = ABCFormatter.Error.missingKeySignature
+        let a = ABCFormatter.Error.notValidated
+        let b = ABCFormatter.Error.notValidated
 
         #expect(a == b)
     }
 
     @Test
-    func message_emptyChord() {
-        #expect(ABCFormatter.Error.emptyChord.message.contains("Chord"))
-    }
-
-    @Test
-    func message_emptyGraceNotes() {
-        #expect(ABCFormatter.Error.emptyGraceNotes.message.contains("Grace"))
-    }
-
-    @Test
-    func message_emptyVariantEnding() {
-        #expect(ABCFormatter.Error.emptyVariantEnding.message.contains("Variant"))
-    }
-
-    @Test
-    func message_emptyVoiceID() {
-        #expect(ABCFormatter.Error.emptyVoiceID.message.contains("Voice"))
-    }
-
-    @Test
-    func message_invalidBarLine() {
-        let error = ABCFormatter.Error.invalidBarLine("||:")
-
-        #expect(error.message.contains("||:"))
-    }
-
-    @Test
-    func message_invalidStringArgument() {
-        let error = ABCFormatter.Error.invalidTextValue("invalid characters")
-
-        #expect(error.message.contains("invalid characters"))
-    }
-
-    @Test
-    func message_invalidTimeSignature() {
-        let ts = makeTimeSignature(3, 4)
-        let error = ABCFormatter.Error.invalidTimeSignature(ts)
-
-        #expect(error.message.contains("structurally invalid"))
-    }
-
-    @Test
-    func message_invalidTupletNoteCount() {
-        #expect(ABCFormatter.Error.invalidTupletNoteCount.message.contains("zero"))
-    }
-
-    @Test
-    func message_misplacedFileHeaderField() {
-        let error = ABCFormatter.Error.misplacedFileHeaderField(.area("test"))
-
-        #expect(error.message.contains("file header"))
-    }
-
-    @Test
-    func message_misplacedTuneField() {
-        let error = ABCFormatter.Error.misplacedTuneField(.area("test"))
-
-        #expect(error.message.contains("tune"))
-    }
-
-    @Test
-    func message_missingKeySignature() {
-        #expect(ABCFormatter.Error.missingKeySignature.message.contains("K:"))
-    }
-
-    @Test
-    func message_missingReferenceNumber() {
-        #expect(ABCFormatter.Error.missingReferenceNumber.message.contains("X:"))
-    }
-
-    @Test
-    func message_stringConversionFailed() {
-        #expect(ABCFormatter.Error.stringConversionFailed.message.contains("UTF-8"))
-    }
-
-    @Test
-    func message_unsupportedVersion() {
-        let error = ABCFormatter.Error.unsupportedVersion(.v1_6)
-
-        #expect(error.message.contains("1.6"))
+    func message_notValidated() {
+        #expect(ABCFormatter.Error.notValidated.message.contains("validated()"))
     }
 }
