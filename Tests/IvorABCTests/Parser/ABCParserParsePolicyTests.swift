@@ -5,12 +5,12 @@ import Foundation
 import Testing
 import XestiTools
 
-struct ABCParserInterpretationTests {
+struct ABCParserParsePolicyTests {
 }
 
 // MARK: -
 
-extension ABCParserInterpretationTests {
+extension ABCParserParsePolicyTests {
 
     // MARK: - Deprecated tempo
 
@@ -131,7 +131,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_elemskip_v20_producesElemskipField() throws {
-        // E: accepted in loose stance (2.0 → loose)
+        // E: accepted in loose mode (2.0 → loose)
         let input = "%abc-2.0\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -148,7 +148,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_elemskip_nilVersion_producesElemskipField() throws {
-        // E: accepted in loose stance (nil version → loose)
+        // E: accepted in loose mode (nil version → loose)
         let input = "X:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -175,7 +175,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_elemskip_v21_throws() {
-        // E: in strict stance (2.1 → strict) is invalid
+        // E: in strict mode (2.1 → strict) is invalid
         let input = "%abc-2.1\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -297,7 +297,7 @@ extension ABCParserInterpretationTests {
         #expect(!diagnostics.contains(.unrecognizedVersion(.v1_6)))
     }
 
-    // MARK: - Version and stance
+    // MARK: - Version and mode
 
     @Test
     func parseWithDiagnostics_noDiagnosticsOnValidV21Input() throws {
@@ -311,7 +311,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parseWithDiagnostics_freeText_v20_emitsUnrecognizedLineDiagnostic() throws {
-        // 2.0 → loose stance; free text between tunes is recovered with diagnostic
+        // 2.0 → loose mode; free text between tunes is recovered with diagnostic
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
 
@@ -332,7 +332,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_freeTextBetweenTunes_v21_throws() {
-        // 2.1 → strict stance; free text throws
+        // 2.1 → strict mode; free text throws
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
 
@@ -437,7 +437,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_missingKeyField_v20_emitsDiagnostic() throws {
-        // 2.0 → loose stance; missing K: emits diagnostic instead of throwing
+        // 2.0 → loose mode; missing K: emits diagnostic instead of throwing
         let input = "%abc-2.0\nX:1\nT:Test\nCDEF|\n"
 
         let (_, diagnostics) = try ABCParser().parseWithDiagnostics(Data(input.utf8))
@@ -512,7 +512,7 @@ extension ABCParserInterpretationTests {
 
     @Test
     func parse_orphanedContinuationInHeader_v20_succeeds() throws {
-        // 2.0 → loose stance; orphaned continuation is skipped
+        // 2.0 → loose mode; orphaned continuation is skipped
         let input = "%abc-2.0\nX:1\n+:ignored\nT:Test\nK:C\nCDEF|\n"
 
         let tunebook = try ABCParser().parse(Data(input.utf8))

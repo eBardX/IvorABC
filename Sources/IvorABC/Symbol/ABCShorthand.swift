@@ -1,10 +1,10 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-/// A decoration shorthand character in ABC notation.
+/// A shorthand character used in the tune body of ABC notation.
 ///
-/// Shorthand decorations are single characters that appear directly in the tune
-/// body. The character `.` has a fixed meaning; the character `~ and`the letters `H`–`W`
-/// and `h`–`w` acquire their meanings through the active `U:` field definitions.
+/// The character `.` has a fixed meaning (staccato mark), while `~`, `H`–`W`,
+/// and `h`–`w` are redefinable symbols (§4.16) that can be assigned via the
+/// `U:` field to represent a decoration or annotation.
 public enum ABCShorthand {
     /// The shorthand character `.`.
     case dot

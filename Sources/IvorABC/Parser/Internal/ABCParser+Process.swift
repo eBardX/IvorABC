@@ -7,7 +7,7 @@ extension ABCParser {
     // MARK: Internal Instance Methods
 
     internal func makeTunebook(_ version: ABCVersion?,
-                               _ interpretation: ABCInterpretation,
+                               _ policy: ABCParsePolicy,
                                _ restLines: [Line],
                                _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
         let parserIsNormalized = version == .current
@@ -17,7 +17,7 @@ extension ABCParser {
         var lineReader = SequenceReader(restLines)
 
         let fileHeaders = _processFileHeaderLines(&lineReader)
-        let tunes = try _makeTunes(interpretation,
+        let tunes = try _makeTunes(policy,
                                    &lineReader,
                                    &diagnostics)
 
@@ -92,26 +92,26 @@ extension ABCParser {
         return false
     }
 
-    private func _handleMissingKeyField(_ interpretation: ABCInterpretation,
+    private func _handleMissingKeyField(_ policy: ABCParsePolicy,
                                         _ inTuneBody: Bool,
                                         _ diagnostics: inout [Diagnostic]) throws {
         guard !inTuneBody
         else { return }
 
-        if interpretation.stance == .strict {
+        if policy.mode == .strict {
             throw Error.missingKeyField
         } else {
             diagnostics.append(.missingKeyField)
         }
     }
 
-    private func _makeTunes(_ interpretation: ABCInterpretation,
+    private func _makeTunes(_ policy: ABCParsePolicy,
                             _ reader: inout SequenceReader<[Line]>,
                             _ diagnostics: inout [Diagnostic]) throws -> [ABCTune] {
         var tunes: [ABCTune] = []
 
         while let tune = try _processTuneLines(&reader,
-                                               interpretation,
+                                               policy,
                                                &diagnostics) {
             tunes.append(tune)
         }
@@ -238,7 +238,7 @@ extension ABCParser {
     }
 
     private func _processHeaderEntry(_ entry: ABCBodyEntry,
-                                     _ interpretation: ABCInterpretation,
+                                     _ policy: ABCParsePolicy,
                                      _ tuneHeader: inout [ABCHeaderEntry],
                                      _ tuneBody: inout [ABCBodyEntry],
                                      _ fieldCount: inout Int,
@@ -252,7 +252,7 @@ extension ABCParser {
         case let .field(field):
             fieldCount += 1
 
-            if interpretation.stance == .strict {
+            if policy.mode == .strict {
                 if fieldCount == 1 {
                     guard case .referenceNumber = field
                     else { throw Error.missingReferenceNumber }
@@ -276,7 +276,7 @@ extension ABCParser {
             }
 
         case .symbols:
-            if interpretation.stance == .loose {
+            if policy.mode == .loose {
                 diagnostics.append(.missingKeyField)
 
                 inTuneBody = true
@@ -289,7 +289,7 @@ extension ABCParser {
     }
 
     private func _processTuneBodyLine(_ line: Line,
-                                      _ interpretation: ABCInterpretation,
+                                      _ policy: ABCParsePolicy,
                                       _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
         switch line {
         case let .directive(directive):
@@ -304,7 +304,7 @@ extension ABCParser {
             if case let .parts(partSequence) = field {
                 if let abcPart = _bodyPart(from: partSequence) {
                     effectiveField = .part(abcPart)
-                } else if interpretation.stance == .loose {
+                } else if policy.mode == .loose {
                     diagnostics.append(.misplacedField(field))
 
                     return (nil, false)
@@ -317,7 +317,7 @@ extension ABCParser {
 
             if effectiveField.isValidInTuneBody {
                 return (.field(effectiveField), false)
-            } else if interpretation.stance == .loose {
+            } else if policy.mode == .loose {
                 diagnostics.append(.misplacedField(effectiveField))
 
                 return (nil, false)
@@ -333,7 +333,7 @@ extension ABCParser {
         }
     }
 
-    private func _processTuneBodyLines(_ interpretation: ABCInterpretation,
+    private func _processTuneBodyLines(_ policy: ABCParsePolicy,
                                        _ reader: inout SequenceReader<[Line]>,
                                        _ tuneBody: inout [ABCBodyEntry],
                                        _ diagnostics: inout [Diagnostic]) throws {
@@ -343,7 +343,7 @@ extension ABCParser {
                    case let .field(field) = tuneBody[lastIndex],
                    let merged = _mergeContinuation(text, field) {
                     tuneBody[lastIndex] = .field(merged)
-                } else if interpretation.stance == .strict {
+                } else if policy.mode == .strict {
                     throw Error.orphanedContinuation
                 }
 
@@ -353,7 +353,7 @@ extension ABCParser {
             }
 
             let result = try _processTuneBodyLine(line,
-                                                  interpretation,
+                                                  policy,
                                                   &diagnostics)
 
             if result.empty {
@@ -372,7 +372,7 @@ extension ABCParser {
     }
 
     private func _processTuneHeaderLine(_ line: Line,
-                                        _ interpretation: ABCInterpretation,
+                                        _ policy: ABCParsePolicy,
                                         _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
         switch line {
         case let .directive(directive):
@@ -384,7 +384,7 @@ extension ABCParser {
         case let .field(field):
             if field.isValidInTuneHeader {
                 return (.field(field), false)
-            } else if interpretation.stance == .loose {
+            } else if policy.mode == .loose {
                 diagnostics.append(.misplacedField(field))
 
                 return (nil, false)
@@ -400,7 +400,7 @@ extension ABCParser {
         }
     }
 
-    private func _processTuneHeaderLines(_ interpretation: ABCInterpretation,
+    private func _processTuneHeaderLines(_ policy: ABCParsePolicy,
                                          _ reader: inout SequenceReader<[Line]>,
                                          _ tuneHeader: inout [ABCHeaderEntry],
                                          _ tuneBody: inout [ABCBodyEntry],
@@ -416,7 +416,7 @@ extension ABCParser {
                    case let .field(field) = tuneHeader[lastIndex],
                    let merged = _mergeContinuation(text, field) {
                     tuneHeader[lastIndex] = .field(merged)
-                } else if interpretation.stance == .strict {
+                } else if policy.mode == .strict {
                     throw Error.orphanedContinuation
                 }
 
@@ -426,7 +426,7 @@ extension ABCParser {
             }
 
             let result = try _processTuneHeaderLine(line,
-                                                    interpretation,
+                                                    policy,
                                                     &diagnostics)
 
             if result.empty {
@@ -439,7 +439,7 @@ extension ABCParser {
             else { break }
 
             try _processHeaderEntry(entry,
-                                    interpretation,
+                                    policy,
                                     &tuneHeader,
                                     &tuneBody,
                                     &fieldCount,
@@ -454,7 +454,7 @@ extension ABCParser {
     }
 
     private func _processTuneLines(_ reader: inout SequenceReader<[Line]>,
-                                   _ interpretation: ABCInterpretation,
+                                   _ policy: ABCParsePolicy,
                                    _ diagnostics: inout [Diagnostic]) throws -> ABCTune? {
         // Skip any leading empty lines before the tune content starts (e.g., after
         // multiple blank lines or skipped prose in lenient mode).
@@ -466,14 +466,14 @@ extension ABCParser {
         var tuneHeader: [ABCHeaderEntry] = []
         var tuneBody: [ABCBodyEntry] = []
 
-        let inTuneBody = try _processTuneHeaderLines(interpretation,
+        let inTuneBody = try _processTuneHeaderLines(policy,
                                                      &reader,
                                                      &tuneHeader,
                                                      &tuneBody,
                                                      &diagnostics)
 
         if inTuneBody {
-            try _processTuneBodyLines(interpretation,
+            try _processTuneBodyLines(policy,
                                       &reader,
                                       &tuneBody,
                                       &diagnostics)
@@ -482,7 +482,7 @@ extension ABCParser {
         guard !tuneHeader.isEmpty || !tuneBody.isEmpty
         else { return nil }
 
-        try _handleMissingKeyField(interpretation,
+        try _handleMissingKeyField(policy,
                                    inTuneBody,
                                    &diagnostics)
 

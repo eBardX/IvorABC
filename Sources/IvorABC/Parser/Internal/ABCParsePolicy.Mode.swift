@@ -1,10 +1,10 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension ABCInterpretation {
+extension ABCParsePolicy {
 
     // MARK: Internal Nested Types
 
-    internal enum Stance {
+    internal enum Mode {
         case loose
         case strict
     }

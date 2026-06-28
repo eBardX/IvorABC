@@ -191,7 +191,7 @@ extension ABCPreprocessFunctionsTests {
 
     @Test
     func preprocess_v21_invalidUTF8_throwsDataConversionFailed() {
-        // 2.1 derives strict stance → invalid UTF-8 throws
+        // 2.1 derives strict mode → invalid UTF-8 throws
         var bytes = [UInt8]("%abc-2.1\nX:1\nT:".utf8)
 
         bytes.append(0xff)  // invalid UTF-8 byte
@@ -207,7 +207,7 @@ extension ABCPreprocessFunctionsTests {
 
     @Test
     func preprocess_v20_explicitUTF8_invalidUTF8_emitsInvalidUTF8DiagnosticAndFallsBack() throws {
-        // 2.0 with explicit utf-8 charset derives loose stance →
+        // 2.0 with explicit utf-8 charset derives loose mode →
         // invalid UTF-8 falls back to ISO-8859-1 with diagnostic
         var bytes = [UInt8]("%abc-2.0\n%%abc-charset utf-8\nX:1\nT:".utf8)
 

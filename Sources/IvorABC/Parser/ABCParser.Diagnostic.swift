@@ -6,7 +6,7 @@ extension ABCParser {
 
     /// A diagnostic message produced by ``ABCParser`` when parsing in lenient mode.
     public enum Diagnostic {
-        /// A deprecated field was accepted in loose parsing stance. The
+        /// A deprecated field was accepted in loose policy mode. The
         /// associated value is the field that was accepted.
         case deprecatedField(ABCField)
 
@@ -69,7 +69,7 @@ extension ABCParser.Diagnostic {
     public var message: String {
         switch self {
         case let .deprecatedField(field):
-            "Deprecated field '\(field)' accepted in loose parsing stance"
+            "Deprecated field '\(field)' accepted in loose parsing mode"
 
         case let .deprecatedTempo(tempo):
             "Deprecated tempo form; rate '\(tempo.rate.map { "\($0)" } ?? "unspecified")' was accepted"

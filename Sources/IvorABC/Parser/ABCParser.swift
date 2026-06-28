@@ -6,7 +6,7 @@ private import XestiTools
 
 /// A parser for ABC notation.
 ///
-/// The parser derives its interpretation stance automatically from the declared
+/// The parser derives its parse policy automatically from the declared
 /// version in the input: strict when the file declares ABC 2.1 or later, loose
 /// otherwise (including unversioned files). Use ``parseWithDiagnostics(_:)`` to
 /// retrieve ``Diagnostic`` values emitted during loose recovery or for
@@ -108,7 +108,7 @@ extension ABCParser {
 
         diagnostics.append(contentsOf: preprocDiagnostics)
 
-        let interpretation = ABCInterpretation(version: version)
+        let policy = ABCParsePolicy(version: version)
         var context = Context()
         var inFileHeader = true
 
@@ -160,7 +160,7 @@ extension ABCParser {
             }
 
             do {
-                guard let line = try _parseLine(text, interpretation, &context, &diagnostics)
+                guard let line = try _parseLine(text, policy, &context, &diagnostics)
                 else { continue }
 
                 _applyLine(line,
@@ -169,7 +169,7 @@ extension ABCParser {
 
                 restLines.append(line)
             } catch {
-                if interpretation.stance == .loose {
+                if policy.mode == .loose {
                     diagnostics.append(.unrecognizedLine(String(text)))
                 } else {
                     throw error
@@ -177,7 +177,7 @@ extension ABCParser {
             }
         }
 
-        return try makeTunebook(version, interpretation, restLines, &diagnostics)
+        return try makeTunebook(version, policy, restLines, &diagnostics)
     }
 
     private func _parseBeginDirective(_ input: Substring) -> (name: ABCDirective.Name, value: String)? {
@@ -230,7 +230,7 @@ extension ABCParser {
     }
 
     private func _parseFieldLine(_ input: Substring,
-                                 _ interpretation: ABCInterpretation,
+                                 _ policy: ABCParsePolicy,
                                  _ context: inout Context,
                                  _ diagnostics: inout [Diagnostic]) throws -> Line? {
         guard let letter = input.first,
@@ -247,9 +247,9 @@ extension ABCParser {
 
         //
         // E: (elemskip) is deprecated with no 2.x equivalent; accepted in
-        // loose stance, flagged via deprecatedField diagnostic.
+        // loose mode, flagged via deprecatedField diagnostic.
         //
-        if interpretation.stance == .loose, letter == "E" {
+        if policy.mode == .loose, letter == "E" {
             let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
 
             guard let elemskip = parseElemskip(tidyInput)
@@ -266,7 +266,7 @@ extension ABCParser {
         // I: is free-text "information" in ABC 1.6; in all other versions
         // (including unversioned files) it is a directive instruction.
         //
-        if interpretation.iFieldIsFreeText, letter == "I" {
+        if policy.iFieldIsFreeText, letter == "I" {
             let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
 
             return try .field(.information(parseText(tidyInput)))
@@ -336,12 +336,12 @@ extension ABCParser {
     }
 
     private func _parseLine(_ input: Substring,
-                            _ interpretation: ABCInterpretation,
+                            _ policy: ABCParsePolicy,
                             _ context: inout Context,
                             _ diagnostics: inout [Diagnostic]) throws -> Line? {
         try _parseEmptyLine(input)
         ?? _parseDirectiveLine(input)
-        ?? _parseFieldLine(input, interpretation, &context, &diagnostics)
+        ?? _parseFieldLine(input, policy, &context, &diagnostics)
         ?? _parseSymbolsLine(input, &context)
     }
 
