@@ -560,7 +560,7 @@ func matchSymbols(_ input: String,
 
 func format(_ tunebook: ABCTunebook) throws -> String {
     let formatter = ABCFormatter()
-    let (validatedBook, _) = try tunebook.normalized().validated()
+    let (validatedBook, _) = try ABCValidator().validate(tunebook.normalized())
     let data = try formatter.format(validatedBook)
 
     return String(bytes: data,

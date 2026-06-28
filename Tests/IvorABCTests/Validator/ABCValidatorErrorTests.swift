@@ -3,20 +3,20 @@
 import IvorABC
 import Testing
 
-struct ABCValidationErrorTests {
+struct ABCValidatorErrorTests {
 }
 
 // MARK: -
 
-extension ABCValidationErrorTests {
+extension ABCValidatorErrorTests {
     @Test
     func equality() {
-        #expect(ABCValidationError.notNormalized == .notNormalized)
+        #expect(ABCValidator.Error.notNormalized == .notNormalized)
     }
 
     @Test
     func message_notNormalized() {
-        let error = ABCValidationError.notNormalized
+        let error = ABCValidator.Error.notNormalized
 
         #expect(!error.message.isEmpty)
         #expect(error.message.lowercased().contains("normalized"))
@@ -24,6 +24,6 @@ extension ABCValidationErrorTests {
 
     @Test
     func category_notNormalized() {
-        #expect(ABCValidationError.notNormalized.category != nil)
+        #expect(ABCValidator.Error.notNormalized.category != nil)
     }
 }

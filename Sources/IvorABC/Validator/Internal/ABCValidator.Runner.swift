@@ -1,52 +1,57 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-internal struct ABCValidator {
+extension ABCValidator {
 
-    // MARK: Internal Initializers
+    // MARK: Internal Nested Types
 
-    internal init() {
-        self.issues = []
-        self.state = State()
-    }
+    internal struct Runner {
 
-    // MARK: Internal Instance Methods
+        // MARK: Internal Initializers
 
-    internal mutating func validate(_ tunebook: ABCTunebook) -> [ABCValidationIssue] {
-        issues = []
-        state = State()
+        internal init() {
+            self.issues = []
+            self.state = State()
+        }
 
-        for header in tunebook.fileHeader {
-            switch header {
-            case let .directive(directive):
-                _updateState(directive)
+        // MARK: Internal Instance Methods
 
-            case let .field(field):
-                if !field.isValidInFileHeader {
-                    issues.append(.misplacedFileHeaderField(field))
+        internal mutating func run(_ tunebook: ABCTunebook) -> [Issue] {
+            issues = []
+            state = State()
+
+            for header in tunebook.fileHeader {
+                switch header {
+                case let .directive(directive):
+                    _updateState(directive)
+
+                case let .field(field):
+                    if !field.isValidInFileHeader {
+                        issues.append(.misplacedFileHeaderField(field))
+                    }
+
+                    _updateState(field)
                 }
-
-                _updateState(field)
             }
+
+            for (tuneIndex, tune) in tunebook.tunes.enumerated() {
+                state.resetTuneScope()
+
+                _validateTune(tune, tuneIndex)
+            }
+
+            return issues
         }
 
-        for (tuneIndex, tune) in tunebook.tunes.enumerated() {
-            state.resetTuneScope()
+        // MARK: Private Instance Properties
 
-            _validateTune(tune, tuneIndex)
-        }
-
-        return issues
+        private var issues: [Issue]
+        private var state: State
     }
-
-    // MARK: Private Instance Properties
-
-    private var issues: [ABCValidationIssue]
-    private var state: State
 }
 
 // MARK: -
 
-extension ABCValidator {
+extension ABCValidator.Runner {
 
     // MARK: Private Instance Methods
 

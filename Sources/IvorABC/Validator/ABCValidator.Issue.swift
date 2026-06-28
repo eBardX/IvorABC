@@ -1,30 +1,35 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-/// An issue found when validating an ``ABCTunebook`` against the ABC
-/// specification.
-public enum ABCValidationIssue {
+extension ABCValidator {
 
-    /// A field in the file header is not valid in that position.
-    case misplacedFileHeaderField(ABCField)
+    // MARK: Public Nested Types
 
-    /// A tune has a reference number (`X:`) field but it is not the first
-    /// header field.
-    case misplacedReferenceNumber(tuneIndex: Int)
+    /// An issue found when validating an ``ABCTunebook`` against the ABC
+    /// specification.
+    public enum Issue {
 
-    /// A field in a tune header or body is not valid in that position.
-    case misplacedTuneField(ABCField, tuneIndex: Int)
+        /// A field in the file header is not valid in that position.
+        case misplacedFileHeaderField(ABCField)
 
-    /// A tune has no reference number (`X:`) field.
-    case missingReferenceNumber(tuneIndex: Int)
+        /// A tune has a reference number (`X:`) field but it is not the first
+        /// header field.
+        case misplacedReferenceNumber(tuneIndex: Int)
 
-    /// A shorthand decoration was encountered that is neither a builtin
-    /// shorthand nor defined by a preceding `U:` field.
-    case undefinedUserSymbol(tuneIndex: Int?)
+        /// A field in a tune header or body is not valid in that position.
+        case misplacedTuneField(ABCField, tuneIndex: Int)
+
+        /// A tune has no reference number (`X:`) field.
+        case missingReferenceNumber(tuneIndex: Int)
+
+        /// A shorthand decoration was encountered that is neither a builtin
+        /// shorthand nor defined by a preceding `U:` field.
+        case undefinedUserSymbol(tuneIndex: Int?)
+    }
 }
 
 // MARK: -
 
-extension ABCValidationIssue {
+extension ABCValidator.Issue {
 
     // MARK: Public Instance Properties
 
@@ -68,12 +73,12 @@ extension ABCValidationIssue {
 
 // MARK: - Equatable
 
-extension ABCValidationIssue: Equatable {
+extension ABCValidator.Issue: Equatable {
 }
 
 // MARK: - Sendable
 
-extension ABCValidationIssue: Sendable {
+extension ABCValidator.Issue: Sendable {
 }
 
 // MARK: - Private Functions

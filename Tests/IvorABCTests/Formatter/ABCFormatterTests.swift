@@ -488,10 +488,10 @@ extension ABCFormatterTests {
     func idempotence_simpleTune_formatsIdentically() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nM:4/4\nL:1/8\nK:G\nGABc defe|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted1 = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted1)
-        let (validatedBook2, _) = try book2.validated()
+        let (validatedBook2, _) = try ABCValidator().validate(book2)
         let formatted2 = try ABCFormatter().format(validatedBook2)
 
         #expect(formatted1 == formatted2)
@@ -857,7 +857,7 @@ extension ABCFormatterTests {
     func roundTrip_beamBreak_preservedAfterFormat() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nA B c d|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -868,7 +868,7 @@ extension ABCFormatterTests {
     func roundTrip_beginEndBlock_producesEqualModel() throws {
         let input = "%abc-2.1\n%%begintext justify\nSome text\n%%endtext\nX:1\nT:Test\nK:C\nCDEF|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -879,7 +879,7 @@ extension ABCFormatterTests {
     func roundTrip_brokenRhythm_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\nC>>D<E|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -890,7 +890,7 @@ extension ABCFormatterTests {
     func roundTrip_fileHeaderDirective_producesEqualModel() throws {
         let input = "%abc-2.1\n%%midi program 40\nX:1\nT:Test\nK:C\nCDEF|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -901,7 +901,7 @@ extension ABCFormatterTests {
     func roundTrip_keyWithAccidentals_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:G ^F\nGABc|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -912,7 +912,7 @@ extension ABCFormatterTests {
     func roundTrip_multipleVoices_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nV:V1\nV:V2\nK:C\nV:V1\nCDEF|\nV:V2\nGABc|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -923,7 +923,7 @@ extension ABCFormatterTests {
     func roundTrip_overlay_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/4\nK:C\nCG&EG|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -934,7 +934,7 @@ extension ABCFormatterTests {
     func roundTrip_simpleTune_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nM:4/4\nL:1/8\nK:G\nGABc defe|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -945,7 +945,7 @@ extension ABCFormatterTests {
     func roundTrip_slur_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n(C(DE)F)|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -956,7 +956,7 @@ extension ABCFormatterTests {
     func roundTrip_spacer_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\ny2C|\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 
@@ -967,7 +967,7 @@ extension ABCFormatterTests {
     func roundTrip_variantEnding_producesEqualModel() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nK:C\n|:CDEF|[1 GABc:|[2 cdef|]\n"
         let book1 = try ABCParser().parse(Data(input.utf8))
-        let (validatedBook1, _) = try book1.validated()
+        let (validatedBook1, _) = try ABCValidator().validate(book1)
         let formatted = try ABCFormatter().format(validatedBook1)
         let book2 = try ABCParser().parse(formatted)
 

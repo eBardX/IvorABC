@@ -11,7 +11,7 @@ extension ABCFormatter {
         /// ``ABCFormatter/format(_:)`` was called on a tunebook whose
         /// ``ABCTunebook/isValidated`` flag is `false`.
         ///
-        /// Call ``ABCTunebook/validated()`` before ``ABCFormatter/format(_:)``.
+        /// Call ``ABCValidator/validate(_:)`` before ``ABCFormatter/format(_:)``.
         case notValidated
     }
 }
@@ -28,7 +28,7 @@ extension ABCFormatter.Error: EnhancedError {
     public var message: String {
         switch self {
         case .notValidated:
-            "Tunebook must be validated before formatting; call validated() first"
+            "Tunebook must be validated before formatting; call ABCValidator.validate(_:) first"
         }
     }
 }

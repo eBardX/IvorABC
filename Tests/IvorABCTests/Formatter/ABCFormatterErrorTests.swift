@@ -27,6 +27,6 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_notValidated() {
-        #expect(ABCFormatter.Error.notValidated.message.contains("validated()"))
+        #expect(ABCFormatter.Error.notValidated.message.lowercased().contains("validate"))
     }
 }

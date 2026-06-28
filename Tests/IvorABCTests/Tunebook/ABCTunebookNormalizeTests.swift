@@ -195,7 +195,7 @@ extension ABCTunebookNormalizeTests {
 
         #expect(normalized.isNormalized)
 
-        let (_, issues) = try normalized.validated()
+        let (_, issues) = try ABCValidator().validate(normalized)
 
         #expect(issues.isEmpty)
     }

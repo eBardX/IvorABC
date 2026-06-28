@@ -42,10 +42,10 @@ public struct ABCTunebook {
     /// ``normalized()``.
     public let isNormalized: Bool
 
-    /// Whether this tunebook has been validated via ``validated()``.
+    /// Whether this tunebook has been validated via ``ABCValidator/validate(_:)``.
     ///
-    /// `false` until a successful ``validated()`` call returns a copy with this
-    /// flag set to `true`.
+    /// `false` until a successful ``ABCValidator/validate(_:)`` call returns a
+    /// copy with this flag set to `true`.
     public let isValidated: Bool
 
     /// The tunes contained in this tunebook.
@@ -58,41 +58,6 @@ public struct ABCTunebook {
 // MARK: -
 
 extension ABCTunebook {
-
-    // MARK: Public Instance Methods
-
-    /// Validates this tunebook against the ABC specification and returns
-    /// any issues found.
-    ///
-    /// - Throws: ``ABCValidationError/notNormalized`` if ``isNormalized`` is
-    ///           `false`. Call ``normalized()`` before calling this method.
-    ///
-    /// - Returns: A tuple of the validated tunebook and an array of
-    ///            ``ABCValidationIssue`` values. The tunebook in the tuple is a
-    ///            copy of `self` with ``isValidated`` set to `true` when no
-    ///            issues are found; otherwise `self` is returned unchanged
-    ///            (re-validating after fixing issues is required).
-    ///            An empty issues array means the tunebook is fully conformant.
-    public func validated() throws -> (Self, [ABCValidationIssue]) {
-        guard isNormalized
-        else { throw ABCValidationError.notNormalized }
-
-        guard !isValidated
-        else { return (self, []) }
-
-        var validator = ABCValidator()
-        let issues = validator.validate(self)
-
-        if !issues.isEmpty {
-            return (self, issues)
-        }
-
-        return (Self(version: version,
-                     fileHeader: fileHeader,
-                     tunes: tunes,
-                     isNormalized: isNormalized,
-                     isValidated: true), issues)
-    }
 
     // MARK: Internal Initializers
 

@@ -41,7 +41,7 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let (validatedTunebook, _) = try tunebook.validated()
+        let (validatedTunebook, _) = try ABCValidator().validate(tunebook)
         let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 
@@ -552,7 +552,7 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let (validatedTunebook, _) = try tunebook.validated()
+        let (validatedTunebook, _) = try ABCValidator().validate(tunebook)
         let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 
@@ -583,7 +583,7 @@ extension ABCParserTests {
         }
 
         let formatter = ABCFormatter()
-        let (validatedTunebook, _) = try tunebook.validated()
+        let (validatedTunebook, _) = try ABCValidator().validate(tunebook)
         let outputData = try formatter.format(validatedTunebook)
         let output = try #require(String(data: outputData, encoding: .utf8))
 

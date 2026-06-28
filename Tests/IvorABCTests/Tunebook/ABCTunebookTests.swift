@@ -31,7 +31,7 @@ extension ABCTunebookTests {
     @Test
     func equality_ignoresIsValidated() throws {
         let normalized = minimalTunebook().normalized()
-        let (validated, _) = try normalized.validated()
+        let (validated, _) = try ABCValidator().validate(normalized)
 
         #expect(normalized == validated)
     }
