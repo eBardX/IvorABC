@@ -22,14 +22,14 @@ extension ABCValidatorTests {
 
     @Test
     func validate_cleanNormalized_returnsNoIssues() throws {
-        let (_, issues) = try ABCValidator().validate(minimalTunebook().normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(minimalTunebook()))
 
         #expect(issues.isEmpty)
     }
 
     @Test
     func validate_alreadyValidated_shortCircuits() throws {
-        let normalized = minimalTunebook().normalized()
+        let normalized = ABCNormalizer().normalize(minimalTunebook())
         let (validated, _) = try ABCValidator().validate(normalized)
 
         #expect(validated.isValidated)
@@ -42,16 +42,15 @@ extension ABCValidatorTests {
 
     @Test
     func validate_setsIsValidated_whenNoErrors() throws {
-        let (validated, _) = try ABCValidator().validate(minimalTunebook().normalized())
+        let (validated, _) = try ABCValidator().validate(ABCNormalizer().normalize(minimalTunebook()))
 
         #expect(validated.isValidated)
     }
 
     @Test
     func validate_doesNotSetIsValidated_whenErrors() throws {
-        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
-                                              body: [.symbols([.shorthand(.nUpper)])])])
-            .normalized()
+        let tunebook = ABCNormalizer().normalize(makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+                                                                        body: [.symbols([.shorthand(.nUpper)])])]))
         let (returned, issues) = try ABCValidator().validate(tunebook)
 
         #expect(!issues.isEmpty)
@@ -63,7 +62,7 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
         #expect(!issues[0].message.isEmpty)
@@ -76,7 +75,7 @@ extension ABCValidatorTests {
                                               body: [.symbols([.shorthand(.tUpper),
                                                                .shorthand(.tilde),
                                                                .shorthand(.hUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
@@ -87,7 +86,7 @@ extension ABCValidatorTests {
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
@@ -98,7 +97,7 @@ extension ABCValidatorTests {
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
@@ -109,7 +108,7 @@ extension ABCValidatorTests {
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.tilde)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
     }
@@ -123,7 +122,7 @@ extension ABCValidatorTests {
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
                                                        .field(.tuneTitle("Tune2"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
@@ -135,7 +134,7 @@ extension ABCValidatorTests {
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
     }
@@ -147,7 +146,7 @@ extension ABCValidatorTests {
                                                        .field(.tuneTitle("Test")),
                                                        .field(.userDefined(makeUserSymbol(.tUpper)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 0)])
     }
@@ -162,7 +161,7 @@ extension ABCValidatorTests {
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
                                                        .field(.tuneTitle("Tune2"))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
@@ -172,15 +171,14 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.shorthand(.dot)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues.isEmpty)
     }
 
     @Test
     func validate_plusDecorationInBody_afterNormalization_returnsNoIssues() throws {
-        let (_, issues) = try ABCValidator().validate(minimalTunebook(symbols: [.decoration(makeDecoration("trill", .plus))])
-                .normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(minimalTunebook(symbols: [.decoration(makeDecoration("trill", .plus))])))
 
         #expect(issues.isEmpty)
     }
@@ -192,14 +190,14 @@ extension ABCValidatorTests {
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
                                                        .field(.tuneTitle("Second Tune"))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.undefinedUserSymbol(tuneIndex: 1)])
     }
 
     @Test
     func validate_preservesIsNormalized() throws {
-        let normalized = minimalTunebook().normalized()
+        let normalized = ABCNormalizer().normalize(minimalTunebook())
         let (validated, _) = try ABCValidator().validate(normalized)
 
         #expect(validated.isNormalized)
@@ -207,11 +205,10 @@ extension ABCValidatorTests {
     }
 
     @Test
-    func validate_canonicalPipeline_parse_normalized_validated_yieldsTT() throws {
-        // parse → normalized() → ABCValidator().validate(_:) must reach (T,T) for clean input
+    func validate_canonicalPipeline_parse_normalize_validate_yieldsTT() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
         let parsed = try ABCParser().parse(Data(input.utf8))
-        let (validated, issues) = try ABCValidator().validate(parsed.normalized())
+        let (validated, issues) = try ABCValidator().validate(ABCNormalizer().normalize(parsed))
 
         #expect(validated.isNormalized)
         #expect(validated.isValidated)
@@ -225,7 +222,7 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([.field(.tuneTitle("Bad"))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.misplacedFileHeaderField(.tuneTitle("Bad"))])
         #expect(!issues[0].message.isEmpty)
@@ -236,7 +233,7 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.wordsAligned(makeAlignedWords())),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.misplacedTuneField(.wordsAligned(makeAlignedWords()), tuneIndex: 0)])
         #expect(!issues[0].message.isEmpty)
@@ -246,7 +243,7 @@ extension ABCValidatorTests {
     func validate_missingReferenceNumber_returnsError() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("No X")),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.missingReferenceNumber(tuneIndex: 0)])
         #expect(!issues[0].message.isEmpty)
@@ -257,7 +254,7 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Bad")),
                                                        .field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
-        let (_, issues) = try ABCValidator().validate(tunebook.normalized())
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
 
         #expect(issues == [.misplacedReferenceNumber(tuneIndex: 0)])
         #expect(!issues[0].message.isEmpty)

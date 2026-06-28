@@ -34,12 +34,12 @@ public struct ABCTunebook {
     /// The entries that make up the file header of this tunebook.
     public let fileHeader: [ABCHeaderEntry]
 
-    /// Whether this tunebook has been normalized to ABC 2.1 via ``normalized()``.
+    /// Whether this tunebook has been normalized to ABC 2.1 via ``ABCNormalizer/normalize(_:)``.
     ///
     /// `false` for tunebooks produced by ``init(version:fileHeader:tunes:)``
-    /// until ``normalized()`` is called; `true` for tunebooks returned by the
+    /// until ``ABCNormalizer/normalize(_:)`` is called; `true` for tunebooks returned by the
     /// parser for clean `%abc-2.1` input, and for all tunebooks returned by
-    /// ``normalized()``.
+    /// ``ABCNormalizer/normalize(_:)``.
     public let isNormalized: Bool
 
     /// Whether this tunebook has been validated via ``ABCValidator/validate(_:)``.

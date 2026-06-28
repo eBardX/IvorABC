@@ -12,7 +12,7 @@ extension ABCValidator {
         /// ``ABCValidator/validate(_:)`` was called on a tunebook whose
         /// ``ABCTunebook/isNormalized`` flag is `false`.
         ///
-        /// Call ``ABCTunebook/normalized()`` before ``ABCValidator/validate(_:)``.
+        /// Call ``ABCNormalizer/normalize(_:)`` before ``ABCValidator/validate(_:)``.
         case notNormalized
     }
 }
@@ -30,7 +30,7 @@ extension ABCValidator.Error: EnhancedError {
     public var message: String {
         switch self {
         case .notNormalized:
-            "Tunebook must be normalized before validation; call normalized() first"
+            "Tunebook must be normalized before validation; call ABCNormalizer.normalize(_:) first"
         }
     }
 }

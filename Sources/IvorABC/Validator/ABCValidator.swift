@@ -29,7 +29,7 @@ extension ABCValidator {
     ///             An empty issues array means the tunebook is fully conformant.
     ///
     /// - Throws:   ``Error/notNormalized`` if ``ABCTunebook/isNormalized`` is
-    ///             `false`. Call ``ABCTunebook/normalized()`` before calling
+    ///             `false`. Call ``ABCNormalizer/normalize(_:)`` before calling
     ///             this method.
     public func validate(_ tunebook: ABCTunebook) throws -> (ABCTunebook, [Issue]) {
         guard tunebook.isNormalized
