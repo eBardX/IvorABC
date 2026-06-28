@@ -12,22 +12,39 @@ struct ABCParserDiagnosticTests {
 extension ABCParserDiagnosticTests {
     @Test
     func equality() {
-        let a = ABCParser.Diagnostic.missingFileID
-        let b = ABCParser.Diagnostic.missingFileID
+        let a = ABCParser.Diagnostic.malformedVersion("2.x")
+        let b = ABCParser.Diagnostic.malformedVersion("2.x")
 
         #expect(a == b)
     }
 
     @Test
     func inequality() {
-        #expect(ABCParser.Diagnostic.missingFileID != ABCParser.Diagnostic.bareTempoRate(120))
+        let tempo = ABCTempo(durations: [], rate: 120, text: nil).require()
+
+        #expect(ABCParser.Diagnostic.malformedVersion("2.x") != ABCParser.Diagnostic.deprecatedTempo(tempo))
     }
 
     @Test
-    func message_bareTempoRate() {
-        let diagnostic = ABCParser.Diagnostic.bareTempoRate(120)
+    func message_deprecatedTempo() {
+        let tempo = ABCTempo(durations: [], rate: 120, text: nil).require()
+        let diagnostic = ABCParser.Diagnostic.deprecatedTempo(tempo)
 
         #expect(diagnostic.message.contains("120"))
+    }
+
+    @Test
+    func message_deprecatedField() {
+        let diagnostic = ABCParser.Diagnostic.deprecatedField(.area("test"))
+
+        #expect(diagnostic.message.lowercased().contains("deprecated"))
+    }
+
+    @Test
+    func message_malformedVersion() {
+        let diagnostic = ABCParser.Diagnostic.malformedVersion("2.x")
+
+        #expect(diagnostic.message.contains("2.x"))
     }
 
     @Test
@@ -45,13 +62,6 @@ extension ABCParserDiagnosticTests {
     }
 
     @Test
-    func message_missingFileID() {
-        let diagnostic = ABCParser.Diagnostic.missingFileID
-
-        #expect(diagnostic.message.contains("Missing"))
-    }
-
-    @Test
     func message_unrecognizedLine() {
         let diagnostic = ABCParser.Diagnostic.unrecognizedLine("%%%bogus")
 
@@ -59,9 +69,9 @@ extension ABCParserDiagnosticTests {
     }
 
     @Test
-    func message_unsupportedVersion() {
+    func message_unrecognizedVersion() {
         let version = ABCVersion(major: 3, minor: 0)
-        let diagnostic = ABCParser.Diagnostic.unsupportedVersion(version)
+        let diagnostic = ABCParser.Diagnostic.unrecognizedVersion(version)
 
         #expect(diagnostic.message.contains("3.0"))
     }

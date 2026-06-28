@@ -18,9 +18,9 @@ extension ABCSymbolTests {
     }
 
     @Test
-    func equality_barRepeat() {
-        let bar = makeBarRepeat()
-        #expect(ABCSymbol.barRepeat(bar) == .barRepeat(bar))
+    func equality_barLine() {
+        let bar = makeBarLine()
+        #expect(ABCSymbol.barLine(bar) == .barLine(bar))
     }
 
     @Test

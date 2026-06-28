@@ -15,9 +15,27 @@ modern ABC parsers must behave:
 - Loose Interpretation (Legacy): If an ABC file completely lacks the
   `%abc-<version>` header, or specifies a version **lower** than 2.1 (like
   `%abc-2.0`), the parser must use loose interpretation. This tells your
-  software to ignore missing fields, tolerate archaic spacing, handle old
-  multi-line quirks (like the legacy `H:` field behavior), and guess the intent
-  without crashing. 
+  software to ignore missing fields, tolerate deprecated syntax, handle old
+  multi-line quirks (like the legacy `H:` field behavior — see below), and guess
+  the intent without crashing.
+
+  This **deprecated-syntax** tolerance covers forms that predate ABC 2.1 but
+  remain common in the wild. This is a separate concern
+  from version detection and character encoding (the two themes of this
+  document), but a legacy-aware parser must accept it: examples from the ABC 1.6
+  era include the notes-per-minute tempo forms `Q:120` and `Q:C=120`, lyrics
+  using only the uppercase `W:` field (aligned lowercase `w:` came later), and
+  chords written only as `[CEGc]` (the `+…+` decoration and `!` line-break
+  dialects are ABC 2.0-era additions, not present in 1.6). A full treatment of
+  deprecated syntax is out of scope here.
+
+  The legacy `H:` (history) field is a concrete example. In ABC 1.6 the history
+  field "can be used for multi-line stories/anecdotes, all of which will be
+  ignored until the next field occurs" — that is, its content ran across
+  multiple raw lines with **no field indicator**, continuing until the next
+  field began. ABC 2.1 deprecates this and instead expects explicit `+:`
+  continuation lines, so a loose parser must recognize the old indicator-less
+  multi-line form.
 - Strict Interpretation (Modern): If a file begins with `%abc-2.1` or higher, it
   forces the parser into strict interpretation mode. Any deviation from the ABC
   2.1 rules must be actively caught and reported to the user as a syntax error. 
@@ -34,13 +52,16 @@ unique regex and scanning considerations:
 2. **The Default State**: If the token is missing, do not crash; default your
    parser's state machine to "Loose/Legacy" mode. 
 3. **Mid-File Variance**: While the version is typically established at the
-   absolute beginning of a file, the standard also allows a version field (e.g.,
-   `I: version 2.0`) to be applied to individual tunes within a large
-   compilation file (a tunebook) to switch behaviors on the fly. 
+   absolute beginning of a file, the standard also allows a version field
+   (`I:abc-version <value>`, e.g. `I:abc-version 2.0`) to be applied to
+   individual tunes within a large compilation file (a tunebook) to switch
+   behaviors on the fly. The field name is `I:abc-version` in ABC 2.1; the older
+   ABC 2.0 equivalent was the stylesheet directive `%%abc-version` (see below).
+   There is no field named `I:version`.
 
 ## Headers in the Wild
 
-You **should not expect** to find `%abc-2.0` or `%abc-1.6**` in files found in
+You **should not expect** to find `%abc-2.0` or `%abc-1.6` in files found in
 the wild.
 
 Because the `%abc-<version>` file header syntax did not exist prior to December
@@ -56,23 +77,29 @@ encounter two rare exceptions when parsing old or non-standard files:
 - **Manually Retconned Files**: A modern user or script may have manually added
   `%abc-2.0` to an old file, mistakenly believing it was a required tag for all
   versions.
-- **The `%%abc-version` Directive**: Before the standard settled on a single
-  percent sign (`%abc-2.1`), draft versions of the ABC 2.0 standard proposed a
-  stylesheet-style directive format using two percent signs: `%%abc-version
-  2.0`.
+- **The `%%abc-version` Directive**: Before the standard settled on the `%abc-`
+  file identifier (`%abc-2.1`), the ABC 2.0 standard (December 2010) defined a
+  stylesheet-style directive using two percent signs: `%%abc-version 2.0`. It
+  was a genuine, settled part of ABC 2.0, not merely a draft proposal, so you
+  may legitimately encounter it in files exported by 2.0-era software.
 
 ## The Safe Parser Implementation Strategy
 
 To make your parser highly robust against any file it encounters, implement the
 following cascading fallback logic:
 
-1. Check for Modern %abc- Header: Look for %abc-2.1, %abc-2.2, etc. If found,
-   use modern strict parsing.
-2. Check for Draft %%abc-version Directive: Look for %%abc-version <number>. If
-   the number is less than 2.1, drop into legacy mode.
+1. Check for Modern `%abc-` Header: Look for `%abc-2.1`, `%abc-2.2`, etc. If
+   found, use modern strict parsing.
+2. Check for the ABC 2.0 `%%abc-version` Directive: Look for `%%abc-version
+   <number>`. If the number is less than 2.1, drop into legacy mode.
 3. Default to Legacy/Loose Mode: If neither header is found—which is true for
    the vast majority of vintage files—automatically assume the file is a legacy
    file (ABC 2.0 or older) and apply loose parsing rules.
+
+Whichever mode the steps above select, an `I:abc-version` field (in the file
+header or an individual tune header) overrides that determination for its scope
+— see **Mid-File Variance** above. The cascade establishes the file-level
+default; `I:abc-version` refines it per tune.
 
 ## Summary Recommendation for Your Parser
 
@@ -93,36 +120,45 @@ eras:
 
 ```
 ┌──────────────────────────┐     ┌──────────────────────────┐     ┌──────────────────────────┐
-│   1990s – Mid-2000s      │     │      ABC 2.0 (2003)      │     │  ABC 2.1+ (2011–Present) │
-│     Strict ASCII         │ ──> │   Latin-1 (ISO-8859-1)   │ ──> │     UTF-8 by Default     │
-│   (Escapes for Accents)  │     │   Introducing `I:charset`│     │    BOM-aware Handling    │
+│      Early Era           │     │   ABC 2.0 (Dec 2010)     │     │  ABC 2.1+ (2011–Present) │
+│  8-bit by convention     │ ──> │   Latin-1 (ISO-8859-1)   │ ──> │     UTF-8 by Default     │
+│   (Mnemonic Escapes)     │     │    Adds %%abc-charset    │     │    BOM-aware Handling    │
 └──────────────────────────┘     └──────────────────────────┘     └──────────────────────────┘
 ```
 
-1. **The Early Era (1990s): Pure ASCII & TeX Macros**
+1. **The Early Era: Mnemonic Escapes**
 
-   Originally, ABC notation was designed to be purely **7-bit ASCII-compliant**
-   so it could be easily transmitted across 1990s Usenet groups and email lists.
-   Because ASCII does not natively support accented characters (like `é` or `ø`)
-   often found in traditional European folk tune titles, files relied heavily on
-   **TeX-style macro escapes** for typography. 
+   The early ABC standards (through ABC 1.6) did not formally specify a character
+   set at all; in practice files were plain 8-bit text. Because there was no
+   guaranteed way to transmit accented characters (like `é` or `ø`) often found
+   in traditional European folk tune titles, files relied on **backslash
+   mnemonic escapes** for accents. The ABC 2.1 standard notes that these
+   mnemonics, based on TeX encodings, "have been available since the earliest
+   days of abc and are widely used in legacy abc files."
 
    - **Example legacy formatting**: `T:The Maid of Thurn\'e`
-   - **Parser impact**: Your parser should expect to see backslash escapes
-     representing accents in very old files.
+   - **Parser impact**: Your parser should expect to see backslash mnemonic
+     escapes representing accents in old files. Note that these escapes remain
+     fully legal under strict ABC 2.1 (alongside named HTML entities and
+     fixed-width Unicode), so you must handle them regardless of the file's
+     declared version or encoding — see below.
 
-2. **The ABC 2.0 Era (2003 Drafts): Latin-1 Default**
+2. **The ABC 2.0 Era (December 2010): Latin-1 Default**
 
-   The ABC 2.0 draft standard shifted the global default encoding from ASCII to
-   **Latin-1 (ISO-8859-1)** to easily accommodate Western European languages. 
+   The ABC 2.0 standard set the global default encoding to **Latin-1
+   (ISO-8859-1)**, chosen to accommodate Western European languages and to match
+   the then-default charset of webpages.
 
    To handle multilingual files outside Western Europe, ABC 2.0 introduced a
-   dedicated directive format: `I:charset <encoding>` (or `%%charset
-   <encoding>`). 
+   dedicated stylesheet directive: `%%abc-charset <encoding>` (two percent
+   signs). In ABC 2.1 the equivalent is the instruction field `I:abc-charset
+   <encoding>`.
 
-   - **The Catch**: This instruction was allowed anywhere in the file header,
+   - **The Catch**: Under ABC 2.0 the charset could be changed partway through a
+     file ("later occurrences of the charset field override earlier ones"),
      meaning a parser had to read the file, encounter the token, and dynamically
-     change its decoder mid-stream. 
+     change its decoder mid-stream. Note that ABC 2.1 reversed this: its
+     `I:abc-charset` "may not be changed further on in the file."
 
 3. **The Modern Era (ABC 2.1+): UTF-8 Standard**
 
@@ -147,13 +183,23 @@ BOM attached to the string will cause your regex match for %abc to fail.
 When loading an incoming stream or file of unknown origin, use this logic path
 to determine how to decode bytes into characters:
 
-1. **Check for `%abc-2.1` or higher**: If found, decode the rest of the stream
-   strictly as **UTF-8**.
-2. **Scan for `I:charset` or `%%charset`**: If a specific charset token is found
-   in the header (e.g., `I:charset utf-8` or `I:charset CP1252`), immediately
-   pivot the decoder to that type.
+1. **Check for `%abc-2.1` or higher**: If found, decode the stream as **UTF-8**,
+   which is the 2.1 default. Note that UTF-8 is only the default: a conforming
+   2.1 file may still declare a different encoding with an `I:abc-charset` field,
+   so do not treat the `%abc-2.1` identifier as a guarantee of UTF-8 — still
+   honor an explicit charset field per the next step.
+2. **Scan for `I:abc-charset` or `%%abc-charset`**: If a specific charset token
+   is found in the header (e.g., `I:abc-charset utf-8` or `%%abc-charset
+   iso-8859-2`), pivot the decoder to that type — including when a `%abc-2.1`
+   identifier is also present. The legal charset values are `iso-8859-1` through
+   `iso-8859-10`, `us-ascii`, and `utf-8`.
 3. **Fallback Default**: If there is no version tag and no charset directive,
-   fall back to decoding the byte stream as **ISO-8859-1 (Latin-1)**. Latin-1 is
-   a safe baseline fallback because it maps every single incoming byte directly
-   to a valid 8-bit character code point without crashing, protecting your
-   parser from unhandled encoding exceptions. 
+   fall back to decoding the byte stream as **ISO-8859-1 (Latin-1)**. This
+   matches ABC 2.0's own documented default ("when no charset is specified,
+   iso-8859-1 is assumed"), and Latin-1 is a safe baseline because it maps every
+   incoming byte directly to a valid 8-bit character code point without
+   crashing, protecting your parser from unhandled encoding exceptions. The
+   tradeoff is that a genuinely UTF-8 legacy file decoded as Latin-1 will yield
+   mojibake rather than an error; if that matters for your inputs, consider
+   attempting a strict UTF-8 decode first and falling back to Latin-1 only when
+   it fails.

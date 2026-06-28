@@ -7,7 +7,7 @@ extension ABCPartSequence.Item {
     // MARK: Public Nested Types
 
     /// The number of times an item is repeated.
-    public struct Count: UIntRepresentable {
+    public struct RepeatCount: UIntRepresentable {
 
         // MARK: Public Type Methods
 
@@ -24,7 +24,7 @@ extension ABCPartSequence.Item {
 
         // MARK: Public Initializers
 
-        /// Creates a `Count` instance with the provided value, or `nil` if the
+        /// Creates a `RepeatCount` instance with the provided value, or `nil` if the
         /// value is not valid.
         ///
         /// - Parameter uintValue:  The repeat count value. Must be greater than

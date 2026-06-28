@@ -11,25 +11,25 @@ struct ABCSymbolMatcherTests {
 
 extension ABCSymbolMatcherTests {
     @Test
-    func matchSymbols_barRepeat() throws {
+    func matchSymbols_barLine() throws {
         let symbols = try matchSymbols("|")
 
-        #expect(symbols == [.barRepeat(makeBarRepeat())])
+        #expect(symbols == [.barLine(makeBarLine())])
     }
 
     @Test
-    func matchSymbols_barRepeat_abbreviatedEnding_decomposes() throws {
+    func matchSymbols_barLine_abbreviatedEnding_decomposes() throws {
         let symbols = try matchSymbols(":|2")
 
-        #expect(symbols == [.barRepeat(makeBarRepeat(.repeat, precedingPlayCount: 2)),
+        #expect(symbols == [.barLine(makeBarLine(.repeat, precedingPlayCount: 2)),
                             .variantEnding(makeVariantEnding([2...2]))])
     }
 
     @Test
-    func matchSymbols_barRepeat_abbreviatedEndingList_decomposes() throws {
+    func matchSymbols_barLine_abbreviatedEndingList_decomposes() throws {
         let symbols = try matchSymbols("|1,3-5")
 
-        #expect(symbols == [.barRepeat(makeBarRepeat()),
+        #expect(symbols == [.barLine(makeBarLine()),
                             .variantEnding(makeVariantEnding([1...1, 3...5]))])
     }
 
@@ -137,7 +137,7 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_shorthand_userDefinedSymbol_stillEmitsShorthand() throws {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.wUpper, makeDecoration("trill"))))
 
@@ -148,7 +148,7 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_shorthand_annotationDefinedSymbol_emitsShorthand() throws {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))
 
@@ -159,7 +159,7 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_shorthand_deassigned_throwsUndefinedShorthand() throws {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign T
 
@@ -170,7 +170,7 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_shorthand_globalDeassignment_shadowedByTuneDefinition_succeeds() throws {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign globally
         ctx.inTune = true
@@ -232,7 +232,7 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_keyContextDoesNotAffectAccidentals() throws {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .key(makeKeySignature(.g, .major)))
 

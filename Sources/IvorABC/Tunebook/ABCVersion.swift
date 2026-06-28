@@ -3,20 +3,6 @@
 /// An ABC version number.
 public struct ABCVersion {
 
-    // MARK: Public Type Properties
-
-    /// The current ABC version supported by this library.
-    public static let current = Self(major: 2,
-                                     minor: 1)
-
-    /// All ABC versions supported by this library.
-    public static let supported = [Self(major: 1,
-                                        minor: 6),
-                                   Self(major: 2,
-                                        minor: 0),
-                                   Self(major: 2,
-                                        minor: 1)]
-
     // MARK: Public Initializers
 
     /// Creates a new version number with the provided major and minor
@@ -37,6 +23,28 @@ public struct ABCVersion {
 
     /// The minor version number.
     public let minor: UInt
+}
+
+// MARK: -
+
+extension ABCVersion {
+
+    // MARK: Public Type Properties
+
+    /// The current ABC version supported by this library.
+    public static let current = v2_1
+
+    /// All ABC versions supported by this library.
+    public static let supported = [v1_6, v2_0, v2_1]
+
+    // MARK: Internal Type Properties
+
+    internal static let v1_6 = Self(major: 1,   // swiftlint:disable:this identifier_name
+                                    minor: 6)
+    internal static let v2_0 = Self(major: 2,   // swiftlint:disable:this identifier_name
+                                    minor: 0)
+    internal static let v2_1 = Self(major: 2,   // swiftlint:disable:this identifier_name
+                                    minor: 1)
 }
 
 // MARK: - Comparable

@@ -46,8 +46,8 @@ extension ABCFormatterErrorTests {
     }
 
     @Test
-    func message_invalidBarRepeat() {
-        let error = ABCFormatter.Error.invalidBarRepeat("||:")
+    func message_invalidBarLine() {
+        let error = ABCFormatter.Error.invalidBarLine("||:")
 
         #expect(error.message.contains("||:"))
     }
@@ -103,7 +103,7 @@ extension ABCFormatterErrorTests {
 
     @Test
     func message_unsupportedVersion() {
-        let error = ABCFormatter.Error.unsupportedVersion(makeVersion(1, 6))
+        let error = ABCFormatter.Error.unsupportedVersion(.v1_6)
 
         #expect(error.message.contains("1.6"))
     }

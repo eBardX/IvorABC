@@ -2,7 +2,7 @@
 
 public import XestiTools
 
-extension ABCBarRepeat {
+extension ABCBarLine {
 
     // MARK: Public Nested Types
 

@@ -42,6 +42,12 @@ extension ABCTimeSignature {
 
 extension ABCTimeSignature.StandardMeter {
 
+    // MARK: Internal Instance Properties
+
+    internal var doubleValue: Double {
+        Double(numerator) / Double(denominator)
+    }
+
     // MARK: Private Type Methods
 
     private static func _isValid(_ numerator: UInt,

@@ -45,7 +45,7 @@ extension ABCSymbolTokenizer {
     // MARK: Private Type Properties
 
     private nonisolated(unsafe) static let rules: [Rule] = [Rule(regexAnnotation, .annotation),
-                                                            Rule(regexBarRepeat, .barRepeat),
+                                                            Rule(regexBarLine, .barLine),
                                                             Rule(regexBrokenRhythm, .brokenRhythm),
                                                             Rule(regexChordSymbol, .chordSymbol),
                                                             Rule(regexDecoration, .decoration),
@@ -81,7 +81,7 @@ extension ABCSymbolTokenizer {
 extension Tokenizer.Token.Kind {
     internal static let annotation         = Self("annotation")
     internal static let backquotes         = Self("backquotes")
-    internal static let barRepeat          = Self("barRepeat")
+    internal static let barLine            = Self("barLine")
     internal static let brokenRhythm       = Self("brokenRhythm")
     internal static let chordBegin         = Self("chordBegin")
     internal static let chordEnd           = Self("chordEnd")

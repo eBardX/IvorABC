@@ -9,7 +9,6 @@ extension ABCParser {
         case directive(ABCDirective)
         case empty
         case field(ABCField)
-        case fileID(ABCFileID)
         case symbols([ABCSymbol])
     }
 }

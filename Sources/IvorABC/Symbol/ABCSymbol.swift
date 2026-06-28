@@ -7,8 +7,8 @@ public enum ABCSymbol {
     /// An annotation.
     case annotation(ABCAnnotation)
 
-    /// A bar repeat marker.
-    case barRepeat(ABCBarRepeat)
+    /// A bar line marker.
+    case barLine(ABCBarLine)
 
     /// A beam-break marker.
     ///

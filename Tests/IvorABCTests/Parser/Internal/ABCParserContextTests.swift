@@ -4,22 +4,22 @@
 import Testing
 import XestiTools
 
-struct ABCParseContextTests {
+struct ABCParserContextTests {
 }
 
 // MARK: -
 
-extension ABCParseContextTests {
+extension ABCParserContextTests {
     @Test
     func baseDuration_defaultIsEighths() {
-        let ctx = ABCParseContext()
+        let ctx = ABCParser.Context()
 
         #expect(ctx.baseDuration == makeDuration(1, 8))
     }
 
     @Test
     func baseDuration_unitNoteLengthOverridesMeter() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(3, 16)))
         ctx.update(with: .unitNoteLength(makeDuration(1, 4)))
@@ -29,7 +29,7 @@ extension ABCParseContextTests {
 
     @Test
     func init_defaults() {
-        let ctx = ABCParseContext()
+        let ctx = ABCParser.Context()
 
         #expect(ctx.accidentalsInKey.isEmpty)
         #expect(!ctx.inTune)
@@ -38,7 +38,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_key_cMajor_noAccidentals() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .key(makeKeySignature(.c, .major)))
 
@@ -47,7 +47,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_key_gMajor_fSharp() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .key(makeKeySignature(.g, .major)))
 
@@ -57,7 +57,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_key_highlandPipesPreset() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .key(.highlandPipesPreset))
 
@@ -69,7 +69,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_meter_compoundTime_setsIsCompoundMeter() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(6, 8)))
 
@@ -78,7 +78,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_meter_simpleTime_clearsIsCompoundMeter() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(4, 4)))
 
@@ -87,7 +87,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_meter_threeQuarterTime_baseDurationEighths() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(3, 4)))
 
@@ -96,7 +96,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_meter_threeSixteenthTime_baseDurationSixteenths() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(3, 16)))
 
@@ -105,7 +105,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_unrelatedField_hasNoEffect() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .tuneTitle("My Song"))
 
@@ -116,7 +116,7 @@ extension ABCParseContextTests {
 
     @Test
     func resetTuneScope_clearsTuneUserSymbols() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.hUpper, makeDecoration("trill"))))
         ctx.inTune = true
@@ -130,7 +130,7 @@ extension ABCParseContextTests {
 
     @Test
     func resetTuneScope_revertsAccidentalsInKey() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.inTune = true
         ctx.update(with: .key(makeKeySignature(.g, .major)))
@@ -142,7 +142,7 @@ extension ABCParseContextTests {
 
     @Test
     func resetTuneScope_revertsDecorationDialect() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: makeDirective(.decoration, "+"))   // file-header default: plus
         ctx.inTune = true
@@ -155,7 +155,7 @@ extension ABCParseContextTests {
 
     @Test
     func resetTuneScope_revertsIsCompoundMeter() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .meter(makeTimeSignature(4, 4)))  // file-header default: simple
         ctx.inTune = true
@@ -168,7 +168,7 @@ extension ABCParseContextTests {
 
     @Test
     func resetTuneScope_revertsBaseDuration() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .unitNoteLength(makeDuration(1, 4)))  // file-header default
         ctx.inTune = true
@@ -181,7 +181,7 @@ extension ABCParseContextTests {
 
     @Test
     func init_predefinedUserSymbols_areAvailable() {
-        let ctx = ABCParseContext()
+        let ctx = ABCParser.Context()
 
         #expect(ctx.userSymbolDefinition(for: .tilde) == .decoration(makeDecoration("roll")))
         #expect(ctx.userSymbolDefinition(for: .hUpper) == .decoration(makeDecoration("fermata")))
@@ -198,7 +198,7 @@ extension ABCParseContextTests {
 
     @Test
     func update_annotation_isRetrievable() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
         let annotation = makeAnnotation(.above, "col legno")
 
         ctx.update(with: .userDefined(makeUserSymbol(.nUpper, annotation)))
@@ -208,7 +208,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_predefinedShorthand_makesItUndefined() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign without any prior explicit definition
 
@@ -218,7 +218,7 @@ extension ABCParseContextTests {
 
     @Test
     func tuneScope_override_predefinedShorthand_revertsAfterReset() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.inTune = true
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("mordent"))))
@@ -232,7 +232,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_global_makesShorthandUndefined() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign
@@ -243,7 +243,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_global_doesNotFallBackToPriorDefinition() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign
@@ -256,7 +256,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_tuneScope_shadowsGlobalDefinition() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))
 
@@ -269,7 +269,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_tuneScope_clearedByResetTuneScope() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.inTune = true
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign at tune scope
@@ -281,7 +281,7 @@ extension ABCParseContextTests {
 
     @Test
     func deassignment_reassignment_clearsDeassigned() {
-        var ctx = ABCParseContext()
+        var ctx = ABCParser.Context()
 
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))                          // de-assign
         ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill")))) // re-assign

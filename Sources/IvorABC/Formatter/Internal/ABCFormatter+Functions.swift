@@ -8,7 +8,7 @@ private import XestiTools
 
 // MARK: Internal Functions
 
-internal func formatField(_ field: ABCField) throws -> (String, String) {
+internal func formatField(_ field: ABCField) -> (String, String) {
     switch field {
     case let .wordsAligned(alignedLyrics):
         ("w", _formatAlignedWords(alignedLyrics))
@@ -108,13 +108,13 @@ internal func formatPart(_ part: ABCPart) -> String {
 
 internal func formatSymbol(_ symbol: ABCSymbol,
                            _ unitNoteLength: ABCDuration?,
-                           _ meter: ABCTimeSignature?) throws -> String {
+                           _ meter: ABCTimeSignature?) -> String {
     switch symbol {
     case let .annotation(annotation):
         _formatAnnotation(annotation)
 
-    case let .barRepeat(barRepeat):
-        _formatBarRepeat(barRepeat)
+    case let .barLine(barLine):
+        _formatBarLine(barLine)
 
     case .beamBreak:
         preconditionFailure("beamBreak must be handled by the caller")
@@ -135,7 +135,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         _formatGraceNotes(graceNotes, unitNoteLength, meter)
 
     case let .inlineField(field):
-        try _formatInlineField(field)
+        _formatInlineField(field)
 
     case let .note(note):
         _formatNote(note, unitNoteLength, meter)
@@ -144,7 +144,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         "&"
 
     case let .rest(rest):
-        try _formatRest(rest, unitNoteLength, meter)
+        _formatRest(rest, unitNoteLength, meter)
 
     case let .shorthand(shorthand):
         _formatShorthand(shorthand)
@@ -171,10 +171,10 @@ private let annotationPlacements: [ABCAnnotation.Placement: String] = [.above: "
                                                                        .left: "<",
                                                                        .right: ">"]
 
-private let barRepeatBarLines: [ABCBarRepeat.BarLine: String] = [.double: "||",
-                                                                 .end: "|]",
-                                                                 .invisible: "[|]",
-                                                                 .standard: "|"]
+private let barLineKinds: [ABCBarLine.Kind: String] = [.double: "||",
+                                                       .end: "|]",
+                                                       .invisible: "[|]",
+                                                       .standard: "|"]
 
 private let brokenRhythms: [ABCBrokenRhythm: String] = [.dotted: ">",
                                                         .doubleDotted: ">>",
@@ -305,32 +305,30 @@ private let ties: [ABCTie: String] = [.dotted: ".-",
 private func _durationFromTimeSignature(_ timeSignature: ABCTimeSignature) -> ABCDuration? {
     switch timeSignature {
     case let .standard(meter):
-        let ratio = Double(meter.numerator) / Double(meter.denominator)
-
-        return ratio < 0.75
-               ? ABCDuration(numerator: 1,
-                             denominator: 16)
-               : ABCDuration(numerator: 1,
-                             denominator: 8)
+        // swiftlint:disable void_function_in_ternary
+        meter.doubleValue < 0.75
+            ? ABCDuration(numerator: 1,
+                          denominator: 16)
+            : ABCDuration(numerator: 1,
+                          denominator: 8)
+        // swiftlint:enable void_function_in_ternary
 
     default:
-        return ABCDuration(numerator: 1,
-                           denominator: 8)
+        ABCDuration(numerator: 1,
+                    denominator: 8)
     }
 }
 
 private func _effectiveBaseDuration(_ unitNoteLength: ABCDuration?,
                                     _ timeSignature: ABCTimeSignature?) -> ABCDuration? {
     if let unitNoteLength {
-        return unitNoteLength
+        unitNoteLength
+    } else if let timeSignature {
+        _durationFromTimeSignature(timeSignature)
+    } else {
+        ABCDuration(numerator: 1,
+                    denominator: 8)
     }
-
-    if let timeSignature {
-        return _durationFromTimeSignature(timeSignature)
-    }
-
-    return ABCDuration(numerator: 1,
-                       denominator: 8)
 }
 
 private func _formatAlignedWords(_ alignedLyrics: ABCAlignedWords) -> String {
@@ -399,16 +397,16 @@ private func _formatAnnotation(_ annotation: ABCAnnotation) -> String {
     return result
 }
 
-private func _formatBarRepeat(_ barRepeat: ABCBarRepeat) -> String {
+private func _formatBarLine(_ barLine: ABCBarLine) -> String {
     var result = ""
 
-    if barRepeat.isDotted {
+    if barLine.isDotted {
         result += "."
     }
 
-    switch barRepeat.barLine {
+    switch barLine.kind {
     case .repeat:
-        switch (barRepeat.precedingPlayCount, barRepeat.followingPlayCount) {
+        switch (barLine.precedingPlayCount, barLine.followingPlayCount) {
         case let (1, fpCount):
             result += "|"
             result += String(repeating: ":",
@@ -436,7 +434,7 @@ private func _formatBarRepeat(_ barRepeat: ABCBarRepeat) -> String {
         }
 
     default:
-        result += barRepeatBarLines[barRepeat.barLine].require()
+        result += barLineKinds[barLine.kind].require()
     }
 
     return result
@@ -600,8 +598,8 @@ private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
     return result
 }
 
-private func _formatInlineField(_ field: ABCField) throws -> String {
-    let (letter, value) = try formatField(field)
+private func _formatInlineField(_ field: ABCField) -> String {
+    let (letter, value) = formatField(field)
 
     return "[\(letter):\(value)]"
 }
@@ -688,23 +686,23 @@ private func _formatNote(_ note: ABCNote,
 private func _formatPartItems(_ items: [ABCPartSequence.Item]) -> String {
     items.map { item in
         switch item {
-        case let .group(children, count):
+        case let .group(children, repeatCount):
             var result = "("
 
             result += _formatPartItems(children)
             result += ")"
 
-            if count > 1 {
-                result += String(count.uintValue)
+            if repeatCount > 1 {
+                result += String(repeatCount.uintValue)
             }
 
             return result
 
-        case let .part(part, count):
+        case let .part(part, repeatCount):
             var result = formatPart(part)
 
-            if count > 1 {
-                result += String(count.uintValue)
+            if repeatCount > 1 {
+                result += String(repeatCount.uintValue)
             }
 
             return result
@@ -734,7 +732,7 @@ private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
 
 private func _formatRest(_ rest: ABCRest,
                          _ unitNoteLength: ABCDuration?,
-                         _ meter: ABCTimeSignature?) throws -> String {
+                         _ meter: ABCTimeSignature?) -> String {
     switch rest {
     case let .multiMeasure(invisible, measureCount):
         let letter = invisible ? "X" : "Z"

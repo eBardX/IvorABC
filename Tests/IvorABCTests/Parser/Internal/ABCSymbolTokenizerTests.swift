@@ -19,23 +19,23 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
-    func tokenize_barRepeat_doubleBar() throws {
+    func tokenize_barLine_doubleBar() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("||")
 
         #expect(tokens.count == 1)
-        #expect(tokens[0].kind == .barRepeat)
+        #expect(tokens[0].kind == .barLine)
     }
 
     @Test
-    func tokenize_barRepeat_singleBar() throws {
+    func tokenize_barLine_singleBar() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("|")
 
         #expect(tokens.count == 1)
-        #expect(tokens[0].kind == .barRepeat)
+        #expect(tokens[0].kind == .barLine)
     }
 
     @Test

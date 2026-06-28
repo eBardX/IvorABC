@@ -36,14 +36,15 @@ extension ABCFormatter.Writer {
     // MARK: Internal Instance Methods
 
     internal mutating func writeTunebook() throws -> Data {
-        guard tunebook.version == ABCVersion.current
+        guard let version = tunebook.version, // should never happen ???
+              version == .current
         else { throw ABCFormatter.Error.unsupportedVersion(tunebook.version) }
 
-        buffer.append("%abc-\(tunebook.version.major).\(tunebook.version.minor)\n")
+        buffer.append("%abc-\(version.major).\(version.minor)\n")
 
         try _writeFileHeaders()
 
-        let autoRefs = _computeAutoReferenceNumbers()
+        let autoRefs = _computeAutoReferenceNumbers() // should never happen ???
 
         for (index, tune) in tunebook.tunes.enumerated() {
             if index > 0 {
@@ -134,8 +135,8 @@ extension ABCFormatter.Writer {
         }
     }
 
-    private mutating func _writeField(_ field: ABCField) throws {
-        let (letter, value) = try formatField(field)
+    private mutating func _writeField(_ field: ABCField) {
+        let (letter, value) = formatField(field)
 
         buffer.append(letter)
         buffer.append(":")
@@ -161,10 +162,10 @@ extension ABCFormatter.Writer {
                 _writeDirective(directive)
 
             case let .field(field):
-                guard field.isValidInFileHeader
+                guard field.isValidInFileHeader // should never happen ???
                 else { throw ABCFormatter.Error.misplacedFileHeaderField(field) }
 
-                try _writeField(field)
+                _writeField(field)
             }
         }
     }
@@ -186,7 +187,7 @@ extension ABCFormatter.Writer {
                 unitNoteLength = duration
             }
 
-            try line.append(formatSymbol(symbol, unitNoteLength, meter))
+            line.append(formatSymbol(symbol, unitNoteLength, meter))
         }
 
         buffer.append(line)
@@ -198,7 +199,7 @@ extension ABCFormatter.Writer {
         var seenReferenceNumber = false
 
         if let refereneceNumber = autoReferenceNumber {
-            try _writeField(.referenceNumber(refereneceNumber))
+            _writeField(.referenceNumber(refereneceNumber))
 
             seenReferenceNumber = true
         }
@@ -210,16 +211,16 @@ extension ABCFormatter.Writer {
 
             case let .field(field):
                 if !seenReferenceNumber {
-                    guard case .referenceNumber = field
+                    guard case .referenceNumber = field // should never happen ???
                     else { throw ABCFormatter.Error.missingReferenceNumber }
 
                     seenReferenceNumber = true
                 } else {
-                    guard field.isValidInTuneHeader
+                    guard field.isValidInTuneHeader // should never happen ???
                     else { throw ABCFormatter.Error.misplacedTuneField(field) }
                 }
 
-                try _writeField(field)
+                _writeField(field)
             }
         }
 
@@ -229,10 +230,10 @@ extension ABCFormatter.Writer {
                 _writeDirective(directive)
 
             case let .field(field):
-                guard field.isValidInTuneBody
+                guard field.isValidInTuneBody // should never happen ???
                 else { throw ABCFormatter.Error.misplacedTuneField(field) }
 
-                try _writeField(field)
+                _writeField(field)
 
             case let .symbols(symbols):
                 try _writeSymbolsLine(symbols)

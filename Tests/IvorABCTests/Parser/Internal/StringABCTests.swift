@@ -3,12 +3,12 @@
 @testable import IvorABC
 import Testing
 
-struct StringExtensionsTests {
+struct StringABCTests {
 }
 
 // MARK: -
 
-extension StringExtensionsTests {
+extension StringABCTests {
     @Test
     func normalizedABCWhitespace_collapses() {
         #expect("  x  y zz    y".normalizedABCWhitespace() == "x y zz y")

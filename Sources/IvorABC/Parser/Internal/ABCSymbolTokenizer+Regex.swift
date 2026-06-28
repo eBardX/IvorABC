@@ -15,7 +15,7 @@ extension ABCSymbolTokenizer {
         "\""
     }
 
-    internal nonisolated(unsafe) static let regexBarRepeat = Regex {
+    internal nonisolated(unsafe) static let regexBarLine = Regex {
         Optionally {
             "."
         }

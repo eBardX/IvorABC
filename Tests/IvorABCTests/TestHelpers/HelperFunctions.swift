@@ -314,14 +314,14 @@ func makeAnnotation(_ placement: ABCAnnotation.Placement,
                   text: text).require()
 }
 
-func makeBarRepeat(_ barLine: ABCBarRepeat.BarLine = .standard,
-                   precedingPlayCount: ABCBarRepeat.PlayCount = 1,
-                   followingPlayCount: ABCBarRepeat.PlayCount = 1,
-                   isDotted: Bool = false) -> ABCBarRepeat {
-    ABCBarRepeat(barLine: barLine,
-                 precedingPlayCount: precedingPlayCount,
-                 followingPlayCount: followingPlayCount,
-                 isDotted: isDotted).require()
+func makeBarLine(_ kind: ABCBarLine.Kind = .standard,
+                 precedingPlayCount: ABCBarLine.PlayCount = 1,
+                 followingPlayCount: ABCBarLine.PlayCount = 1,
+                 isDotted: Bool = false) -> ABCBarLine {
+    ABCBarLine(kind: kind,
+               precedingPlayCount: precedingPlayCount,
+               followingPlayCount: followingPlayCount,
+               isDotted: isDotted).require()
 }
 
 func makeChord(_ notes: [ABCNote],
@@ -350,10 +350,6 @@ func makeDuration(_ numerator: UInt,
                   _ denominator: UInt = 1) -> ABCDuration {
     ABCDuration(numerator: numerator,
                 denominator: denominator).require()
-}
-
-func makeFileID(_ version: ABCVersion) -> ABCFileID {
-    ABCFileID(version: version)
 }
 
 func makeGraceNotes(_ notes: [ABCNote],
@@ -399,12 +395,12 @@ func makeNote(_ pitch: ABCPitch,
 }
 
 func makePart(_ part: ABCPart,
-              _ count: ABCPartSequence.Item.Count = 1) -> ABCPartSequence.Item {
+              _ count: ABCPartSequence.Item.RepeatCount = 1) -> ABCPartSequence.Item {
     .part(part, count)
 }
 
 func makePartGroup(_ items: [ABCPartSequence.Item],
-                   _ count: ABCPartSequence.Item.Count = 1) -> ABCPartSequence.Item {
+                   _ count: ABCPartSequence.Item.RepeatCount = 1) -> ABCPartSequence.Item {
     .group(items, count)
 }
 
@@ -470,13 +466,13 @@ func makeTune(header: [ABCHeaderEntry],
 
 func makeTunebook(_ fileHeaders: [ABCHeaderEntry],
                   _ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: makeVersion(2, 1),
+    ABCTunebook(version: .v2_1,
                 fileHeader: fileHeaders,
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: makeVersion(2, 1),
+    ABCTunebook(version: .v2_1,
                 fileHeader: [],
                 tunes: tunes).require()
 }
@@ -545,14 +541,14 @@ func makeVoice(_ id: ABCVoice.ID,
 }
 
 func matchSymbols(_ input: String) throws -> [ABCSymbol] {
-    var ctx = ABCParseContext()
+    var ctx = ABCParser.Context()
 
     return try matchSymbols(input,
                             context: &ctx)
 }
 
 func matchSymbols(_ input: String,
-                  context: inout ABCParseContext) throws -> [ABCSymbol] {
+                  context: inout ABCParser.Context) throws -> [ABCSymbol] {
     let tokenizer = ABCSymbolTokenizer(tracing: .silent)
     let tokens = try tokenizer.tokenize(input)
     var matcher = ABCSymbolMatcher(tokens: tokens)

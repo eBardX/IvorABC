@@ -3,12 +3,12 @@
 @testable import IvorABC
 import Testing
 
-struct CharacterExtensionsTests {
+struct CharacterABCTests {
 }
 
 // MARK: -
 
-extension CharacterExtensionsTests {
+extension CharacterABCTests {
     @Test
     func isABCAlphanumeric_withDigit() {
         let char: Character = "5"

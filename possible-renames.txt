@@ -1,0 +1,24 @@
+ABCValidationError → ABCTunebookError
+
+The parallel naming with ABCValidationIssue is a genuine API trap. A user
+browsing the public surface would naturally expect ABCValidationError to be the
+error type produced by validation — but that role belongs to ABCValidationIssue.
+ABCValidationError is actually a precondition error thrown when you call
+validated() without normalizing first. Renaming it ABCTunebookError (or
+ABCOperationError) removes the false association with validation content.
+
+---
+ABCShorthand → ABCDecorationShorthand
+
+ABCShorthand doesn't tell you what it's a shorthand for until you read the doc
+comment. ABCDecorationShorthand makes the domain relationship explicit, which
+matters especially since ABCDecoration lives right alongside it in the public
+API.
+
+---
+ABCInterpretation[.Stance] → ABCParsePolicy[.Mode] (internal)
+
+---
+ABCValidator.validate(_ tunebook: ABCTunebook) throws
+ABCNormalizer.normalize(_ tunebook: ABCTunebook) throws
+ABCExpander.expand(_ tunebook: ABCTunebook) throws

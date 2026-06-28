@@ -1,17 +1,17 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension ABCBarRepeat {
+extension ABCBarLine {
 
     // MARK: Public Nested Types
 
-    /// A bar or repeat line symbol.
+    /// The kind of bar line.
     ///
     /// This is a *semantic* representation: equivalent spellings declared
     /// interchangeable by the ABC v2.1 spec (§4.8) collapse to a single case.
     /// In particular, `::`, `:|:`, and `:||:` all denote `.repeat` with
-    /// ``ABCBarRepeat/precedingPlayCount`` and
-    /// ``ABCBarRepeat/followingPlayCount`` both equal to `2`.
-    public enum BarLine {
+    /// ``ABCBarLine/precedingPlayCount`` and
+    /// ``ABCBarLine/followingPlayCount`` both equal to `2`.
+    public enum Kind {
 
         /// A thin-thin double bar line: `||`.
         case double
@@ -25,8 +25,8 @@ extension ABCBarRepeat {
         /// A bar line with at least one repeat: any form containing a colon.
         ///
         /// The direction and fold of the repeat are encoded in
-        /// ``ABCBarRepeat/precedingPlayCount`` and
-        /// ``ABCBarRepeat/followingPlayCount``.
+        /// ``ABCBarLine/precedingPlayCount`` and
+        /// ``ABCBarLine/followingPlayCount``.
         case `repeat`
 
         /// A plain (thin) bar line: `|`.
@@ -36,15 +36,15 @@ extension ABCBarRepeat {
 
 // MARK: - Equatable
 
-extension ABCBarRepeat.BarLine: Equatable {
+extension ABCBarLine.Kind: Equatable {
 }
 
 // MARK: - Hashable
 
-extension ABCBarRepeat.BarLine: Hashable {
+extension ABCBarLine.Kind: Hashable {
 }
 
 // MARK: - Sendable
 
-extension ABCBarRepeat.BarLine: Sendable {
+extension ABCBarLine.Kind: Sendable {
 }

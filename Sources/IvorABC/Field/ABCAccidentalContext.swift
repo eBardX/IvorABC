@@ -18,15 +18,15 @@
 ///
 /// for symbol in symbols {
 ///     switch symbol {
+///     case .barLine:
+///         ctx.reset()
+///
 ///     case let .note(note):
 ///         let acc = ctx.resolveAccidental(for: note)
 ///
 ///         ctx.update(with: note)
 ///
 ///         // use acc …
-///
-///     case .barRepeat:
-///         ctx.reset()
 ///
 ///     default:
 ///         break

@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 
 // © 2025–2026 John Gary Pusey (see LICENSE.md)
 
@@ -20,7 +20,7 @@ let package = Package(name: "IvorABC",
                       dependencies: [.package(url: "https://github.com/eBardX/XestiTokens.git",
                                               .upToNextMajor(from: "1.1.0")),
                                      .package(url: "https://github.com/eBardX/XestiTools.git",
-                                              .upToNextMajor(from: "7.6.0"))],
+                                              .upToNextMajor(from: "9.0.0"))],
                       targets: [.target(name: "IvorABC",
                                         dependencies: [.product(name: "XestiTokens",
                                                                 package: "XestiTokens"),

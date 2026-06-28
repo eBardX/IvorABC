@@ -120,9 +120,9 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func barRepeat_emitsVerbatim() throws {
+    func barLine_emitsVerbatim() throws {
         let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let output = try format(minimalTunebook(symbols: [.barRepeat(makeBarRepeat(.repeat, followingPlayCount: 2)), .note(note)]))
+        let output = try format(minimalTunebook(symbols: [.barLine(makeBarLine(.repeat, followingPlayCount: 2)), .note(note)]))
 
         #expect(output.contains("|:"))
     }
@@ -1151,11 +1151,11 @@ extension ABCFormatterTests {
 
     @Test
     func unsupportedVersion_throws() {
-        let book = makeTunebook(makeVersion(1, 6),
+        let book = makeTunebook(.v1_6,
                                 [],
                                 [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(throws: ABCFormatter.Error.unsupportedVersion(makeVersion(1, 6))) {
+        #expect(throws: ABCFormatter.Error.unsupportedVersion(.v1_6)) {
             try format(book)
         }
     }

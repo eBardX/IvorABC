@@ -6,32 +6,22 @@ private import XestiTools
 
 /// A parser for ABC notation.
 ///
-/// By default the parser operates in ``Strictness/strict`` mode, which requires
-/// a valid `%abc-M.m` file identifier (where `M.m` is a known supported
-/// version — currently 1.6, 2.0, or 2.1) on the first line and throws
-/// ``Error`` on any deviation from the standard. Pass `strictness: .lenient`
-/// to ``init(strictness:)`` for a mode that tolerates common real-world
-/// deviations and emits ``Diagnostic`` values in place of errors.
+/// The parser derives its interpretation stance automatically from the declared
+/// version in the input: strict when the file declares ABC 2.1 or later, loose
+/// otherwise (including unversioned files). Use ``parseWithDiagnostics(_:)`` to
+/// retrieve ``Diagnostic`` values emitted during loose recovery or for
+/// deprecated forms accepted in all stances.
 public struct ABCParser {
 
     // MARK: Public Initializers
 
-    /// Creates a new ABC parser with the specified strictness.
-    ///
-    /// - Parameter strictness: The strictness mode for this parser. Pass
-    ///                         ``Strictness/strict`` (the default) to require
-    ///                         full ABC 2.1 conformance, or
-    ///                         ``Strictness/lenient`` to tolerate real-world
-    ///                         deviations with ``Diagnostic`` recovery
-    ///                         messages.
-    public init(strictness: Strictness = .strict) {
-        self.strictness = strictness
+    /// Creates a new ABC parser.
+    public init() {
         self.tokenizer = ABCSymbolTokenizer(tracing: .silent)
     }
 
     // MARK: Private Instance Properties
 
-    let strictness: Strictness
     private let tokenizer: ABCSymbolTokenizer
 }
 
@@ -43,11 +33,10 @@ extension ABCParser {
 
     /// Parses ABC notation data and returns the resulting tunebook.
     ///
-    /// Any ``Diagnostic`` values generated in ``Strictness/lenient`` mode
-    /// are silently discarded. Use ``parseWithDiagnostics(_:)`` to retrieve
-    /// them.
+    /// Any ``Diagnostic`` values generated during parsing are silently
+    /// discarded. Use ``parseWithDiagnostics(_:)`` to retrieve them.
     ///
-    /// - Parameter data: The UTF-8 encoded ABC notation data to parse.
+    /// - Parameter data: The ABC notation data to parse.
     ///
     /// - Returns:  The ``ABCTunebook`` parsed from `data`.
     ///
@@ -59,16 +48,13 @@ extension ABCParser {
     }
 
     /// Parses ABC notation data and returns the resulting tunebook along
-    /// with any diagnostic messages produced during lenient recovery.
+    /// with any diagnostic messages produced during parsing.
     ///
-    /// In ``Strictness/strict`` mode, the returned diagnostics array is always
-    /// empty.
-    ///
-    /// - Parameter data: The UTF-8 encoded ABC notation data to parse.
+    /// - Parameter data: The ABC notation data to parse.
     ///
     /// - Returns:  A tuple containing the ``ABCTunebook`` parsed from `data`
     ///             and an array of ``Diagnostic`` values describing any
-    ///             recoveries performed.
+    ///             recoveries or deprecated forms encountered.
     ///
     /// - Throws:   ``Error`` if the data cannot be parsed.
     public func parseWithDiagnostics(_ data: Data) throws -> (ABCTunebook, [Diagnostic]) {
@@ -83,13 +69,12 @@ extension ABCParser {
     private static let expectedBeginDirectivePrefix = "%%begin"
     private static let expectedDirectivePrefix      = "%%"
     private static let expectedEndDirectivePrefix   = "%%end"
-    private static let expectedFileIDPrefix         = "%abc"
 
     // MARK: Private Instance Methods
 
     private func _applyLine(_ line: Line,
                             inFileHeader: inout Bool,
-                            context: inout ABCParseContext) {
+                            context: inout Context) {
         switch line {
         case .empty:
             if inFileHeader {
@@ -117,72 +102,21 @@ extension ABCParser {
         return rest.isEmpty || rest.allSatisfy { $0.isABCWhitespace }
     }
 
-    private func _joinContinuationLines(_ rawLines: [Substring]) -> [Substring] {
-        var result: [Substring] = []
-        var pending: String?
-
-        for line in rawLines {
-            let stripped = String(trimSuffix(uncomment(line)))
-
-            //
-            // Field lines (letter: or +:) are never folded into a pending music
-            // accumulation. When a field line appears in the middle of a music
-            // continuation (e.g. a w: lyric or M: meter change between two
-            // backslash-continued music lines), flush the pending music first,
-            // then emit the field line on its own — stripping any trailing \
-            // that was acting as the continuation signal rather than field content.
-            //
-            let isFieldLine = (stripped.first?.isABCLetter == true || stripped.first == "+")
-                              && stripped.dropFirst().first == ":"
-
-            if isFieldLine {
-                if let buf = pending {
-                    result.append(Substring(buf))
-                    pending = nil
-                }
-
-                let fieldText = stripped.hasSuffix("\\")
-                                ? String(stripped.dropLast())
-                                : String(stripped)
-
-                result.append(Substring(fieldText))
-            } else if stripped.hasSuffix("\\") {
-                pending = (pending ?? "") + stripped.dropLast()
-            } else if let buf = pending {
-                result.append(Substring(buf + String(line)))
-                pending = nil
-            } else {
-                result.append(line)
-            }
-        }
-
-        if let buf = pending {
-            result.append(Substring(buf))
-        }
-
-        return result
-    }
-
     private func _parse(_ data: Data,
                         _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
-        guard let input = String(data: data,
-                                 encoding: .utf8)
-        else { throw Error.dataConversionFailed }
+        let (lines, version, preprocDiagnostics) = try preprocess(data)
 
-        let rawLines = input.split(separator: /\n|(?:\r\n?)/,
-                                   omittingEmptySubsequences: false)
-        let lines = _joinContinuationLines(rawLines)
+        diagnostics.append(contentsOf: preprocDiagnostics)
 
-        var context = ABCParseContext()
+        let interpretation = ABCInterpretation(version: version)
+        var context = Context()
         var inFileHeader = true
 
-        let (version, bodyLines) = try _resolveFileID(lines, &diagnostics)
-
-        var idx = bodyLines.startIndex
+        var idx = lines.startIndex
         var restLines: [Line] = []
 
-        while idx < bodyLines.endIndex {
-            let text = bodyLines[idx]
+        while idx < lines.endIndex {
+            let text = lines[idx]
 
             idx += 1
 
@@ -192,8 +126,8 @@ extension ABCParser {
                 var contentLines: [String] = []
                 var foundEnd = false
 
-                while idx < bodyLines.endIndex {
-                    let contentText = bodyLines[idx]
+                while idx < lines.endIndex {
+                    let contentText = lines[idx]
 
                     idx += 1
 
@@ -226,7 +160,7 @@ extension ABCParser {
             }
 
             do {
-                guard let line = try _parseLine(text, version, &context, &diagnostics)
+                guard let line = try _parseLine(text, interpretation, &context, &diagnostics)
                 else { continue }
 
                 _applyLine(line,
@@ -235,7 +169,7 @@ extension ABCParser {
 
                 restLines.append(line)
             } catch {
-                if strictness == .lenient {
+                if interpretation.stance == .loose {
                     diagnostics.append(.unrecognizedLine(String(text)))
                 } else {
                     throw error
@@ -243,7 +177,7 @@ extension ABCParser {
             }
         }
 
-        return try makeTunebook(version, restLines, &diagnostics)
+        return try makeTunebook(version, interpretation, restLines, &diagnostics)
     }
 
     private func _parseBeginDirective(_ input: Substring) -> (name: ABCDirective.Name, value: String)? {
@@ -295,10 +229,9 @@ extension ABCParser {
         return .empty
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     private func _parseFieldLine(_ input: Substring,
-                                 _ version: ABCVersion,
-                                 _ context: inout ABCParseContext,
+                                 _ interpretation: ABCInterpretation,
+                                 _ context: inout Context,
                                  _ diagnostics: inout [Diagnostic]) throws -> Line? {
         guard let letter = input.first,
               letter.isABCLetter || letter == "+",
@@ -312,28 +245,31 @@ extension ABCParser {
             return .continuation(normalize(vtext))
         }
 
-        let isVersion16 = (version == ABCVersion(major: 1,
-                                                 minor: 6))
+        //
+        // E: (elemskip) is deprecated with no 2.x equivalent; accepted in
+        // loose stance, flagged via deprecatedField diagnostic.
+        //
+        if interpretation.stance == .loose, letter == "E" {
+            let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
+
+            guard let elemskip = parseElemskip(tidyInput)
+            else { throw Error.invalidField(false, tidyInput) }
+
+            let field = ABCField.elemskip(elemskip)
+
+            diagnostics.append(.deprecatedField(field))
+
+            return .field(field)
+        }
 
         //
-        // E: (elemskip) is a 1.6-only field with no 2.x equivalent.
-        // I: is free-text "information" in 1.6; in 2.x it is an instruction.
+        // I: is free-text "information" in ABC 1.6; in all other versions
+        // (including unversioned files) it is a directive instruction.
         //
-        if isVersion16 {
-            if letter == "E" {
-                let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
+        if interpretation.iFieldIsFreeText, letter == "I" {
+            let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
 
-                guard let elemskip = parseElemskip(tidyInput)
-                else { throw Error.invalidField(false, tidyInput) }
-
-                return .field(.elemskip(elemskip))
-            }
-
-            if letter == "I" {
-                let tidyInput = trimSuffix(uncomment(input.dropFirst(2)))
-
-                return try .field(.information(parseText(tidyInput)))
-            }
+            return try .field(.information(parseText(tidyInput)))
         }
 
         if letter == "I" {
@@ -348,40 +284,36 @@ extension ABCParser {
             context.update(with: field)
 
             return .field(field)
-        } catch let Error.invalidTempo(vtext) where strictness == .lenient || version != ABCVersion.current {
+        } catch let Error.invalidTempo(vtext) {
             //
-            // ABC 1.6 Q:C=rate / Q:Cn=rate form: "C" stands for the active
-            // default note length (L:).  Try this before the bare-integer
-            // path so Q:C=120 is not mistaken for "invalid bare integer".
+            // Q:C=rate / Q:Cn=rate form: "C" stands for the active default
+            // note length (L:).  Try this before the bare-integer path so
+            // Q:C=120 is not mistaken for an invalid bare integer.  Both
+            // deprecated forms are accepted in all stances and diagnosed.
             //
-            if version == ABCVersion(major: 1,
-                                     minor: 6) {
-                if let tempo = parseLegacyBeatTempo(trim(vtext),
-                                                    baseDuration: context.baseDuration) {
-                    let field = ABCField.tempo(tempo)
+            if let tempo = parseLegacyBeatTempo(trim(vtext),
+                                                baseDuration: context.baseDuration) {
+                let field = ABCField.tempo(tempo)
 
-                    context.update(with: field)
+                diagnostics.append(.deprecatedTempo(tempo))
+                context.update(with: field)
 
-                    return .field(field)
-                }
+                return .field(field)
             }
 
             //
-            // Accept the bare-integer tempo form (e.g. "Q:120").
-            // It is deprecated in ABC 2.0 and later, but the spec says it
-            // remains parseable. In lenient mode it is also flagged as a
-            // diagnostic; in strict mode it is accepted silently for known
-            // older versions.
+            // Bare-integer tempo (e.g. Q:120): deprecated in ABC 2.0+, but
+            // accepted in all stances.  Represented identically to Q:C=rate
+            // so Phase 4 normalization is uniform.
             //
             if let rate = UInt(trim(vtext)), rate > 0 {
-                let field = ABCField.tempo(ABCTempo(durations: [],
-                                                    rate: rate,
-                                                    text: nil).require())
+                let tempo = ABCTempo(durations: [context.baseDuration],
+                                     rate: rate,
+                                     text: nil,
+                                     legacyBeatMultiple: 1).require()
+                let field = ABCField.tempo(tempo)
 
-                if strictness == .lenient {
-                    diagnostics.append(.bareTempoRate(rate))
-                }
-
+                diagnostics.append(.deprecatedTempo(tempo))
                 context.update(with: field)
 
                 return .field(field)
@@ -403,41 +335,18 @@ extension ABCParser {
         return .directive(ABCDirective(name: name, value: value))
     }
 
-    private func _parseFileID(_ tidyInput: Substring) throws -> ABCFileID {
-        guard tidyInput.first == "-"
-        else { throw Error.invalidFileID(Self.expectedFileIDPrefix + tidyInput) }
-
-        let version = try _parseVersion(tidyInput.dropFirst())
-
-        return ABCFileID(version: version)
-    }
-
-    private func _parseFileIDLine(_ input: Substring) throws -> Line? {
-        let prefix = Self.expectedFileIDPrefix
-
-        guard input.hasPrefix(prefix)
-        else { return nil }
-
-        let tidyInput = trimSuffix(uncomment(input.dropFirst(prefix.count)))
-
-        let fileID = try _parseFileID(tidyInput)
-
-        return .fileID(fileID)
-    }
-
     private func _parseLine(_ input: Substring,
-                            _ version: ABCVersion,
-                            _ context: inout ABCParseContext,
+                            _ interpretation: ABCInterpretation,
+                            _ context: inout Context,
                             _ diagnostics: inout [Diagnostic]) throws -> Line? {
         try _parseEmptyLine(input)
-        ?? _parseFileIDLine(input)
         ?? _parseDirectiveLine(input)
-        ?? _parseFieldLine(input, version, &context, &diagnostics)
+        ?? _parseFieldLine(input, interpretation, &context, &diagnostics)
         ?? _parseSymbolsLine(input, &context)
     }
 
     private func _parseSymbolsLine(_ input: Substring,
-                                   _ context: inout ABCParseContext) throws -> Line? {
+                                   _ context: inout Context) throws -> Line? {
         let tokens: [ABCSymbolTokenizer.Token]
 
         do {
@@ -462,79 +371,5 @@ extension ABCParser {
         else { return nil }
 
         return .symbols(symbols)
-    }
-
-    private func _parseVersion(_ tidyInput: Substring) throws -> ABCVersion {
-        let parts = tidyInput.split(separator: ".",
-                                    maxSplits: 1,
-                                    omittingEmptySubsequences: false)
-
-        guard parts.count == 2,
-              let major = UInt(parts[0]),
-              let minor = UInt(parts[1])
-        else { throw Error.invalidVersion(tidyInput) }
-
-        return ABCVersion(major: major,
-                          minor: minor)
-    }
-
-    private func _resolveFileID(_ lines: [Substring],
-                                _ diagnostics: inout [Diagnostic]) throws -> (ABCVersion, [Substring]) {
-        var version = ABCVersion.current
-
-        guard let firstText = lines.first,
-              firstText.hasPrefix(Self.expectedFileIDPrefix)
-        else {
-            //
-            // No "%abc" prefix on the first line.  In strict mode the file ID is
-            // required; in lenient mode assume version 2.1 and include all lines
-            // in the body.
-            //
-            if strictness == .strict {
-                throw Error.missingFileID
-            }
-
-            diagnostics.append(.missingFileID)
-
-            return (version, Array(lines))
-        }
-
-        //
-        // First line starts with "%abc" — consume it regardless of validity.
-        //
-        do {
-            if let line = try _parseFileIDLine(firstText),
-               case let .fileID(fileID) = line {
-                let v = fileID.version
-
-                if !ABCVersion.supported.contains(v) {
-                    if strictness == .strict {
-                        throw Error.unsupportedVersion(v)
-                    }
-
-                    diagnostics.append(.unsupportedVersion(v))
-                }
-
-                version = v
-            } else {
-                //
-                // "%abc" prefix but parsed to nil or a non-fileID line (should
-                // not happen in practice but handled defensively).
-                //
-                if strictness == .strict {
-                    throw Error.missingFileID
-                }
-
-                diagnostics.append(.missingFileID)
-            }
-        } catch {
-            if strictness == .strict {
-                throw error
-            }
-
-            diagnostics.append(.missingFileID)
-        }
-
-        return (version, Array(lines.dropFirst()))
     }
 }

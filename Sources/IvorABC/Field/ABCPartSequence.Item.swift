@@ -36,14 +36,14 @@ extension ABCPartSequence {
         /// inside the parentheses. The second is the repeat count that follows
         /// the closing parenthesis; `1` is used when no count appears in the
         /// source.
-        case group([Self], Count)
+        case group([Self], RepeatCount)
 
         /// A single part label with an optional repeat count.
         ///
         /// The first associated value is the part label (`A`–`Z`). The second
         /// is the repeat count; `1` is used when no count appears in the
         /// source.
-        case part(ABCPart, Count)
+        case part(ABCPart, RepeatCount)
     }
 }
 

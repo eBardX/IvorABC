@@ -2,55 +2,60 @@
 
 private import XestiTools
 
-internal struct ABCParseContext {
+extension ABCParser {
 
-    // MARK: Internal Initializers
+    // MARK: Internal Nested Types
 
-    internal init() {
-        self.accidentalsInKey = [:]
-        self.decorationDialect = .bang
-        self.globalDeassignedShorthands = []
-        self.globalDecorationDialect = .bang
-        self.globalDurationFromMeter = nil
-        self.globalDurationFromUnitNoteLength = nil
-        self.globalIsCompoundMeter = false
-        self.globalUserSymbolDefinitions = Self.defaultUserSymbolDefinitions
-        self.inTune = false
-        self.isCompoundMeter = false
-        self.tuneDeassignedShorthands = []
-        self.tuneDurationFromMeter = nil
-        self.tuneDurationFromUnitNoteLength = nil
-        self.tuneUserSymbolDefinitions = [:]
+    internal struct Context {
+
+        // MARK: Internal Initializers
+
+        internal init() {
+            self.accidentalsInKey = [:]
+            self.decorationDialect = .bang
+            self.globalDeassignedShorthands = []
+            self.globalDecorationDialect = .bang
+            self.globalDurationFromMeter = nil
+            self.globalDurationFromUnitNoteLength = nil
+            self.globalIsCompoundMeter = false
+            self.globalUserSymbolDefinitions = Self.defaultUserSymbolDefinitions
+            self.inTune = false
+            self.isCompoundMeter = false
+            self.tuneDeassignedShorthands = []
+            self.tuneDurationFromMeter = nil
+            self.tuneDurationFromUnitNoteLength = nil
+            self.tuneUserSymbolDefinitions = [:]
+        }
+
+        // MARK: Internal Instance Properties
+
+        internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
+        internal var decorationDialect: ABCDecoration.Dialect
+        internal var inTune: Bool
+        internal var isCompoundMeter: Bool
+
+        internal var baseDuration: ABCDuration {
+            tuneDurationFromUnitNoteLength ?? tuneDurationFromMeter ?? Self.durationEighths
+        }
+
+        // MARK: Private Instance Properties
+
+        private var globalDeassignedShorthands: Set<ABCShorthand>
+        private var globalDecorationDialect: ABCDecoration.Dialect
+        private var globalDurationFromMeter: ABCDuration?
+        private var globalDurationFromUnitNoteLength: ABCDuration?
+        private var globalIsCompoundMeter: Bool
+        private var globalUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
+        private var tuneDeassignedShorthands: Set<ABCShorthand>
+        private var tuneDurationFromMeter: ABCDuration?
+        private var tuneDurationFromUnitNoteLength: ABCDuration?
+        private var tuneUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
     }
-
-    // MARK: Internal Instance Properties
-
-    internal var accidentalsInKey: [ABCPitch.Letter: ABCPitch.Accidental]
-    internal var decorationDialect: ABCDecoration.Dialect
-    internal var inTune: Bool
-    internal var isCompoundMeter: Bool
-
-    internal var baseDuration: ABCDuration {
-        tuneDurationFromUnitNoteLength ?? tuneDurationFromMeter ?? Self.durationEighths
-    }
-
-    // MARK: Private Instance Properties
-
-    private var globalDeassignedShorthands: Set<ABCShorthand>
-    private var globalDecorationDialect: ABCDecoration.Dialect
-    private var globalDurationFromMeter: ABCDuration?
-    private var globalDurationFromUnitNoteLength: ABCDuration?
-    private var globalIsCompoundMeter: Bool
-    private var globalUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
-    private var tuneDeassignedShorthands: Set<ABCShorthand>
-    private var tuneDurationFromMeter: ABCDuration?
-    private var tuneDurationFromUnitNoteLength: ABCDuration?
-    private var tuneUserSymbolDefinitions: [ABCShorthand: ABCUserSymbol.Definition]
 }
 
 // MARK: -
 
-extension ABCParseContext {
+extension ABCParser.Context {
 
     // MARK: Internal Instance Methods
 
@@ -211,5 +216,5 @@ extension ABCParseContext {
 
 // MARK: - Sendable
 
-extension ABCParseContext: Sendable {
+extension ABCParser.Context: Sendable {
 }
