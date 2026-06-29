@@ -184,7 +184,7 @@ extension ABCNormalizerTests {
     @Test
     func normalize_deprecatedTempo_v21_thenValidated_returnsNoIssues() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
 

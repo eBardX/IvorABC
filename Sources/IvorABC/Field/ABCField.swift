@@ -209,11 +209,11 @@ extension ABCField {
              .book,
              .composer,
              .discography,
-             .elemskip,     // for now…
+             .elemskip,
              .fileURL,
              .group,
              .history,
-             .information,  // for now…
+             .information,
              .instruction,
              .key,
              .macro,

@@ -580,6 +580,7 @@ func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .ma
 
 func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
     makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tuneTitle("Test")),
                                     .field(.unitNoteLength(makeDuration(1, 4))),
                                     .field(.key(makeKeySignature(.c, .major)))],
                            body: [.symbols(symbols)])])
@@ -587,6 +588,7 @@ func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
 
 func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
     makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tuneTitle("Test")),
                                     .field(.tempo(tempo)),
                                     .field(.key(makeKeySignature(.c, .major)))])])
 }

@@ -49,7 +49,8 @@ extension ABCValidatorTests {
 
     @Test
     func validate_doesNotSetIsValidated_whenErrors() throws {
-        let (tunebook, _) = ABCNormalizer().normalize(makeTunebook([makeTune(header: [.field(.tuneTitle("Test"))],
+        let (tunebook, _) = ABCNormalizer().normalize(makeTunebook([makeTune(header: [.field(.tuneTitle("Test")),
+                                                                                      .field(.key(makeKeySignature(.c, .major)))],
                                                                              body: [.symbols([.shorthand(.nUpper)])])]))
         let (returned, issues) = try ABCValidator().validate(tunebook)
 
@@ -60,7 +61,8 @@ extension ABCValidatorTests {
     @Test
     func validate_undefinedShorthand_returnsError() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -71,7 +73,8 @@ extension ABCValidatorTests {
     @Test
     func validate_predefinedShorthand_noExplicitDefinition_returnsNoError() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tUpper),
                                                                .shorthand(.tilde),
                                                                .shorthand(.hUpper)])])])
@@ -84,7 +87,8 @@ extension ABCValidatorTests {
     func validate_definedShorthand_returnsNoError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeDecoration("trill"))))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -95,7 +99,8 @@ extension ABCValidatorTests {
     func validate_annotationDefinedShorthand_returnsNoError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -106,7 +111,8 @@ extension ABCValidatorTests {
     func validate_deassignedPredefinedShorthand_withoutExplicitDefinition_returnsError() throws {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tilde)))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tilde)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -117,10 +123,12 @@ extension ABCValidatorTests {
     func validate_tuneScope_override_revertsForSubsequentTune() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Tune1")),
-                                                       .field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("mordent"))))],
+                                                       .field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("mordent")))),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: []),
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
-                                                       .field(.tuneTitle("Tune2"))],
+                                                       .field(.tuneTitle("Tune2")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -132,7 +140,8 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill")))),
                                      .field(.userDefined(makeUserSymbol(.tUpper)))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -144,7 +153,8 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test")),
-                                                       .field(.userDefined(makeUserSymbol(.tUpper)))],
+                                                       .field(.userDefined(makeUserSymbol(.tUpper))),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -156,10 +166,12 @@ extension ABCValidatorTests {
         let tunebook = makeTunebook([.field(.userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Tune1")),
-                                                       .field(.userDefined(makeUserSymbol(.tUpper)))],
+                                                       .field(.userDefined(makeUserSymbol(.tUpper))),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: []),
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
-                                                       .field(.tuneTitle("Tune2"))],
+                                                       .field(.tuneTitle("Tune2")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.tUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -169,7 +181,8 @@ extension ABCValidatorTests {
     @Test
     func validate_dotShorthand_alwaysValid() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("Test"))],
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.dot)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -187,9 +200,11 @@ extension ABCValidatorTests {
     @Test
     func validate_tuneIndex_isCorrect() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                       .field(.tuneTitle("First Tune"))]),
+                                                       .field(.tuneTitle("First Tune")),
+                                                       .field(.key(makeKeySignature(.c, .major)))]),
                                      makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
-                                                       .field(.tuneTitle("Second Tune"))],
+                                                       .field(.tuneTitle("Second Tune")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.shorthand(.nUpper)])])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -208,7 +223,7 @@ extension ABCValidatorTests {
     @Test
     func validate_canonicalPipeline_parse_normalize_validate_yieldsTT() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let parsed = try ABCParser().parse(Data(input.utf8))
+        let (parsed, _) = try ABCParser().parse(Data(input.utf8))
         let (validated, issues) = try ABCValidator().validate(ABCNormalizer().normalize(parsed).0)
 
         #expect(validated.isNormalized)
@@ -222,6 +237,7 @@ extension ABCValidatorTests {
     func validate_misplacedFileHeaderField_returnsError() throws {
         let tunebook = makeTunebook([.field(.tuneTitle("Bad"))],
                                     [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
@@ -230,13 +246,49 @@ extension ABCValidatorTests {
     }
 
     @Test
-    func validate_misplacedTuneField_returnsError() throws {
+    func validate_misplacedTuneHeaderField_returnsError() throws {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
                                                        .field(.wordsAligned(makeAlignedWords())),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
-        #expect(issues == [.misplacedTuneField(.wordsAligned(makeAlignedWords()), 0)])
+        #expect(issues == [.misplacedTuneHeaderField(.wordsAligned(makeAlignedWords()), 0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_invalidInlineField_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
+                                              body: [.symbols([.inlineField(.words("la la la"))])])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.invalidInlineField(.words("la la la"), 0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_validInlineField_returnsNoError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
+                                              body: [.symbols([.inlineField(.meter(makeTimeSignature(3, 4)))])])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues.isEmpty)
+    }
+
+    @Test
+    func validate_misplacedTuneBodyField_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major)))],
+                                              body: [.field(.composer("Bach"))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.misplacedTuneBodyField(.composer("Bach"), 0)])
         #expect(!issues[0].message.isEmpty)
     }
 
@@ -258,6 +310,83 @@ extension ABCValidatorTests {
         let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
 
         #expect(issues == [.misplacedReferenceNumber(0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_misplacedReferenceNumber_suppressesTuneTitleCheck() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.tuneTitle("Bad")),
+                                                       .field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Also Bad")),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.misplacedReferenceNumber(0)])
+    }
+
+    @Test
+    func validate_misplacedTuneTitle_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.composer("Composer")),
+                                                       .field(.tuneTitle("Late")),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.misplacedTuneTitle(0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_missingTuneTitle_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.missingTuneTitle(0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_tuneTitleSecond_returnsNoError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Good")),
+                                                       .field(.composer("Composer")),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues.isEmpty)
+    }
+
+    @Test
+    func validate_misplacedKey_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.key(makeKeySignature(.c, .major))),
+                                                       .field(.composer("Trailing"))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.misplacedKey(0)])
+        #expect(!issues[0].message.isEmpty)
+    }
+
+    @Test
+    func validate_keyLast_returnsNoError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test")),
+                                                       .field(.composer("Composer")),
+                                                       .field(.key(makeKeySignature(.c, .major)))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues.isEmpty)
+    }
+
+    @Test
+    func validate_missingKey_returnsError() throws {
+        let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                       .field(.tuneTitle("Test"))])])
+        let (_, issues) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook).0)
+
+        #expect(issues == [.missingKey(0)])
         #expect(!issues[0].message.isEmpty)
     }
 }

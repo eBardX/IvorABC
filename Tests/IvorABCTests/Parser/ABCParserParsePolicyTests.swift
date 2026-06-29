@@ -15,11 +15,11 @@ extension ABCParserParsePolicyTests {
     // MARK: - Deprecated tempo
 
     @Test
-    func parseWithDiagnostics_deprecatedTempo_bareInteger_v21_emitsDiagnostic() throws {
+    func parse_deprecatedTempo_bareInteger_v21_emitsDiagnostic() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.contains { if case .deprecatedTempo = $0 { true } else { false } })
     }
@@ -29,7 +29,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
@@ -48,7 +48,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.0\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
@@ -67,7 +67,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nQ:C=120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
@@ -82,11 +82,11 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parseWithDiagnostics_deprecatedTempo_cForm_v21_emitsDiagnostic() throws {
+    func parse_deprecatedTempo_cForm_v21_emitsDiagnostic() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nQ:C=120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.contains { if case .deprecatedTempo = $0 { true } else { false } })
     }
@@ -97,7 +97,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/4\nQ:120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(field) = entry,
                   case let .tempo(t) = field
@@ -118,7 +118,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-1.6\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
@@ -135,7 +135,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.0\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
@@ -152,7 +152,7 @@ extension ABCParserParsePolicyTests {
         let input = "X:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
@@ -164,11 +164,11 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parseWithDiagnostics_elemskip_loose_emitsDeprecatedFieldDiagnostic() throws {
+    func parse_elemskip_loose_emitsDeprecatedFieldDiagnostic() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nE:3\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.contains { if case .deprecatedField(.elemskip) = $0 { true } else { false } })
     }
@@ -191,7 +191,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-1.6\nX:1\nT:Test\nI:some info\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let fields = tunebook.tunes.first?.header.compactMap { entry -> ABCField? in
             guard case let .field(f) = entry
             else { return nil }
@@ -230,7 +230,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-1.6\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.version == .v1_6)
         #expect(tunebook.tunes.count == 1)
@@ -242,7 +242,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-1.6\nX:1\nT:Test\nL:1/8\nQ:C=120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(f) = entry,
                   case let .tempo(t) = f
@@ -262,7 +262,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-1.6\nX:1\nT:Test\nL:1/8\nQ:C3=40\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
         let tempo = tunebook.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(f) = entry,
                   case let .tempo(t) = f
@@ -288,11 +288,11 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parseWithDiagnostics_v16_noUnrecognizedVersionDiagnostic() throws {
+    func parse_v16_noUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-1.6\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(!diagnostics.contains(.unrecognizedVersion(.v1_6)))
     }
@@ -300,22 +300,22 @@ extension ABCParserParsePolicyTests {
     // MARK: - Version and mode
 
     @Test
-    func parseWithDiagnostics_noDiagnosticsOnValidV21Input() throws {
+    func parse_noDiagnosticsOnValidV21Input() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.isEmpty)
     }
 
     @Test
-    func parseWithDiagnostics_freeText_v20_emitsUnrecognizedLineDiagnostic() throws {
+    func parse_freeText_v20_emitsUnrecognizedLineDiagnostic() throws {
         // 2.0 → loose mode; free text between tunes is recovered with diagnostic
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.contains(.unrecognizedLine("This is free text?")))
     }
@@ -325,7 +325,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n\nThis is free text?\n\nX:2\nT:Another\nK:G\nGABc|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.tunes.count == 2)
     }
@@ -342,11 +342,11 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parseWithDiagnostics_missingFileID_nilVersion() throws {
+    func parse_missingFileID_nilVersion() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (tunebook, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (tunebook, diagnostics) = try ABCParser().parse(data)
 
         #expect(tunebook.version == nil)
         #expect(!diagnostics.contains { if case .malformedVersion = $0 { true } else { false } })
@@ -358,37 +358,37 @@ extension ABCParserParsePolicyTests {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.tunes.count == 1)
     }
 
     @Test
-    func parseWithDiagnostics_presentFileID_setsVersion() throws {
+    func parse_presentFileID_setsVersion() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (tunebook, _) = try ABCParser().parseWithDiagnostics(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.version == .v2_1)
     }
 
     @Test
-    func parseWithDiagnostics_unrecognizedVersion_emitsUnrecognizedVersionDiagnostic() throws {
+    func parse_unrecognizedVersion_emitsUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(diagnostics.contains(.unrecognizedVersion(makeVersion(3, 0))))
     }
 
     @Test
-    func parseWithDiagnostics_v20_noUnrecognizedVersionDiagnostic() throws {
+    func parse_v20_noUnrecognizedVersionDiagnostic() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(data)
+        let (_, diagnostics) = try ABCParser().parse(data)
 
         #expect(!diagnostics.contains(.unrecognizedVersion(.v2_0)))
     }
@@ -398,7 +398,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.version == .v2_0)
         #expect(tunebook.tunes.count == 1)
@@ -410,7 +410,7 @@ extension ABCParserParsePolicyTests {
         let input = "%abc-3.0\nX:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
-        let tunebook = try ABCParser().parse(data)
+        let (tunebook, _) = try ABCParser().parse(data)
 
         #expect(tunebook.version == makeVersion(3, 0))
         #expect(tunebook.tunes.count == 1)
@@ -421,7 +421,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_headerBodySplit_keyFieldInHeader_symbolsInBody() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
         let keyInHeader = tune.header.contains { if case .field(.key) = $0 { true } else { false } }
@@ -440,7 +440,7 @@ extension ABCParserParsePolicyTests {
         // 2.0 → loose mode; missing K: emits diagnostic instead of throwing
         let input = "%abc-2.0\nX:1\nT:Test\nCDEF|\n"
 
-        let (_, diagnostics) = try ABCParser().parseWithDiagnostics(Data(input.utf8))
+        let (_, diagnostics) = try ABCParser().parse(Data(input.utf8))
 
         #expect(diagnostics.contains(.missingKeyField))
     }
@@ -448,7 +448,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_missingKeyField_v20_symbolsGoToBody() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
 
         let symbolsInBody = tune.body.contains { if case .symbols = $0 { true } else { false } }
@@ -515,7 +515,7 @@ extension ABCParserParsePolicyTests {
         // 2.0 → loose mode; orphaned continuation is skipped
         let input = "%abc-2.0\nX:1\n+:ignored\nT:Test\nK:C\nCDEF|\n"
 
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(tunebook.tunes.count == 1)
     }
@@ -533,7 +533,7 @@ extension ABCParserParsePolicyTests {
     func parse_orphanedContinuationInBody_v20_succeeds() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\n+:orphaned\nCDEF|\n"
 
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(tunebook.tunes.count == 1)
     }
@@ -543,7 +543,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_cleanV21_isNormalized() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(tunebook.isNormalized)
     }
@@ -551,7 +551,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_cleanV20_isNotNormalized() throws {
         let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }
@@ -559,7 +559,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_nilVersion_isNotNormalized() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }
@@ -567,7 +567,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_v21_withDeprecatedTempo_isNotNormalized() throws {
         let input = "%abc-2.1\nX:1\nT:Test\nQ:120\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }
@@ -575,7 +575,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_v21_withAbcCharsetDirective_isNotNormalized() throws {
         let input = "%abc-2.1\n%%abc-charset utf-8\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }
@@ -583,7 +583,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_v21_withAbcVersionDirective_isNotNormalized() throws {
         let input = "%abc-2.1\n%%abc-version 2.1\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }
@@ -591,7 +591,7 @@ extension ABCParserParsePolicyTests {
     @Test
     func parse_v21_withDecorationPlusDirective_isNotNormalized() throws {
         let input = "%abc-2.1\n%%decoration +\nX:1\nT:Test\nK:C\nCDEF|\n"
-        let tunebook = try ABCParser().parse(Data(input.utf8))
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
 
         #expect(!tunebook.isNormalized)
     }

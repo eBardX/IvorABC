@@ -32,15 +32,15 @@ extension ABCValidator {
     ///             `false`. Call ``ABCNormalizer/normalize(_:)`` before calling
     ///             this method.
     public func validate(_ tunebook: ABCTunebook) throws -> (ABCTunebook, [Issue]) {
-        guard tunebook.isNormalized
-        else { throw Error.notNormalized }
-
         guard !tunebook.isValidated
         else { return (tunebook, []) }
 
-        var runner = Runner()
+        guard tunebook.isNormalized
+        else { throw Error.notNormalized }
 
-        let issues = runner.run(tunebook)
+        var runner = Checker()
+
+        let issues = runner.check(tunebook)
 
         if !issues.isEmpty {
             return (tunebook, issues)

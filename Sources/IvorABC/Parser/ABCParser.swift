@@ -8,9 +8,9 @@ private import XestiTools
 ///
 /// The parser derives its parse policy automatically from the declared
 /// version in the input: strict when the file declares ABC 2.1 or later, loose
-/// otherwise (including unversioned files). Use ``parseWithDiagnostics(_:)`` to
-/// retrieve ``Diagnostic`` values emitted during loose recovery or for
-/// deprecated forms accepted in all stances.
+/// otherwise (including unversioned files). ``Diagnostic`` values emitted during
+/// loose recovery or for deprecated forms accepted in all stances are always
+/// included in the result.
 public struct ABCParser {
 
     // MARK: Public Initializers
@@ -31,22 +31,6 @@ extension ABCParser {
 
     // MARK: Public Instance Methods
 
-    /// Parses ABC notation data and returns the resulting tunebook.
-    ///
-    /// Any ``Diagnostic`` values generated during parsing are silently
-    /// discarded. Use ``parseWithDiagnostics(_:)`` to retrieve them.
-    ///
-    /// - Parameter data: The ABC notation data to parse.
-    ///
-    /// - Returns:  The ``ABCTunebook`` parsed from `data`.
-    ///
-    /// - Throws:   ``Error`` if the data cannot be parsed.
-    public func parse(_ data: Data) throws -> ABCTunebook {
-        var diagnostics: [Diagnostic] = []
-
-        return try _parse(data, &diagnostics)
-    }
-
     /// Parses ABC notation data and returns the resulting tunebook along
     /// with any diagnostic messages produced during parsing.
     ///
@@ -57,7 +41,7 @@ extension ABCParser {
     ///             recoveries or deprecated forms encountered.
     ///
     /// - Throws:   ``Error`` if the data cannot be parsed.
-    public func parseWithDiagnostics(_ data: Data) throws -> (ABCTunebook, [Diagnostic]) {
+    public func parse(_ data: Data) throws -> (ABCTunebook, [Diagnostic]) {
         var diagnostics: [Diagnostic] = []
 
         let tunebook = try _parse(data, &diagnostics)
