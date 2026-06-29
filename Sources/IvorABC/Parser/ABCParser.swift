@@ -59,6 +59,7 @@ extension ABCParser {
     /// - Throws:   ``Error`` if the data cannot be parsed.
     public func parseWithDiagnostics(_ data: Data) throws -> (ABCTunebook, [Diagnostic]) {
         var diagnostics: [Diagnostic] = []
+
         let tunebook = try _parse(data, &diagnostics)
 
         return (tunebook, diagnostics)
@@ -108,7 +109,7 @@ extension ABCParser {
 
         diagnostics.append(contentsOf: preprocDiagnostics)
 
-        let policy = ABCParsePolicy(version: version)
+        let policy = Policy(version: version)
         var context = Context()
         var inFileHeader = true
 
@@ -230,7 +231,7 @@ extension ABCParser {
     }
 
     private func _parseFieldLine(_ input: Substring,
-                                 _ policy: ABCParsePolicy,
+                                 _ policy: Policy,
                                  _ context: inout Context,
                                  _ diagnostics: inout [Diagnostic]) throws -> Line? {
         guard let letter = input.first,
@@ -310,7 +311,7 @@ extension ABCParser {
                 let tempo = ABCTempo(durations: [context.baseDuration],
                                      rate: rate,
                                      text: nil,
-                                     legacyBeatMultiple: 1).require()
+                                     beatMultiplier: 1).require()
                 let field = ABCField.tempo(tempo)
 
                 diagnostics.append(.deprecatedTempo(tempo))
@@ -336,7 +337,7 @@ extension ABCParser {
     }
 
     private func _parseLine(_ input: Substring,
-                            _ policy: ABCParsePolicy,
+                            _ policy: Policy,
                             _ context: inout Context,
                             _ diagnostics: inout [Diagnostic]) throws -> Line? {
         try _parseEmptyLine(input)

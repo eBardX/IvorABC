@@ -14,9 +14,9 @@ extension ABCNormalizerTests {
     @Test
     func normalize_alreadyNormalized_isIdempotent() {
         let normalizer = ABCNormalizer()
-        let once = normalizer.normalize(makeTunebook(.current,
-                                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])]))
-        let twice = normalizer.normalize(once)
+        let (once, _) = normalizer.normalize(makeTunebook(.current,
+                                                          [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])]))
+        let (twice, _) = normalizer.normalize(once)
 
         #expect(twice == once)
         #expect(twice.isNormalized)
@@ -28,7 +28,7 @@ extension ABCNormalizerTests {
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
         #expect(!tunebook.isNormalized)
-        #expect(ABCNormalizer().normalize(tunebook).isNormalized)
+        #expect(ABCNormalizer().normalize(tunebook).0.isNormalized)
     }
 
     @Test
@@ -36,14 +36,14 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook(.v2_0,
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(!ABCNormalizer().normalize(tunebook).isValidated)
+        #expect(!ABCNormalizer().normalize(tunebook).0.isValidated)
     }
 
     @Test
     func normalize_fromV16_elemskipBecomesRemark() {
         let tune = makeTune(header: [.field(.elemskip(.integer(3)))])
         let tunebook = makeTunebook(.v1_6, [tune])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         #expect(normalized.tunes.first?.header.contains(.field(.remark("3"))) == true)
         #expect(normalized.tunes.first?.header.contains(.field(.elemskip(.integer(3)))) == false)
@@ -54,7 +54,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook(.v1_6,
                                     [.field(.information("some info"))],
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         #expect(normalized.fileHeader.contains(.field(.remark("some info"))) == true)
         #expect(normalized.fileHeader.contains(.field(.information("some info"))) == false)
@@ -65,16 +65,16 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook(.v1_6,
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(ABCNormalizer().normalize(tunebook).version == .current)
+        #expect(ABCNormalizer().normalize(tunebook).0.version == .current)
     }
 
     @Test
     func normalize_fromV16_tempoLegacyFlagCleared() {
         let dottedQuarter = makeDuration(3, 8)
-        let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, legacyBeatMultiple: 3).require()
+        let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, beatMultiplier: 3).require()
         let tune = makeTune(header: [.field(.tempo(legacyTempo))])
         let tunebook = makeTunebook(.v1_6, [tune])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         let normalizedTempo = normalized.tunes.first?.header.compactMap { entry -> ABCTempo? in
             guard case let .field(f) = entry,
@@ -84,7 +84,7 @@ extension ABCNormalizerTests {
             return t
         }.first
 
-        #expect(normalizedTempo?.legacyBeatMultiple == nil)
+        #expect(normalizedTempo?.beatMultiplier == nil)
         #expect(normalizedTempo?.durations == [dottedQuarter])
         #expect(normalizedTempo?.rate == 40)
     }
@@ -94,7 +94,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook(.v2_0,
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(ABCNormalizer().normalize(tunebook).version == .current)
+        #expect(ABCNormalizer().normalize(tunebook).0.version == .current)
     }
 
     @Test
@@ -102,7 +102,7 @@ extension ABCNormalizerTests {
         let fileHeader = ABCHeaderEntry.field(.composer("J.S. Bach"))
         let tune = makeTune(header: [.field(.tuneTitle("Test"))])
         let tunebook = makeTunebook(.v2_0, [fileHeader], [tune])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         #expect(normalized.fileHeader == [fileHeader])
         #expect(normalized.tunes == [tune])
@@ -112,7 +112,7 @@ extension ABCNormalizerTests {
     func normalize_plusDecoration_convertsToBang() {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1)))],
                                               body: [.symbols([.decoration(makeDecoration("trill", .plus))])])])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         let decoration = normalized.tunes.first?.body.compactMap { entry -> ABCDecoration? in
             guard case let .symbols(symbols) = entry,
@@ -132,7 +132,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook([.directive(directive)],
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(ABCNormalizer().normalize(tunebook).fileHeader.isEmpty)
+        #expect(ABCNormalizer().normalize(tunebook).0.fileHeader.isEmpty)
     }
 
     @Test
@@ -141,7 +141,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
                                                        .directive(directive),
                                                        .field(.key(makeKeySignature(.c, .major)))])])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         #expect(!normalized.tunes[0].header.contains(.directive(directive)))
     }
@@ -153,7 +153,7 @@ extension ABCNormalizerTests {
                                                        .field(.key(makeKeySignature(.c, .major)))],
                                               body: [.symbols([.inlineField(.instruction(directive)),
                                                                .decoration(makeDecoration("trill", .plus))])])])
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
         var symbols: [ABCSymbol] = []
 
         if case let .symbols(s) = normalized.tunes.first?.body.first {
@@ -169,7 +169,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook([.directive(directive)],
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(ABCNormalizer().normalize(tunebook).fileHeader.isEmpty)
+        #expect(ABCNormalizer().normalize(tunebook).0.fileHeader.isEmpty)
     }
 
     @Test
@@ -178,7 +178,7 @@ extension ABCNormalizerTests {
         let tunebook = makeTunebook([.directive(directive)],
                                     [makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])])
 
-        #expect(ABCNormalizer().normalize(tunebook).fileHeader.isEmpty)
+        #expect(ABCNormalizer().normalize(tunebook).0.fileHeader.isEmpty)
     }
 
     @Test
@@ -188,7 +188,7 @@ extension ABCNormalizerTests {
 
         #expect(!tunebook.isNormalized)
 
-        let normalized = ABCNormalizer().normalize(tunebook)
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
 
         #expect(normalized.isNormalized)
 

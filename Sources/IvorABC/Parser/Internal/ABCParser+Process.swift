@@ -7,7 +7,7 @@ extension ABCParser {
     // MARK: Internal Instance Methods
 
     internal func makeTunebook(_ version: ABCVersion?,
-                               _ policy: ABCParsePolicy,
+                               _ policy: Policy,
                                _ restLines: [Line],
                                _ diagnostics: inout [Diagnostic]) throws -> ABCTunebook {
         let parserIsNormalized = version == .current
@@ -54,7 +54,7 @@ extension ABCParser {
                 }
 
             case let .field(.tempo(tempo)):
-                if tempo.legacyBeatMultiple != nil {
+                if tempo.beatMultiplier != nil {
                     return true
                 }
 
@@ -92,7 +92,7 @@ extension ABCParser {
         return false
     }
 
-    private func _handleMissingKeyField(_ policy: ABCParsePolicy,
+    private func _handleMissingKeyField(_ policy: Policy,
                                         _ inTuneBody: Bool,
                                         _ diagnostics: inout [Diagnostic]) throws {
         guard !inTuneBody
@@ -105,7 +105,7 @@ extension ABCParser {
         }
     }
 
-    private func _makeTunes(_ policy: ABCParsePolicy,
+    private func _makeTunes(_ policy: Policy,
                             _ reader: inout SequenceReader<[Line]>,
                             _ diagnostics: inout [Diagnostic]) throws -> [ABCTune] {
         var tunes: [ABCTune] = []
@@ -238,7 +238,7 @@ extension ABCParser {
     }
 
     private func _processHeaderEntry(_ entry: ABCBodyEntry,
-                                     _ policy: ABCParsePolicy,
+                                     _ policy: Policy,
                                      _ tuneHeader: inout [ABCHeaderEntry],
                                      _ tuneBody: inout [ABCBodyEntry],
                                      _ fieldCount: inout Int,
@@ -289,7 +289,7 @@ extension ABCParser {
     }
 
     private func _processTuneBodyLine(_ line: Line,
-                                      _ policy: ABCParsePolicy,
+                                      _ policy: Policy,
                                       _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
         switch line {
         case let .directive(directive):
@@ -333,7 +333,7 @@ extension ABCParser {
         }
     }
 
-    private func _processTuneBodyLines(_ policy: ABCParsePolicy,
+    private func _processTuneBodyLines(_ policy: Policy,
                                        _ reader: inout SequenceReader<[Line]>,
                                        _ tuneBody: inout [ABCBodyEntry],
                                        _ diagnostics: inout [Diagnostic]) throws {
@@ -372,7 +372,7 @@ extension ABCParser {
     }
 
     private func _processTuneHeaderLine(_ line: Line,
-                                        _ policy: ABCParsePolicy,
+                                        _ policy: Policy,
                                         _ diagnostics: inout [Diagnostic]) throws -> (entry: ABCBodyEntry?, empty: Bool) {
         switch line {
         case let .directive(directive):
@@ -400,7 +400,7 @@ extension ABCParser {
         }
     }
 
-    private func _processTuneHeaderLines(_ policy: ABCParsePolicy,
+    private func _processTuneHeaderLines(_ policy: Policy,
                                          _ reader: inout SequenceReader<[Line]>,
                                          _ tuneHeader: inout [ABCHeaderEntry],
                                          _ tuneBody: inout [ABCBodyEntry],
@@ -454,7 +454,7 @@ extension ABCParser {
     }
 
     private func _processTuneLines(_ reader: inout SequenceReader<[Line]>,
-                                   _ policy: ABCParsePolicy,
+                                   _ policy: Policy,
                                    _ diagnostics: inout [Diagnostic]) throws -> ABCTune? {
         // Skip any leading empty lines before the tune content starts (e.g., after
         // multiple blank lines or skipped prose in lenient mode).

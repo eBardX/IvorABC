@@ -23,14 +23,14 @@ extension ABCTunebookTests {
     func equality_ignoresIsNormalized() {
         let tune = makeTune(header: [.field(.key(makeKeySignature(.c, .major)))])
         let unnormalized = makeTunebook(.v2_1, [tune])
-        let normalized = ABCNormalizer().normalize(unnormalized)
+        let (normalized, _) = ABCNormalizer().normalize(unnormalized)
 
         #expect(unnormalized == normalized)
     }
 
     @Test
     func equality_ignoresIsValidated() throws {
-        let normalized = ABCNormalizer().normalize(minimalTunebook())
+        let (normalized, _) = ABCNormalizer().normalize(minimalTunebook())
         let (validated, _) = try ABCValidator().validate(normalized)
 
         #expect(normalized == validated)
@@ -65,8 +65,7 @@ extension ABCTunebookTests {
 
     @Test
     func init_withEmptyTunes_returnsNil() {
-        #expect(ABCTunebook(version: .v2_1,
-                            fileHeader: [],
+        #expect(ABCTunebook(fileHeader: [],
                             tunes: []) == nil)
     }
 

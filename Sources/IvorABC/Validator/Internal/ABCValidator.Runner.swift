@@ -13,35 +13,6 @@ extension ABCValidator {
             self.state = State()
         }
 
-        // MARK: Internal Instance Methods
-
-        internal mutating func run(_ tunebook: ABCTunebook) -> [Issue] {
-            issues = []
-            state = State()
-
-            for header in tunebook.fileHeader {
-                switch header {
-                case let .directive(directive):
-                    _updateState(directive)
-
-                case let .field(field):
-                    if !field.isValidInFileHeader {
-                        issues.append(.misplacedFileHeaderField(field))
-                    }
-
-                    _updateState(field)
-                }
-            }
-
-            for (tuneIndex, tune) in tunebook.tunes.enumerated() {
-                state.resetTuneScope()
-
-                _validateTune(tune, tuneIndex)
-            }
-
-            return issues
-        }
-
         // MARK: Private Instance Properties
 
         private var issues: [Issue]
@@ -52,6 +23,35 @@ extension ABCValidator {
 // MARK: -
 
 extension ABCValidator.Runner {
+
+    // MARK: Internal Instance Methods
+
+    internal mutating func run(_ tunebook: ABCTunebook) -> [ABCValidator.Issue] {
+        issues = []
+        state = ABCValidator.State()
+
+        for header in tunebook.fileHeader {
+            switch header {
+            case let .directive(directive):
+                _updateState(directive)
+
+            case let .field(field):
+                if !field.isValidInFileHeader {
+                    issues.append(.misplacedFileHeaderField(field))
+                }
+
+                _updateState(field)
+            }
+        }
+
+        for (tuneIndex, tune) in tunebook.tunes.enumerated() {
+            state.resetTuneScope()
+
+            _validateTune(tune, tuneIndex)
+        }
+
+        return issues
+    }
 
     // MARK: Private Instance Methods
 
@@ -66,7 +66,7 @@ extension ABCValidator.Runner {
         }
 
         if !tuneHasReferenceNumber {
-            issues.append(.missingReferenceNumber(tuneIndex: tuneIndex))
+            issues.append(.missingReferenceNumber(tuneIndex))
         }
 
         var seenReferenceNumber = !tuneHasReferenceNumber
@@ -81,14 +81,14 @@ extension ABCValidator.Runner {
                     if case .referenceNumber = field {
                         seenReferenceNumber = true
                     } else {
-                        issues.append(.misplacedReferenceNumber(tuneIndex: tuneIndex))
+                        issues.append(.misplacedReferenceNumber(tuneIndex))
 
                         seenReferenceNumber = true
                     }
                 }
 
                 if !field.isValidInTuneHeader {
-                    issues.append(.misplacedTuneField(field, tuneIndex: tuneIndex))
+                    issues.append(.misplacedTuneField(field, tuneIndex))
                 }
 
                 _updateState(field, true)
@@ -102,7 +102,7 @@ extension ABCValidator.Runner {
 
             case let .field(field):
                 if !field.isValidInTuneBody {
-                    issues.append(.misplacedTuneField(field, tuneIndex: tuneIndex))
+                    issues.append(.misplacedTuneField(field, tuneIndex))
                 }
 
                 _updateState(field, true)
@@ -124,7 +124,7 @@ extension ABCValidator.Runner {
         case let .shorthand(shorthand):
             if shorthand != .dot,
                !state.isShorthandDefined(shorthand) {
-                issues.append(.undefinedUserSymbol(tuneIndex: tuneIndex))
+                issues.append(.undefinedUserSymbol(tuneIndex))
             }
 
         default:

@@ -466,14 +466,12 @@ func makeTune(header: [ABCHeaderEntry],
 
 func makeTunebook(_ fileHeaders: [ABCHeaderEntry],
                   _ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: .v2_1,
-                fileHeader: fileHeaders,
+    ABCTunebook(fileHeader: fileHeaders,
                 tunes: tunes).require()
 }
 
 func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
-    ABCTunebook(version: .v2_1,
-                fileHeader: [],
+    ABCTunebook(fileHeader: [],
                 tunes: tunes).require()
 }
 
@@ -482,14 +480,18 @@ func makeTunebook(_ version: ABCVersion,
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
                 fileHeader: fileHeaders,
-                tunes: tunes).require()
+                tunes: tunes,
+                isNormalized: false,
+                isValidated: false)
 }
 
 func makeTunebook(_ version: ABCVersion,
                   _ tunes: [ABCTune]) -> ABCTunebook {
     ABCTunebook(version: version,
                 fileHeader: [],
-                tunes: tunes).require()
+                tunes: tunes,
+                isNormalized: false,
+                isValidated: false)
 }
 
 func makeTuplet(_ noteCount: UInt,
@@ -560,7 +562,8 @@ func matchSymbols(_ input: String,
 
 func format(_ tunebook: ABCTunebook) throws -> String {
     let formatter = ABCFormatter()
-    let (validatedBook, _) = try ABCValidator().validate(ABCNormalizer().normalize(tunebook))
+    let (normalizedBook, _) = ABCNormalizer().normalize(tunebook)
+    let (validatedBook, _) = try ABCValidator().validate(normalizedBook)
     let data = try formatter.format(validatedBook)
 
     return String(bytes: data,

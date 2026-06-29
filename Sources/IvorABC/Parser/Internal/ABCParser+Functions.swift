@@ -458,7 +458,7 @@ internal func parseLegacyBeatTempo(_ tidyInput: Substring,
     return ABCTempo(durations: [beat],
                     rate: rate,
                     text: text,
-                    legacyBeatMultiple: multiplier)
+                    beatMultiplier: multiplier)
 }
 
 internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
@@ -618,7 +618,7 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
                   !rest[..<closeIdx].isEmpty,
                   rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) }),
                   let name = ABCDecoration.Name(stringValue: String(rest[..<closeIdx])),
-                  let decoration = ABCDecoration(name: name, dialect: .bang)
+                  let decoration = ABCDecoration(name: name)
             else { return nil }
 
             elements.append(.decoration(decoration))
@@ -815,7 +815,7 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
         parseAnnotation(Substring(raw)).map { .annotation($0) }
     } else if raw.count >= 2, raw.first == "!", raw.last == "!" {
         ABCDecoration.Name(stringValue: String(raw.dropFirst().dropLast()))
-            .flatMap { ABCDecoration(name: $0, dialect: .bang) }
+            .flatMap { ABCDecoration(name: $0) }
             .map { .decoration($0) }
     } else if raw.count >= 2, raw.first == "+", raw.last == "+" {
         ABCDecoration.Name(stringValue: String(raw.dropFirst().dropLast()))
@@ -823,7 +823,7 @@ internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
             .map { .decoration($0) }
     } else {
         ABCDecoration.Name(stringValue: raw)
-            .flatMap { ABCDecoration(name: $0, dialect: .bang) }
+            .flatMap { ABCDecoration(name: $0) }
             .map { .decoration($0) }
     }
 

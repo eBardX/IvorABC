@@ -39,7 +39,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 120)
-        #expect(tempo?.legacyBeatMultiple == 1)
+        #expect(tempo?.beatMultiplier == 1)
         #expect(tempo?.durations.isEmpty == false)
     }
 
@@ -58,7 +58,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 120)
-        #expect(tempo?.legacyBeatMultiple == 1)
+        #expect(tempo?.beatMultiplier == 1)
     }
 
     @Test
@@ -77,7 +77,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 120)
-        #expect(tempo?.legacyBeatMultiple == 1)
+        #expect(tempo?.beatMultiplier == 1)
         #expect(tempo?.durations == [makeDuration(1, 8)])
     }
 
@@ -107,7 +107,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 120)
-        #expect(tempo?.legacyBeatMultiple == 1)
+        #expect(tempo?.beatMultiplier == 1)
         #expect(tempo?.durations == [makeDuration(1, 4)])
     }
 
@@ -252,7 +252,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 120)
-        #expect(tempo?.legacyBeatMultiple == 1)
+        #expect(tempo?.beatMultiplier == 1)
         #expect(tempo?.durations == [makeDuration(1, 8)])
     }
 
@@ -272,7 +272,7 @@ extension ABCParserParsePolicyTests {
         }.first
 
         #expect(tempo?.rate == 40)
-        #expect(tempo?.legacyBeatMultiple == 3)
+        #expect(tempo?.beatMultiplier == 3)
         #expect(tempo?.durations == [makeDuration(3, 8)])
     }
 

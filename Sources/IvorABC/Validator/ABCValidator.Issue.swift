@@ -13,17 +13,17 @@ extension ABCValidator {
 
         /// A tune has a reference number (`X:`) field but it is not the first
         /// header field.
-        case misplacedReferenceNumber(tuneIndex: Int)
+        case misplacedReferenceNumber(Int)
 
         /// A field in a tune header or body is not valid in that position.
-        case misplacedTuneField(ABCField, tuneIndex: Int)
+        case misplacedTuneField(ABCField, Int)
 
         /// A tune has no reference number (`X:`) field.
-        case missingReferenceNumber(tuneIndex: Int)
+        case missingReferenceNumber(Int)
 
         /// A shorthand decoration was encountered that is neither a builtin
         /// shorthand nor defined by a preceding `U:` field.
-        case undefinedUserSymbol(tuneIndex: Int?)
+        case undefinedUserSymbol(Int?)
     }
 }
 

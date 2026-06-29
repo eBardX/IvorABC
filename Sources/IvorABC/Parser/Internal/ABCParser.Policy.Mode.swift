@@ -1,6 +1,6 @@
 // © 2026 John Gary Pusey (see LICENSE.md)
 
-extension ABCParsePolicy {
+extension ABCParser.Policy {
 
     // MARK: Internal Nested Types
 
@@ -8,4 +8,9 @@ extension ABCParsePolicy {
         case loose
         case strict
     }
+}
+
+// MARK: - Sendable
+
+extension ABCParser.Policy.Mode: Sendable {
 }

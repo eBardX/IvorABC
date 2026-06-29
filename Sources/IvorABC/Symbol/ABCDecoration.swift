@@ -11,27 +11,21 @@ public struct ABCDecoration {
 
     // MARK: Public Initializers
 
-    /// Creates a new decoration, or `nil` if the combination of `name` and
-    /// `dialect` fails forthcoming validation.
+    /// Creates a new decoration with the ``Dialect/bang`` dialect, or `nil` if
+    /// `name` fails forthcoming validation.
     ///
-    /// - Parameter name:    The decoration name (without delimiters), e.g.
-    ///                      `ABCDecoration.Name("roll")`.
-    /// - Parameter dialect: The delimiter dialect in effect; defaults to
-    ///                      ``Dialect/bang`` (ABC 2.1 standard).
-    public init?(name: Name,
-                 dialect: Dialect = .bang) {
-        guard Self._isValid(name, dialect)
-        else { return nil }
-
-        self.dialect = dialect
-        self.name = name
+    /// - Parameter name: The decoration name (without delimiters), e.g.
+    ///                   `ABCDecoration.Name("roll")`.
+    public init?(name: Name) {
+        self.init(name: name,
+                  dialect: .bang)
     }
 
     // MARK: Public Instance Properties
 
     /// The delimiter dialect for this decoration: ``Dialect/bang`` (`!name!`) or
-    /// ``Dialect/plus`` (`+name+`). Defaults to ``Dialect/bang`` when constructed
-    /// directly rather than parsed.
+    /// ``Dialect/plus`` (`+name+`). Always ``Dialect/bang`` for directly-constructed
+    /// decorations; may be ``Dialect/plus`` for decorations produced by the parser.
     public let dialect: Dialect
 
     /// The decoration name, without delimiters.
@@ -41,6 +35,17 @@ public struct ABCDecoration {
 // MARK: -
 
 extension ABCDecoration {
+
+    // MARK: Internal Initializers
+
+    internal init?(name: Name,
+                   dialect: Dialect) {
+        guard Self._isValid(name, dialect)
+        else { return nil }
+
+        self.dialect = dialect
+        self.name = name
+    }
 
     // MARK: Private Type Methods
 

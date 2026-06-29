@@ -16,10 +16,11 @@ extension ABCNormalizer {
 
     // MARK: Public Instance Methods
 
-    /// Returns a copy of the provided tunebook normalized to the current ABC version.
+    /// Returns a copy of the provided tunebook normalized to the current ABC version,
+    /// along with an array describing each change applied.
     ///
     /// Normalization is idempotent: calling `normalize(_:)` on an already-normalized
-    /// tunebook returns it immediately.
+    /// tunebook returns it immediately with an empty changes array.
     ///
     /// The following conversions are applied:
     /// - ``ABCField/elemskip(_:)`` → ``ABCField/remark(_:)``
@@ -32,13 +33,16 @@ extension ABCNormalizer {
     ///
     /// - Parameter tunebook:   The tunebook to normalize.
     ///
-    /// - Returns: A new ``ABCTunebook`` whose ``ABCTunebook/isNormalized`` is `true` and
-    ///            ``ABCTunebook/version`` is ``ABCVersion/current``.
-    public func normalize(_ tunebook: ABCTunebook) -> ABCTunebook {
+    /// - Returns: A tuple of a new ``ABCTunebook`` whose ``ABCTunebook/isNormalized`` is `true` and
+    ///            ``ABCTunebook/version`` is ``ABCVersion/current``, and an array of ``Change``
+    ///            values describing each normalization applied.
+    public func normalize(_ tunebook: ABCTunebook) -> (ABCTunebook, [Change]) {
         guard !tunebook.isNormalized
-        else { return tunebook }
+        else { return (tunebook, []) }
 
-        return Runner().run(tunebook)
+        var runner = Runner()
+
+        return runner.run(tunebook)
     }
 }
 
