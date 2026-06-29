@@ -8,13 +8,16 @@ extension ABCValidator {
 
         // MARK: Internal Initializers
 
-        internal init() {
-            self.globalDefinedShorthands = []
+        internal init(tunebook: ABCTunebook) {
+            self.globalDefinedShorthands = Self.defaultGlobalDefinedShorthands
             self.issues = []
+            self.tunebook = tunebook
             self.tuneDefinedShorthands = []
         }
 
         // MARK: Private Instance Properties
+
+        private let tunebook: ABCTunebook
 
         private var globalDefinedShorthands: Set<ABCShorthand>
         private var issues: [Issue]
@@ -41,11 +44,7 @@ extension ABCValidator.Checker {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func check(_ tunebook: ABCTunebook) -> [ABCValidator.Issue] {
-        globalDefinedShorthands = Self.defaultGlobalDefinedShorthands
-        issues = []
-        tuneDefinedShorthands = []
-
+    internal mutating func checkTunebook() -> [ABCValidator.Issue] {
         _checkFileHeader(tunebook.fileHeader)
 
         for (index, tune) in tunebook.tunes.enumerated() {
@@ -73,11 +72,7 @@ extension ABCValidator.Checker {
     private mutating func _checkKey(_ fields: [ABCField],
                                     _ index: Int) {
         guard let keyIndex = fields.firstIndex(where: _isKey)
-        else {
-            issues.append(.missingKey(index))
-
-            return
-        }
+        else { issues.append(.missingKey(index)); return }
 
         if keyIndex != fields.count - 1 {
             issues.append(.misplacedKey(index))
@@ -87,11 +82,7 @@ extension ABCValidator.Checker {
     private mutating func _checkReferenceNumber(_ fields: [ABCField],
                                                 _ index: Int) {
         guard let referenceNumberIndex = fields.firstIndex(where: _isReferenceNumber)
-        else {
-            issues.append(.missingReferenceNumber(index))
-
-            return
-        }
+        else { issues.append(.missingReferenceNumber(index)); return }
 
         if referenceNumberIndex != 0 {
             issues.append(.misplacedReferenceNumber(index))
@@ -174,11 +165,7 @@ extension ABCValidator.Checker {
     private mutating func _checkTuneTitle(_ fields: [ABCField],
                                           _ index: Int) {
         guard let titleIndex = fields.firstIndex(where: _isTuneTitle)
-        else {
-            issues.append(.missingTuneTitle(index))
-
-            return
-        }
+        else { issues.append(.missingTuneTitle(index)); return }
 
         // A misplaced title is only meaningful once the reference number is
         // first; otherwise the header is already flagged for that and a title

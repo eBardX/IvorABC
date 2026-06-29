@@ -40,9 +40,9 @@ extension ABCNormalizer {
         guard !tunebook.isNormalized
         else { return (tunebook, []) }
 
-        var runner = Runner()
+        var runner = Editor(tunebook: tunebook)
 
-        return runner.run(tunebook)
+        return runner.editTunebook()
     }
 }
 

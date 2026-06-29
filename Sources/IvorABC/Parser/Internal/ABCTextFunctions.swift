@@ -283,11 +283,7 @@ private func _decodeBackslashEscape(_ chars: [Character],
     let n = chars.count
 
     guard index + 1 < n
-    else {
-        result.append("\\")
-
-        return index + 1
-    }
+    else { result.append("\\"); return index + 1 }
 
     let next = chars[index + 1]
 
@@ -343,11 +339,7 @@ private func _decodeHTMLEntity(_ chars: [Character],
 
     guard index2 < n, chars[index2] == ";",
           index2 > index + 1
-    else {
-        result.append("&")
-
-        return index + 1
-    }
+    else { result.append("&"); return index + 1 }
 
     let body = String(chars[(index + 1)..<index2])
 

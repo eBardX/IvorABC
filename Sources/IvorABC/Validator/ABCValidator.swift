@@ -38,13 +38,12 @@ extension ABCValidator {
         guard tunebook.isNormalized
         else { throw Error.notNormalized }
 
-        var runner = Checker()
+        var runner = Checker(tunebook: tunebook)
 
-        let issues = runner.check(tunebook)
+        let issues = runner.checkTunebook()
 
-        if !issues.isEmpty {
-            return (tunebook, issues)
-        }
+        guard issues.isEmpty
+        else { return (tunebook, issues) }
 
         return (ABCTunebook(version: tunebook.version,
                             fileHeader: tunebook.fileHeader,

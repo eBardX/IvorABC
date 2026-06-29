@@ -69,13 +69,13 @@ extension ABCParser.Diagnostic {
     public var message: String {
         switch self {
         case let .deprecatedField(field):
-            "Deprecated field '\(field)' accepted in loose parsing mode"
+            "Deprecated field ‘\(field)’ accepted in loose parsing mode"
 
         case let .deprecatedTempo(tempo):
-            "Deprecated tempo form; rate '\(tempo.rate.map { "\($0)" } ?? "unspecified")' was accepted"
+            "Deprecated tempo form; rate ‘\(tempo.rate.map { "\($0)" } ?? "unspecified")’ was accepted"
 
         case let .duplicateCharset(name):
-            "Charset '\(name)' was ignored; an earlier charset directive takes precedence"
+            "Charset ‘\(name)’ was ignored; an earlier charset directive takes precedence"
 
         case .ignoredByteOrderMark:
             "Non-UTF-8 byte order mark was ignored; treating content as ISO-8859-1"
@@ -84,19 +84,19 @@ extension ABCParser.Diagnostic {
             "Declared encoding could not decode the file content; falling back to ISO-8859-1"
 
         case let .malformedVersion(raw):
-            "Malformed version string '\(raw)'; version is treated as unspecified"
+            "Malformed version string ‘\(raw)’; version is treated as unspecified"
 
         case let .misplacedField(field):
-            "Misplaced field '\(field)' was skipped"
+            "Misplaced field ‘\(field)’ was skipped"
 
         case .missingKeyField:
             "Tune has no K: field; tune body assumed to start at first music line"
 
         case let .unrecognizedCharset(name):
-            "Unrecognized charset '\(name)'; falling back to ISO-8859-1"
+            "Unrecognized charset ‘\(name)’; falling back to ISO-8859-1"
 
         case let .unrecognizedLine(line):
-            "Unrecognized line skipped: '\(line)'"
+            "Unrecognized line skipped: ‘\(line)’"
 
         case let .unrecognizedVersion(version):
             "Unrecognized ABC version \(version.major).\(version.minor); parsing continued with declared version"

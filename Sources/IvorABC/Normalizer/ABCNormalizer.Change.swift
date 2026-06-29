@@ -6,18 +6,17 @@ extension ABCNormalizer {
 
     /// A change applied when normalizing an ``ABCTunebook`` to the current ABC version.
     public enum Change {
-
-        /// The legacy ``ABCTempo/beatMultiplier`` was cleared from a tempo field.
+        /// A legacy ``ABCTempo/beatMultiplier`` was cleared from a tempo field.
         case clearedBeatMultiplier(ABCTempo, Int?)
 
-        /// A `+name+` decoration was converted to the `!name!` form. The first associated
+        /// A legacy `+name+` decoration was converted to the `!name!` form. The first associated
         /// value is the original decoration.
         case convertedDecoration(ABCDecoration, Int?)
 
-        /// A stale directive was dropped.
-        case droppedDirective(ABCDirective, Int?)
+        /// A legacy directive was removed.
+        case removedDirective(ABCDirective, Int?)
 
-        /// A deprecated field was replaced. The first associated value is the original
+        /// A legacy field was replaced. The first associated value is the original
         /// field; the second is the replacement.
         case replacedField(ABCField, ABCField, Int?)
     }
@@ -33,16 +32,16 @@ extension ABCNormalizer.Change {
     public var message: String {
         switch self {
         case let .clearedBeatMultiplier(tempo, tuneIndex):
-            "\(_tuneLabel(tuneIndex)): legacy beat multiplier cleared from tempo field '\(tempo)'"
+            "\(_tuneLabel(tuneIndex)): legacy beat multiplier cleared from tempo field ‘\(tempo)’"
 
         case let .convertedDecoration(decoration, tuneIndex):
-            "\(_tuneLabel(tuneIndex)): decoration '\(decoration)' converted from +name+ to !name! form"
+            "\(_tuneLabel(tuneIndex)): decoration converted from legacy ‘+\(decoration)+’ to ‘!\(decoration)!’ form"
 
-        case let .droppedDirective(directive, tuneIndex):
-            "\(_tuneLabel(tuneIndex)): stale directive '\(directive)' dropped"
+        case let .removedDirective(directive, tuneIndex):
+            "\(_tuneLabel(tuneIndex)): legacy directive ‘\(directive)’ was removed"
 
-        case let .replacedField(old, new, tuneIndex):
-            "\(_tuneLabel(tuneIndex)): field '\(old)' replaced with '\(new)'"
+        case let .replacedField(oldField, newField, tuneIndex):
+            "\(_tuneLabel(tuneIndex)): legacy field ‘\(oldField)’ was replaced with ‘\(newField)’"
         }
     }
 
@@ -52,7 +51,7 @@ extension ABCNormalizer.Change {
         switch self {
         case let .clearedBeatMultiplier(_, tuneIndex),
              let .convertedDecoration(_, tuneIndex),
-             let .droppedDirective(_, tuneIndex),
+             let .removedDirective(_, tuneIndex),
              let .replacedField(_, _, tuneIndex):
             tuneIndex
         }

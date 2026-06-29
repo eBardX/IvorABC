@@ -121,62 +121,62 @@ extension ABCParser.Error: EnhancedError {
             "Failed to convert UTF-8 data to string"
 
         case let .invalidDirective(value):
-            "Invalid directive: '\(value)'"
+            "Invalid directive: ‘\(value)’"
 
         case let .invalidField(isInline, value):
             if isInline {
-                "Invalid inline field: '\(value)'"
+                "Invalid inline field: ‘\(value)’"
             } else {
-                "Invalid field: '\(value)'"
+                "Invalid field: ‘\(value)’"
             }
 
         case let .invalidKeySignature(value):
-            "Invalid key signature: '\(value)'"
+            "Invalid key signature: ‘\(value)’"
 
         case let .invalidMacro(value):
-            "Invalid macro: '\(value)'"
+            "Invalid macro: ‘\(value)’"
 
         case let .invalidNote(value):
-            "Invalid note: '\(value)'"
+            "Invalid note: ‘\(value)’"
 
         case let .invalidPartSequence(value):
-            "Invalid part sequence: '\(value)'"
+            "Invalid part sequence: ‘\(value)’"
 
         case let .invalidPitch(value):
-            "Invalid pitch: '\(value)'"
+            "Invalid pitch: ‘\(value)’"
 
         case let .invalidRefNumber(value):
-            "Invalid reference number: '\(value)'"
+            "Invalid reference number: ‘\(value)’"
 
         case let .invalidRest(value):
-            "Invalid rest: '\(value)'"
+            "Invalid rest: ‘\(value)’"
 
         case let .invalidSymbolLine(value):
-            "Invalid symbol line: '\(value)'"
+            "Invalid symbol line: ‘\(value)’"
 
         case let .invalidSymbols(value):
-            "Invalid music code symbols: '\(value)'"
+            "Invalid music code symbols: ‘\(value)’"
 
         case let .invalidTempo(value):
-            "Invalid tempo: '\(value)'"
+            "Invalid tempo: ‘\(value)’"
 
         case let .invalidText(value):
-            "Invalid text: '\(value)'"
+            "Invalid text: ‘\(value)’"
 
         case let .invalidTimeSignature(value):
-            "Invalid time signature: '\(value)'"
+            "Invalid time signature: ‘\(value)’"
 
         case let .invalidTuplet(value):
-            "Invalid tuplet: '\(value)'"
+            "Invalid tuplet: ‘\(value)’"
 
         case let .invalidUnitNoteLength(value):
-            "Invalid unit note length: '\(value)'"
+            "Invalid unit note length: ‘\(value)’"
 
         case let .invalidUserSymbol(value):
-            "Invalid user-defined symbol: '\(value)'"
+            "Invalid user-defined symbol: ‘\(value)’"
 
         case let .invalidVoice(value):
-            "Invalid voice: '\(value)'"
+            "Invalid voice: ‘\(value)’"
 
         case let .misplacedField(field):
             "Misplaced field: \(field)"
@@ -194,10 +194,10 @@ extension ABCParser.Error: EnhancedError {
             "Continuation (+:) line has no preceding field to merge with"
 
         case let .undefinedShorthand(value):
-            "Shorthand '\(value)' has been de-assigned and is undefined"
+            "Shorthand ‘\(value)’ has been de-assigned and is undefined"
 
         case let .unmatchedBeginDirective(name):
-            "'%%begin\(name)' has no matching '%%end\(name)'"
+            "‘%%begin\(name)’ has no matching ‘%%end\(name)’"
         }
     }
 }
