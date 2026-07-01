@@ -33,6 +33,21 @@ public struct ABCDirective {
     public let value: String
 }
 
+// MARK: -
+
+extension ABCDirective {
+
+    // MARK: Internal Instance Properties
+
+    // A Boolean value indicating whether this directive is a legacy construct
+    // that ``ABCNormalizer`` removes when normalizing to the current ABC version.
+    internal var needsNormalization: Bool {
+        name == .abcCharset
+        || name == .abcVersion
+        || (name == .decoration && value == "+")
+    }
+}
+
 // MARK: - Equatable
 
 extension ABCDirective: Equatable {

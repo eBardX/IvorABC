@@ -48,11 +48,12 @@ extension ABCParser {
 
         /// The parser encountered an invalid tempo specification.
         ///
-        /// In ``ABCParser/Strictness/lenient`` mode, or in
-        /// ``ABCParser/Strictness/strict`` mode when parsing a known older
-        /// version (e.g. 2.0), a bare-integer tempo (e.g. `Q:120`) is
-        /// recovered instead. In lenient mode it is also reported as
-        /// ``ABCParser/Diagnostic/bareTempoRate(_:)``.
+        /// Deprecated tempo forms — a bare-integer rate (e.g. `Q:120`) or the
+        /// `Q:C=rate` / `Q:Cn=rate` beat-unit form — are not reported through
+        /// this error; they are accepted regardless of the declared version and
+        /// reported as ``ABCParser/Diagnostic/deprecatedTempo(_:)``. This error
+        /// is thrown only when the value is neither a valid tempo nor a
+        /// recoverable deprecated form.
         case invalidTempo(Substring)
 
         /// The parser encountered an invalid text value.
@@ -73,33 +74,12 @@ extension ABCParser {
         /// The parser encountered an invalid voice specification.
         case invalidVoice(Substring)
 
-        /// The parser encountered a field in a location where it is not permitted.
-        ///
-        /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
-        /// instead and reported as ``ABCParser/Diagnostic/misplacedField(_:)``.
-        case misplacedField(ABCField)
-
-        /// A tune is missing its required ``ABCField/key(_:)`` field, which must
-        /// be the last entry in the tune header.
-        ///
-        /// In ``ABCParser/Strictness/lenient`` mode, this condition is recovered
-        /// instead and reported as ``ABCParser/Diagnostic/missingKeyField``.
-        case missingKeyField
-
-        /// A tune does not begin with a ``ABCField/referenceNumber(_:)`` field
-        /// (`X:`), which must be the first field in the tune header.
-        case missingReferenceNumber
-
         /// The input contains no tunes.
         case missingTunes
 
         /// The parser encountered a `+:` continuation line with no preceding field
         /// to merge it into.
         case orphanedContinuation
-
-        /// The parser encountered a shorthand that has been explicitly de-assigned
-        /// via `U: X = !nil!` or `U: X = !none!` and is therefore undefined.
-        case undefinedShorthand(Substring)
 
         /// The parser encountered a `%%beginXxx` directive with no matching `%%endXxx`.
         case unmatchedBeginDirective(String)
@@ -178,23 +158,11 @@ extension ABCParser.Error: EnhancedError {
         case let .invalidVoice(value):
             "Invalid voice: ‘\(value)’"
 
-        case let .misplacedField(field):
-            "Misplaced field: \(field)"
-
-        case .missingKeyField:
-            "Tune is missing required K: field"
-
-        case .missingReferenceNumber:
-            "Tune does not begin with a reference number (X:) field"
-
         case .missingTunes:
             "ABC file contains no tunes"
 
         case .orphanedContinuation:
             "Continuation (+:) line has no preceding field to merge with"
-
-        case let .undefinedShorthand(value):
-            "Shorthand ‘\(value)’ has been de-assigned and is undefined"
 
         case let .unmatchedBeginDirective(name):
             "‘%%begin\(name)’ has no matching ‘%%end\(name)’"

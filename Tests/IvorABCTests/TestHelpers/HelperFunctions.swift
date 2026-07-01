@@ -274,7 +274,7 @@ func expectFieldIsVoice(_ field: ABCField,
 // swiftlint:disable:next static_operator
 func == (lhs: ParseNoteResult?,
          rhs: ParseNoteResult?) -> Bool {
-    lhs?.duration == rhs?.duration
+    lhs?.length == rhs?.length
     && lhs?.tie == rhs?.tie
     && lhs?.pitch == rhs?.pitch
 }
@@ -291,7 +291,7 @@ func == (lhs: ParsePitchResult?,
 func == (lhs: ParseRestResult?,
          rhs: ParseRestResult?) -> Bool {
     lhs?.kind == rhs?.kind
-    && lhs?.duration == rhs?.duration
+    && lhs?.length == rhs?.length
 }
 
 // swiftlint:disable:next static_operator
@@ -325,10 +325,10 @@ func makeBarLine(_ kind: ABCBarLine.Kind = .standard,
 }
 
 func makeChord(_ notes: [ABCNote],
-               _ duration: ABCDuration,
+               _ length: ABCLength,
                _ tie: ABCTie? = nil) -> ABCChord {
     ABCChord(notes: notes,
-             duration: duration,
+             length: length,
              tie: tie).require()
 }
 
@@ -346,10 +346,10 @@ func makeDirective(_ name: ABCDirective.Name,
                  content: content)
 }
 
-func makeDuration(_ numerator: UInt,
-                  _ denominator: UInt = 1) -> ABCDuration {
-    ABCDuration(numerator: numerator,
-                denominator: denominator).require()
+func makeLength(_ numerator: UInt,
+                _ denominator: UInt = 1) -> ABCLength {
+    ABCLength(numerator: numerator,
+              denominator: denominator).require()
 }
 
 func makeGraceNotes(_ notes: [ABCNote],
@@ -387,10 +387,10 @@ func makeMacro(_ target: String,
 }
 
 func makeNote(_ pitch: ABCPitch,
-              _ duration: ABCDuration,
+              _ length: ABCLength,
               _ tie: ABCTie? = nil) -> ABCNote {
     ABCNote(pitch: pitch,
-            duration: duration,
+            length: length,
             tie: tie)
 }
 
@@ -428,21 +428,21 @@ func makeTempo(_ numerator: UInt,
                _ denominator: UInt,
                _ rate: UInt? = nil,
                _ text: String? = nil) -> ABCTempo {
-    ABCTempo(durations: [makeDuration(numerator, denominator)],
+    ABCTempo(lengths: [makeLength(numerator, denominator)],
              rate: rate,
              text: text).require()
 }
 
-func makeTempo(_ durations: [ABCDuration],
+func makeTempo(_ lengths: [ABCLength],
                _ rate: UInt? = nil,
                _ text: String? = nil) -> ABCTempo {
-    ABCTempo(durations: durations,
+    ABCTempo(lengths: lengths,
              rate: rate,
              text: text).require()
 }
 
 func makeTempo(_ text: String) -> ABCTempo {
-    ABCTempo(durations: [],
+    ABCTempo(lengths: [],
              rate: nil,
              text: text).require()
 }
@@ -543,19 +543,11 @@ func makeVoice(_ id: ABCVoice.ID,
 }
 
 func matchSymbols(_ input: String) throws -> [ABCSymbol] {
-    var ctx = ABCParser.Context()
-
-    return try matchSymbols(input,
-                            context: &ctx)
-}
-
-func matchSymbols(_ input: String,
-                  context: inout ABCParser.Context) throws -> [ABCSymbol] {
     let tokenizer = ABCSymbolTokenizer(tracing: .silent)
     let tokens = try tokenizer.tokenize(input)
     var matcher = ABCSymbolMatcher(tokens: tokens)
 
-    return try matcher.matchSymbols(&context)
+    return try matcher.matchSymbols()
 }
 
 // MARK: - ABCFormatter Helpers
@@ -576,14 +568,6 @@ func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .ma
                                     .field(.tuneTitle("Test")),
                                     .field(.key(key))],
                            body: symbols.isEmpty ? [] : [.symbols(symbols)])])
-}
-
-func minimalTunebookWithL4(symbols: [ABCSymbol]) -> ABCTunebook {
-    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
-                                    .field(.tuneTitle("Test")),
-                                    .field(.unitNoteLength(makeDuration(1, 4))),
-                                    .field(.key(makeKeySignature(.c, .major)))],
-                           body: [.symbols(symbols)])])
 }
 
 func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {

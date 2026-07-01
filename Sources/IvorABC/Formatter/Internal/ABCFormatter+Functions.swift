@@ -91,8 +91,8 @@ internal func formatField(_ field: ABCField) -> (String, String) {
     case let .transcription(text):
         ("Z", _formatText(text))
 
-    case let .unitNoteLength(duration):
-        ("L", "\(duration.numerator)/\(duration.denominator)")
+    case let .unitNoteLength(length):
+        ("L", "\(length.numerator)/\(length.denominator)")
 
     case let .userDefined(userSymbol):
         ("U", _formatUserSymbol(userSymbol))
@@ -106,9 +106,7 @@ internal func formatPart(_ part: ABCPart) -> String {
     parts[part].require()
 }
 
-internal func formatSymbol(_ symbol: ABCSymbol,
-                           _ unitNoteLength: ABCDuration?,
-                           _ meter: ABCTimeSignature?) -> String {
+internal func formatSymbol(_ symbol: ABCSymbol) -> String {
     switch symbol {
     case let .annotation(annotation):
         _formatAnnotation(annotation)
@@ -123,7 +121,7 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         _formatBrokenRhythm(brokenRhythm)
 
     case let .chord(chord):
-        _formatChord(chord, unitNoteLength, meter)
+        _formatChord(chord)
 
     case let .chordSymbol(chordSymbol):
         _formatChordSymbol(chordSymbol)
@@ -132,19 +130,19 @@ internal func formatSymbol(_ symbol: ABCSymbol,
         _formatDecoration(decoration)
 
     case let .graceNotes(graceNotes):
-        _formatGraceNotes(graceNotes, unitNoteLength, meter)
+        _formatGraceNotes(graceNotes)
 
     case let .inlineField(field):
         _formatInlineField(field)
 
     case let .note(note):
-        _formatNote(note, unitNoteLength, meter)
+        _formatNote(note)
 
     case .overlay:
         "&"
 
     case let .rest(rest):
-        _formatRest(rest, unitNoteLength, meter)
+        _formatRest(rest)
 
     case let .shorthand(shorthand):
         _formatShorthand(shorthand)
@@ -152,8 +150,8 @@ internal func formatSymbol(_ symbol: ABCSymbol,
     case let .slur(slur):
         _formatSlur(slur)
 
-    case let .spacer(duration):
-        "y\(_formatDuration(duration, unitNoteLength, meter))"
+    case let .spacer(length):
+        "y\(_formatLength(length))"
 
     case let .tuplet(tuplet):
         _formatTuplet(tuplet)
@@ -302,35 +300,6 @@ private let ties: [ABCTie: String] = [.dotted: ".-",
 
 // MARK: Private Functions
 
-private func _durationFromTimeSignature(_ timeSignature: ABCTimeSignature) -> ABCDuration? {
-    switch timeSignature {
-    case let .standard(meter):
-        // swiftlint:disable void_function_in_ternary
-        meter.doubleValue < 0.75
-            ? ABCDuration(numerator: 1,
-                          denominator: 16)
-            : ABCDuration(numerator: 1,
-                          denominator: 8)
-        // swiftlint:enable void_function_in_ternary
-
-    default:
-        ABCDuration(numerator: 1,
-                    denominator: 8)
-    }
-}
-
-private func _effectiveBaseDuration(_ unitNoteLength: ABCDuration?,
-                                    _ timeSignature: ABCTimeSignature?) -> ABCDuration? {
-    if let unitNoteLength {
-        unitNoteLength
-    } else if let timeSignature {
-        _durationFromTimeSignature(timeSignature)
-    } else {
-        ABCDuration(numerator: 1,
-                    denominator: 8)
-    }
-}
-
 private func _formatAlignedWords(_ alignedLyrics: ABCAlignedWords) -> String {
     var prevIsConnector = false
     var result = ""
@@ -444,18 +413,15 @@ private func _formatBrokenRhythm(_ brokenRhythm: ABCBrokenRhythm) -> String {
     brokenRhythms[brokenRhythm].require()
 }
 
-private func _formatChord(_ chord: ABCChord,
-                          _ unitNoteLength: ABCDuration?,
-                          _ meter: ABCTimeSignature?) -> String {
+private func _formatChord(_ chord: ABCChord) -> String {
     var result = "["
 
-    result += chord.notes.map { _formatNote($0, unitNoteLength, meter) }.joined()
+    result += chord.notes.map { _formatNote($0) }.joined()
 
     result += "]"
 
-    result += _formatDuration(chord.duration,
-                              unitNoteLength,
-                              meter)
+    result += _formatLength(chord.length)
+
     if let tie = chord.tie {
         result += ties[tie].require()
     }
@@ -535,43 +501,6 @@ private func _formatDecoration(_ decoration: ABCDecoration) -> String {
     }
 }
 
-private func _formatDuration(_ duration: ABCDuration,
-                             _ unitNoteLength: ABCDuration?,
-                             _ meter: ABCTimeSignature?) -> String {
-    guard let base = _effectiveBaseDuration(unitNoteLength, meter)
-    else { return "" }
-
-    let mn = duration.numerator * base.denominator
-    let md = duration.denominator * base.numerator
-
-    guard let reduced = ABCDuration(numerator: mn,
-                                    denominator: md)
-    else { return "" }
-
-    let rn = reduced.numerator
-    let rd = reduced.denominator
-
-    if rn == 1,
-       rd == 1 {
-        return ""
-    }
-
-    if rd == 1 {
-        return "\(rn)"
-    }
-
-    if rn == 1 {
-        if rd.isPowerOf2 {
-            return String(repeating: "/",
-                          count: _uintLog2(rd))
-        } else {
-            return "/\(rd)"
-        }
-    }
-
-    return "\(rn)/\(rd)"
-}
-
 private func _formatElemskip(_ elemskip: ABCElemskip) -> String {
     switch elemskip {
     case let .decimal(doubleValue):
@@ -582,16 +511,14 @@ private func _formatElemskip(_ elemskip: ABCElemskip) -> String {
     }
 }
 
-private func _formatGraceNotes(_ graceNotes: ABCGraceNotes,
-                               _ unitNoteLength: ABCDuration?,
-                               _ meter: ABCTimeSignature?) -> String {
+private func _formatGraceNotes(_ graceNotes: ABCGraceNotes) -> String {
     var result = "{"
 
     if graceNotes.isSlashed {
         result += "/"
     }
 
-    result += graceNotes.notes.map { _formatNote($0, unitNoteLength, meter) }.joined()
+    result += graceNotes.notes.map { _formatNote($0) }.joined()
 
     result += "}"
 
@@ -660,21 +587,47 @@ private func _formatKeySignature(_ keySignature: ABCKeySignature) -> String {
     }
 }
 
+// Formats a written length (a multiplier of the unit note length) directly.
+// The AST stores note/rest/chord/spacer lengths as written; resolution against
+// `L:`/`M:` is the resolver's job. See ``ABCNote/length``.
+private func _formatLength(_ length: ABCLength) -> String {
+    _formatLengthComponents(length.numerator, length.denominator)
+}
+
+private func _formatLengthComponents(_ numerator: UInt,
+                                     _ denominator: UInt) -> String {
+    if numerator == 1,
+       denominator == 1 {
+        return ""
+    }
+
+    if denominator == 1 {
+        return "\(numerator)"
+    }
+
+    if numerator == 1 {
+        if denominator.isPowerOf2 {
+            return String(repeating: "/",
+                          count: _uintLog2(denominator))
+        } else {
+            return "/\(denominator)"
+        }
+    }
+
+    return "\(numerator)/\(denominator)"
+}
+
 private func _formatMacro(_ macro: ABCMacro) -> String {
     "\(macro.target)=\(macro.replacement)"
 }
 
-private func _formatNote(_ note: ABCNote,
-                         _ unitNoteLength: ABCDuration?,
-                         _ meter: ABCTimeSignature?) -> String {
+private func _formatNote(_ note: ABCNote) -> String {
     var result = pitchAccidentals[note.pitch.accidental]?.note ?? ""
 
     result += _formatPitchLetterOctave(note.pitch.letter,
                                        note.pitch.octave)
 
-    result += _formatDuration(note.duration,
-                              unitNoteLength,
-                              meter)
+    result += _formatLength(note.length)
 
     if let tie = note.tie {
         result += ties[tie].require()
@@ -730,19 +683,17 @@ private func _formatPitchLetterOctave(_ letter: ABCPitch.Letter,
     }
 }
 
-private func _formatRest(_ rest: ABCRest,
-                         _ unitNoteLength: ABCDuration?,
-                         _ meter: ABCTimeSignature?) -> String {
+private func _formatRest(_ rest: ABCRest) -> String {
     switch rest {
     case let .multiMeasure(invisible, measureCount):
         let letter = invisible ? "X" : "Z"
 
         return measureCount == 1 ? letter : "\(letter)\(measureCount)"
 
-    case let .regular(invisible, duration):
+    case let .regular(invisible, length):
         let letter = invisible ? "x" : "z"
 
-        return "\(letter)\(_formatDuration(duration, unitNoteLength, meter))"
+        return "\(letter)\(_formatLength(length))"
     }
 }
 
@@ -779,8 +730,8 @@ private func _formatTempo(_ tempo: ABCTempo) -> String {
         segments.append("\"\(text)\"")
     }
 
-    if !tempo.durations.isEmpty {
-        let durStr = tempo.durations.map { "\($0.numerator)/\($0.denominator)" }.joined(separator: " ")
+    if !tempo.lengths.isEmpty {
+        let durStr = tempo.lengths.map { "\($0.numerator)/\($0.denominator)" }.joined(separator: " ")
 
         if let rate = tempo.rate {
             segments.append("\(durStr)=\(rate)")

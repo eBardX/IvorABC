@@ -25,8 +25,8 @@ extension ABCEntryTests {
     @Test
     func equality_symbols() {
         let pitch = makePitch(.c, .omitted, 4)
-        let duration = makeDuration(1, 4)
-        let note = makeNote(pitch, duration)
+        let length = makeLength(1, 4)
+        let note = makeNote(pitch, length)
         let symbols: [ABCSymbol] = [.note(note)]
 
         #expect(ABCBodyEntry.symbols(symbols) == .symbols(symbols))

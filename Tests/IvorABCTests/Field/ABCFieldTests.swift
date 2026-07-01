@@ -45,7 +45,7 @@ extension ABCFieldTests {
                                        .rhythm(""),
                                        .source(""),
                                        .transcription(""),
-                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .unitNoteLength(makeLength(1, 8)),
                                        .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata")))]
 
@@ -89,7 +89,7 @@ extension ABCFieldTests {
                                        .symbolLine(makeSymbolLine([])),
                                        .tempo(makeTempo([])),
                                        .tuneTitle(""),
-                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .unitNoteLength(makeLength(1, 8)),
                                        .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))),
                                        .voice(makeVoice("1"))]
@@ -133,7 +133,7 @@ extension ABCFieldTests {
                                        .tempo(makeTempo([])),
                                        .tuneTitle(""),
                                        .transcription(""),
-                                       .unitNoteLength(makeDuration(1, 8)),
+                                       .unitNoteLength(makeLength(1, 8)),
                                        .userDefined(makeUserSymbol(.tilde, makeDecoration("roll"))),
                                        .userDefined(makeUserSymbol(.hUpper, makeAnnotation(.above, "fermata"))),
                                        .voice(makeVoice("1"))]

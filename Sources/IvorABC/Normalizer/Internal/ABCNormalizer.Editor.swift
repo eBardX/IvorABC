@@ -20,6 +20,12 @@ extension ABCNormalizer {
         private let tunebook: ABCTunebook
 
         private var changes: [Change] = []
+
+        // The active unit-note-length scope, tracked while walking so that a
+        // deprecated C-form tempo (``ABCTempo/beatMultiplier``) can be resolved
+        // against the `L:`/`M:` in effect at its position.
+        private var meter: ABCTimeSignature?
+        private var unitNoteLength: ABCLength?
     }
 }
 
@@ -31,7 +37,20 @@ extension ABCNormalizer.Editor {
 
     internal mutating func editTunebook() -> (ABCTunebook, [ABCNormalizer.Change]) {
         let fileHeader = _editFileHeader(tunebook.fileHeader)
-        let tunes = tunebook.tunes.enumerated().map { _editTune($1, $0) }
+
+        // `L:`/`M:` declared in the file header carry forward as each tune's
+        // starting scope.
+        let fileUnitNoteLength = unitNoteLength
+        let fileMeter = meter
+
+        var tunes: [ABCTune] = []
+
+        for (index, tune) in tunebook.tunes.enumerated() {
+            unitNoteLength = fileUnitNoteLength
+            meter = fileMeter
+
+            tunes.append(_editTune(tune, index))
+        }
 
         let normalized = ABCTunebook(version: .current,
                                      fileHeader: fileHeader,
@@ -44,23 +63,16 @@ extension ABCNormalizer.Editor {
 
     // MARK: Private Instance Methods
 
-    private func _isStaleDirective(_ directive: ABCDirective) -> Bool {
-        directive.name == .abcCharset
-        || directive.name == .abcVersion
-        || (directive.name == .decoration && directive.value == "+")
-    }
-
     private mutating func _editBodyEntry(_ entry: ABCBodyEntry,
                                          _ index: Int?) -> ABCBodyEntry? {
         switch entry {
         case let .directive(directive):
-            if _isStaleDirective(directive) {
-                changes.append(.removedDirective(directive, index))
+            guard directive.needsNormalization
+            else { return entry }
 
-                return nil
-            }
+            changes.append(.removedDirective(directive, index))
 
-            return entry
+            return nil
 
         case let .field(field):
             return .field(_editField(field, index))
@@ -74,7 +86,7 @@ extension ABCNormalizer.Editor {
 
     private mutating func _editDecoration(_ decoration: ABCDecoration,
                                           _ index: Int?) -> ABCDecoration {
-        guard decoration.dialect == .plus
+        guard decoration.needsNormalization
         else { return decoration }
 
         changes.append(.convertedDecoration(decoration, index))
@@ -84,6 +96,17 @@ extension ABCNormalizer.Editor {
 
     private mutating func _editField(_ field: ABCField,
                                      _ index: Int?) -> ABCField {
+        switch field {
+        case let .meter(timeSignature):
+            meter = timeSignature
+
+        case let .unitNoteLength(length):
+            unitNoteLength = length
+
+        default:
+            break
+        }
+
         switch field {
         case let .elemskip(elemskip):
             let stringValue = switch elemskip {
@@ -129,10 +152,14 @@ extension ABCNormalizer.Editor {
         }
 
         if case let .tempo(tempo) = field,
-           tempo.beatMultiplier != nil {
+           let multiplier = tempo.beatMultiplier {
             changes.append(.clearedBeatMultiplier(tempo, index))
 
-            return .tempo(ABCTempo(durations: tempo.durations,
+            let base = _effectiveUnitNoteLength()
+            let beat = ABCLength(numerator: base.numerator * multiplier,
+                                 denominator: base.denominator) ?? base
+
+            return .tempo(ABCTempo(lengths: [beat],
                                    rate: tempo.rate,
                                    text: tempo.text).require())
         }
@@ -148,13 +175,12 @@ extension ABCNormalizer.Editor {
                                            _ index: Int?) -> ABCHeaderEntry? {
         switch entry {
         case let .directive(directive):
-            if _isStaleDirective(directive) {
-                changes.append(.removedDirective(directive, index))
+            guard directive.needsNormalization
+            else { return entry }
 
-                return nil
-            }
+            changes.append(.removedDirective(directive, index))
 
-            return entry
+            return nil
 
         case let .field(field):
             return .field(_editField(field, index))
@@ -168,14 +194,13 @@ extension ABCNormalizer.Editor {
             return .decoration(_editDecoration(decoration, index))
 
         case let .inlineField(field):
-            if case let .instruction(directive) = field,
-               _isStaleDirective(directive) {
-                changes.append(.removedDirective(directive, index))
+            guard case let .instruction(directive) = field,
+                  directive.needsNormalization
+            else { return .inlineField(_editField(field, index)) }
 
-                return nil
-            }
+            changes.append(.removedDirective(directive, index))
 
-            return .inlineField(_editField(field, index))
+            return nil
 
         default:
             return symbol
@@ -196,5 +221,29 @@ extension ABCNormalizer.Editor {
     private mutating func _editTuneHeader(_ header: [ABCHeaderEntry],
                                           _ index: Int) -> [ABCHeaderEntry] {
         header.compactMap { _editHeaderEntry($0, index) }
+    }
+
+    private func _effectiveUnitNoteLength() -> ABCLength {
+        if let unitNoteLength {
+            return unitNoteLength
+        }
+
+        if let meter {
+            return _unitNoteLength(from: meter)
+        }
+
+        return ABCLength(numerator: 1,
+                         denominator: 8).require()
+    }
+
+    private func _unitNoteLength(from meter: ABCTimeSignature) -> ABCLength {
+        if case let .standard(standard) = meter,
+           standard.doubleValue < 0.75 {
+            return ABCLength(numerator: 1,
+                             denominator: 16).require()
+        }
+
+        return ABCLength(numerator: 1,
+                         denominator: 8).require()
     }
 }

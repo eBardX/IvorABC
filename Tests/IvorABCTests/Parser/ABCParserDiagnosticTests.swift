@@ -20,14 +20,14 @@ extension ABCParserDiagnosticTests {
 
     @Test
     func inequality() {
-        let tempo = ABCTempo(durations: [], rate: 120, text: nil).require()
+        let tempo = ABCTempo(lengths: [], rate: 120, text: nil).require()
 
         #expect(ABCParser.Diagnostic.malformedVersion("2.x") != ABCParser.Diagnostic.deprecatedTempo(tempo))
     }
 
     @Test
     func message_deprecatedTempo() {
-        let tempo = ABCTempo(durations: [], rate: 120, text: nil).require()
+        let tempo = ABCTempo(lengths: [], rate: 120, text: nil).require()
         let diagnostic = ABCParser.Diagnostic.deprecatedTempo(tempo)
 
         #expect(diagnostic.message.contains("120"))
@@ -45,20 +45,6 @@ extension ABCParserDiagnosticTests {
         let diagnostic = ABCParser.Diagnostic.malformedVersion("2.x")
 
         #expect(diagnostic.message.contains("2.x"))
-    }
-
-    @Test
-    func message_misplacedField() {
-        let diagnostic = ABCParser.Diagnostic.misplacedField(.area("test"))
-
-        #expect(diagnostic.message.contains("Misplaced"))
-    }
-
-    @Test
-    func message_missingKeyField() {
-        let diagnostic = ABCParser.Diagnostic.missingKeyField
-
-        #expect(diagnostic.message.contains("K:"))
     }
 
     @Test

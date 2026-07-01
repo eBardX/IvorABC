@@ -16,7 +16,7 @@ extension ABCFormatterTests {
     @Test
     func accidental_doubleFlat_emitsDoubleUnderscores() throws {
         let note = makeNote(makePitch(.a, .doubleFlat, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("__A\n"))
@@ -25,7 +25,7 @@ extension ABCFormatterTests {
     @Test
     func accidental_doubleSharp_emitsDoubleCarets() throws {
         let note = makeNote(makePitch(.c, .doubleSharp, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("^^C\n"))
@@ -34,7 +34,7 @@ extension ABCFormatterTests {
     @Test
     func accidental_flat_emitsUnderscore() throws {
         let note = makeNote(makePitch(.b, .flat, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("_B\n"))
@@ -43,7 +43,7 @@ extension ABCFormatterTests {
     @Test
     func accidental_natural_emitsBareNote() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C\n"))
@@ -53,7 +53,7 @@ extension ABCFormatterTests {
     @Test
     func accidental_sharp_emitsCaret() throws {
         let note = makeNote(makePitch(.f, .sharp, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("^F\n"))
@@ -127,7 +127,7 @@ extension ABCFormatterTests {
 
     @Test
     func barLine_emitsVerbatim() throws {
-        let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
+        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.barLine(makeBarLine(.repeat, followingPlayCount: 2)), .note(note)]))
 
         #expect(output.contains("|:"))
@@ -135,8 +135,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_doubleRight_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
+        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.doubleDotted), .note(d)]))
 
         #expect(output.contains(">>"))
@@ -144,8 +144,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
+        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.dotted), .note(d)]))
 
         #expect(output.contains(">"))
@@ -153,8 +153,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_left_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeDuration(1, 8))
+        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.reverseDotted), .note(d)]))
 
         #expect(output.contains("<"))
@@ -162,152 +162,76 @@ extension ABCFormatterTests {
 
     @Test
     func chord_basic_emitsBracketedNotes() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8)),
-                                makeNote(makePitch(.e, .natural, 4), makeDuration(1, 8)),
-                                makeNote(makePitch(.g, .natural, 4), makeDuration(1, 8))]
-        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 8)))]))
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(1, 1)))]))
 
         #expect(output.contains("[CEG]\n"))
     }
 
     @Test
-    func chord_withDurationSuffix_emitsChordSuffix() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8)),
-                                makeNote(makePitch(.e, .natural, 4), makeDuration(1, 8))]
-        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 4)))]))
+    func chord_withLengthSuffix_emitsChordSuffix() throws {
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(2, 1)))]))
 
         #expect(output.contains("[CE]2\n"))
     }
 
     @Test
     func chord_withTie_emitsDash() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8)),
-                                makeNote(makePitch(.e, .natural, 4), makeDuration(1, 8))]
-        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeDuration(1, 8), .regular))]))
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))]
+        let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(1, 1), .regular))]))
 
         #expect(output.contains("[CE]-\n"))
     }
 
     @Test
-    func crossTuneDurationState_L1_4_leaksIntoSecondTune() throws {
-        // Tune 1 sets L:1/4. Tune 2 has no L:. The formatter must carry
-        // unitNoteLength forward, so notes in tune 2 are divided by 1/4.
-        let noteDur = makeDuration(1, 4)  // stored duration = 1/4 (one unit of L:1/4)
-        let note = makeNote(makePitch(.c, .natural, 4), noteDur)
-        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.tuneTitle("Test")),
-                                                   .field(.unitNoteLength(makeDuration(1, 4))),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([.note(note)])]),
-                                 makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
-                                                   .field(.tuneTitle("Test")),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([.note(note)])])])
-        let output = try format(book)
-        let lines = output.components(separatedBy: "\n")
-
-        // Both tunes should emit "C" (no suffix) because both use L:1/4 as base.
-        let symbolLines = lines.filter { $0 == "C" }
-
-        #expect(symbolLines.count == 2)
-    }
-
-    @Test
-    func crossTuneDurationState_M3_8_leaksIntoSecondTune() throws {
-        // Tune 1 sets M:3/8 (ratio < 0.75, so default L: is 1/16) with no explicit L:.
-        // Tune 2 has no M: and no L:. M: state carries forward, so the effective
-        // base in tune 2 is still 1/16.
-        let noteDur = makeDuration(1, 16)  // stored duration = 1/16 (one unit under M:3/8 default)
-        let note = makeNote(makePitch(.c, .natural, 4), noteDur)
-        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.tuneTitle("Test")),
-                                                   .field(.meter(makeTimeSignature(3, 8))),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([.note(note)])]),
-                                 makeTune(header: [.field(.referenceNumber(makeReferenceNumber(2))),
-                                                   .field(.tuneTitle("Test")),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([.note(note)])])])
-        let output = try format(book)
-        let lines = output.components(separatedBy: "\n")
-
-        // Both tunes should emit "C" (no suffix) because both use 1/16 as effective base.
-        let symbolLines = lines.filter { $0 == "C" }
-
-        #expect(symbolLines.count == 2)
-    }
-
-    @Test
-    func duration_default_emitsEmpty() throws {
-        // With L:1/8 (the default), a stored duration of 1/8 emits no suffix.
+    func length_default_emitsEmpty() throws {
+        // A written length of 1/1 (a bare note) emits no suffix.
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C\n"))
     }
 
     @Test
-    func duration_double_emits2() throws {
+    func length_double_emits2() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 4))
+                            makeLength(2, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C2\n"))
     }
 
     @Test
-    func duration_half_emitsSlash() throws {
+    func length_half_emitsSlash() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 16))
+                            makeLength(1, 2))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C/\n"))
     }
 
     @Test
-    func duration_quarter_emitsDoubleSlash() throws {
+    func length_quarter_emitsDoubleSlash() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 32))
+                            makeLength(1, 4))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C//\n"))
     }
 
     @Test
-    func duration_threeHalves_emits3over2() throws {
+    func length_threeHalves_emits3over2() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(3, 16))
+                            makeLength(3, 2))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C3/2\n"))
-    }
-
-    @Test
-    func duration_underL4_eighth_emitsSlash() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 8))
-        let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
-
-        #expect(output.contains("C/\n"))
-    }
-
-    @Test
-    func duration_underL4_quarter_emitsEmpty() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 4))
-        let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
-
-        #expect(output.contains("C\n"))
-    }
-
-    @Test
-    func duration_underL4_whole_emits4() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 1))
-        let output = try format(minimalTunebookWithL4(symbols: [.note(note)]))
-
-        #expect(output.contains("C4\n"))
     }
 
     @Test
@@ -383,7 +307,7 @@ extension ABCFormatterTests {
 
     @Test
     func field_unitNoteLength_emitsLField() throws {
-        let book = makeTunebook([.field(.unitNoteLength(makeDuration(1, 8)))],
+        let book = makeTunebook([.field(.unitNoteLength(makeLength(1, 8)))],
                                 [makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                    .field(.tuneTitle("Test")),
                                                    .field(.key(makeKeySignature(.c, .major)))])])
@@ -491,8 +415,8 @@ extension ABCFormatterTests {
 
     @Test
     func graceNotes_noSlash_emitsCurlyBraces() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeDuration(1, 8))]
-        let following = makeNote(makePitch(.g, .natural, 4), makeDuration(1, 8))
+        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeLength(1, 1))]
+        let following = makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, false)), .note(following)]))
 
         #expect(output.contains("{A}G\n"))
@@ -500,11 +424,34 @@ extension ABCFormatterTests {
 
     @Test
     func graceNotes_withSlash_emitsSlashInBraces() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeDuration(1, 8))]
-        let following = makeNote(makePitch(.g, .natural, 4), makeDuration(1, 8))
+        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeLength(1, 1))]
+        let following = makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, true)), .note(following)]))
 
         #expect(output.contains("{/A}G\n"))
+    }
+
+    @Test
+    func roundTrip_explicitLengths_preserveWrittenFormRegardlessOfL() throws {
+        // With note length stored as written, the multiplier survives a
+        // parse → format round-trip unchanged, independent of L:.
+        let input = "%abc-2.1\nX:1\nT:Test\nM:4/4\nL:1/4\nK:G\nA2 B/ c3/2 d|\n"
+        let (book, _) = try ABCParser().parse(Data(input.utf8))
+
+        #expect(try format(book).contains("A2 B/ c3/2 d|\n"))
+    }
+
+    @Test
+    func deprecatedTempo_resolvedToAbsoluteThroughPipeline() throws {
+        // Parser leaves Q:C=120 unresolved; the normalizer resolves it against
+        // L:1/8 to the absolute Q:1/8=120 that the formatter emits.
+        let input = "%abc-2.1\nX:1\nT:Test\nL:1/8\nQ:C=120\nK:C\nCDEF|\n"
+        let (parsed, _) = try ABCParser().parse(Data(input.utf8))
+        let (normalized, _) = ABCNormalizer().normalize(parsed)
+        let (validated, _) = try ABCValidator().validate(normalized)
+        let output = try String(data: ABCFormatter().format(validated), encoding: .utf8).require()
+
+        #expect(output.contains("Q:1/8=120\n"))
     }
 
     @Test
@@ -524,7 +471,7 @@ extension ABCFormatterTests {
     func inlineField_key_emitsBracketed() throws {
         let output = try format(minimalTunebook(symbols: [.inlineField(.key(makeKeySignature(.g, .major))),
                                                           .note(makeNote(makePitch(.g, .natural, 4),
-                                                                         makeDuration(1, 8)))]))
+                                                                         makeLength(1, 8)))]))
 
         #expect(output.contains("[K:G major]"))
     }
@@ -533,7 +480,7 @@ extension ABCFormatterTests {
     func inlineField_meter_emitsBracketed() throws {
         let output = try format(minimalTunebook(symbols: [.inlineField(.meter(makeTimeSignature(3, 4))),
                                                           .note(makeNote(makePitch(.c, .natural, 4),
-                                                                         makeDuration(1, 8)))]))
+                                                                         makeLength(1, 8)))]))
 
         #expect(output.contains("[M:3/4]"))
     }
@@ -804,7 +751,7 @@ extension ABCFormatterTests {
     @Test
     func pitch_octave2_emitsUppercaseWithTwoCommas() throws {
         let note = ABCNote(pitch: makePitch(.c, .natural, 2),
-                           duration: makeDuration(1, 8),
+                           length: makeLength(1, 1),
                            tie: nil)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -814,7 +761,7 @@ extension ABCFormatterTests {
     @Test
     func pitch_octave3_emitsUppercaseWithComma() throws {
         let note = makeNote(makePitch(.c, .natural, 3),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C,\n"))
@@ -823,7 +770,7 @@ extension ABCFormatterTests {
     @Test
     func pitch_octave4_emitsUppercase() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("C\n"))
@@ -832,7 +779,7 @@ extension ABCFormatterTests {
     @Test
     func pitch_octave5_emitsLowercase() throws {
         let note = makeNote(makePitch(.c, .natural, 5),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("c\n"))
@@ -841,7 +788,7 @@ extension ABCFormatterTests {
     @Test
     func pitch_octave6_emitsLowercaseWithApostrophe() throws {
         let note = makeNote(makePitch(.c, .natural, 6),
-                            makeDuration(1, 8))
+                            makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
         #expect(output.contains("c'\n"))
@@ -863,14 +810,14 @@ extension ABCFormatterTests {
 
     @Test
     func rest_regularInvisible_emitsX() throws {
-        let output = try format(minimalTunebook(symbols: [.rest(.regular(true, makeDuration(1, 8)))]))
+        let output = try format(minimalTunebook(symbols: [.rest(.regular(true, makeLength(1, 1)))]))
 
         #expect(output.contains("x\n"))
     }
 
     @Test
     func rest_regular_emitsZ() throws {
-        let output = try format(minimalTunebook(symbols: [.rest(.regular(false, makeDuration(1, 8)))]))
+        let output = try format(minimalTunebook(symbols: [.rest(.regular(false, makeLength(1, 1)))]))
 
         #expect(output.contains("z\n"))
     }
@@ -1045,19 +992,14 @@ extension ABCFormatterTests {
 
     @Test
     func spacer_emitsY() throws {
-        let output = try format(minimalTunebook(symbols: [.spacer(makeDuration(1, 8))]))
+        let output = try format(minimalTunebook(symbols: [.spacer(makeLength(1, 1))]))
 
         #expect(output.contains("y\n"))
     }
 
     @Test
-    func spacer_withDuration_emitsYWithSuffix() throws {
-        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
-                                                   .field(.tuneTitle("Test")),
-                                                   .field(.unitNoteLength(makeDuration(1, 8))),
-                                                   .field(.key(makeKeySignature(.c, .major)))],
-                                          body: [.symbols([.spacer(makeDuration(1, 4))])])])
-        let output = try format(book)
+    func spacer_withLength_emitsYWithSuffix() throws {
+        let output = try format(minimalTunebook(symbols: [.spacer(makeLength(2, 1))]))
 
         #expect(output.contains("y2\n"))
     }
@@ -1074,12 +1016,12 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func tempo_durationAndRate_emitsFullForm() throws {
+    func tempo_lengthAndRate_emitsFullForm() throws {
         #expect(try format(minimalTunebookWithTempo(makeTempo(1, 4, 120))).contains("Q:1/4=120\n"))
     }
 
     @Test
-    func tempo_durationTextAndRate_emitsFullForm() throws {
+    func tempo_lengthTextAndRate_emitsFullForm() throws {
         #expect(try format(minimalTunebookWithTempo(makeTempo(1, 4, 80, "Andante"))).contains("Q:\"Andante\" 1/4=80\n"))
     }
 
@@ -1109,7 +1051,7 @@ extension ABCFormatterTests {
 
     @Test
     func tune_missingKeySignature_outputsWithoutKeyField() throws {
-        let note = makeNote(makePitch(.c, .natural, 4), makeDuration(1, 8))
+        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
         let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                    .field(.tuneTitle("Test"))],
                                           body: [.symbols([.note(note)])])])

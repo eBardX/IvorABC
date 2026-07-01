@@ -145,27 +145,6 @@ extension ABCParserErrorTests {
     }
 
     @Test
-    func message_misplacedField() {
-        let error = ABCParser.Error.misplacedField(.area("test"))
-
-        #expect(error.message.contains("Misplaced"))
-    }
-
-    @Test
-    func message_missingKeyField() {
-        let error = ABCParser.Error.missingKeyField
-
-        #expect(error.message.contains("K:"))
-    }
-
-    @Test
-    func message_missingReferenceNumber() {
-        let error = ABCParser.Error.missingReferenceNumber
-
-        #expect(error.message.contains("X:"))
-    }
-
-    @Test
     func message_missingTunes() {
         let error = ABCParser.Error.missingTunes
 

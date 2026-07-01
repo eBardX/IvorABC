@@ -59,7 +59,7 @@ extension ABCSymbolTokenizer {
     internal nonisolated(unsafe) static let regexChordSuffix = Regex {
         ChoiceOf {
             Regex {
-                duration
+                length
                 Optionally {
                     ChoiceOf {
                         ".-"
@@ -129,7 +129,7 @@ extension ABCSymbolTokenizer {
             pitchOctaveCC
         }
         Optionally {
-            duration
+            length
         }
         Optionally {
             ChoiceOf {
@@ -142,7 +142,7 @@ extension ABCSymbolTokenizer {
     internal nonisolated(unsafe) static let regexRest = Regex {
         restCC
         Optionally {
-            duration
+            length
         }
     }
 
@@ -153,7 +153,7 @@ extension ABCSymbolTokenizer {
     internal nonisolated(unsafe) static let regexSpacer = Regex {
         "y"
         Optionally {
-            duration
+            length
         }
     }
 
@@ -212,7 +212,18 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private nonisolated(unsafe) static let duration = Regex {
+    private nonisolated(unsafe) static let inlineFieldValue = Regex {
+        ZeroOrMore {
+            ChoiceOf {
+                "\\\\"
+                "\\&"
+                "\\%"
+                CharacterClass.anyOf("\n\r\\%]").inverted
+            }
+        }
+    }
+
+    private nonisolated(unsafe) static let length = Regex {
         ChoiceOf {
             Regex {
                 Optionally {
@@ -229,17 +240,6 @@ extension ABCSymbolTokenizer {
                 }
             }
             uinteger
-        }
-    }
-
-    private nonisolated(unsafe) static let inlineFieldValue = Regex {
-        ZeroOrMore {
-            ChoiceOf {
-                "\\\\"
-                "\\&"
-                "\\%"
-                CharacterClass.anyOf("\n\r\\%]").inverted
-            }
         }
     }
 

@@ -32,36 +32,36 @@ extension ABCBrokenRhythm {
 
     // MARK: Public Instance Methods
 
-    /// Returns the effective durations of the notes immediately before and
+    /// Returns the effective lengths of the notes immediately before and
     /// after this broken rhythm marker.
     ///
-    /// Pass the written `ABCDuration` of the note before the marker as `left`
+    /// Pass the written `ABCLength` of the note before the marker as `left`
     /// and the note after as `right`. The returned tuple contains the
-    /// corresponding effective durations.
+    /// corresponding effective lengths.
     ///
     /// For `n` `>` characters, the left note is lengthened by a factor of
     /// `(2^(n+1)−1) / 2^n` and the right note shortened by `1 / 2^n`
     /// (e.g. `>`: ×3/2 and ×1/2; `>>`: ×7/4 and ×1/4). `<` reverses the
     /// two sides.
     ///
-    /// - Parameter left:   The written duration of the note before the marker.
-    /// - Parameter right:  The written duration of the note after the marker.
+    /// - Parameter left:   The written length of the note before the marker.
+    /// - Parameter right:  The written length of the note after the marker.
     ///
-    /// - Returns:  The effective `(left, right)` durations, or `nil` if either
-    ///             adjusted duration cannot be represented.
-    public func resolve(left: ABCDuration,
-                        right: ABCDuration) -> (left: ABCDuration, right: ABCDuration)? {
+    /// - Returns:  The effective `(left, right)` lengths, or `nil` if either
+    ///             adjusted length cannot be represented.
+    public func resolve(left: ABCLength,
+                        right: ABCLength) -> (left: ABCLength, right: ABCLength)? {
         let denMult = UInt(1) << factor
         let numMult = (UInt(1) << (factor + 1)) - 1
 
-        func long(_ duration: ABCDuration) -> ABCDuration? {
-            ABCDuration(numerator: duration.numerator * numMult,
-                        denominator: duration.denominator * denMult)
+        func long(_ length: ABCLength) -> ABCLength? {
+            ABCLength(numerator: length.numerator * numMult,
+                      denominator: length.denominator * denMult)
         }
 
-        func short(_ duration: ABCDuration) -> ABCDuration? {
-            ABCDuration(numerator: duration.numerator,
-                        denominator: duration.denominator * denMult)
+        func short(_ length: ABCLength) -> ABCLength? {
+            ABCLength(numerator: length.numerator,
+                      denominator: length.denominator * denMult)
         }
 
         switch self {

@@ -105,7 +105,7 @@ public enum ABCField {
     case transcription(ABCText)
 
     /// A unit note length field (`L:`).
-    case unitNoteLength(ABCDuration)
+    case unitNoteLength(ABCLength)
 
     /// A user-defined symbol field (`U:`).
     case userDefined(ABCUserSymbol)
@@ -233,6 +233,44 @@ extension ABCField {
              .voice,
              .words:
             true
+
+        default:
+            false
+        }
+    }
+
+    // MARK: Internal Instance Properties
+
+    // A Boolean value indicating whether this field is a legacy construct that
+    // ``ABCNormalizer`` rewrites or replaces when normalizing to the current
+    // ABC version.
+    internal var needsNormalization: Bool {
+        switch self {
+        case .elemskip,
+             .information:
+            true
+
+        case let .instruction(directive):
+            directive.needsNormalization
+
+        case let .tempo(tempo):
+            tempo.beatMultiplier != nil
+
+        case let .symbolLine(symbolLine):
+            symbolLine.elements.contains {
+                if case let .decoration(decoration) = $0 {
+                    decoration.needsNormalization
+                } else {
+                    false
+                }
+            }
+
+        case let .userDefined(userSymbol):
+            if case let .decoration(decoration) = userSymbol.definition {
+                decoration.needsNormalization
+            } else {
+                false
+            }
 
         default:
             false

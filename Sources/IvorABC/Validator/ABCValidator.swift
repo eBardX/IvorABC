@@ -38,9 +38,9 @@ extension ABCValidator {
         guard tunebook.isNormalized
         else { throw Error.notNormalized }
 
-        var runner = Checker(tunebook: tunebook)
+        var checker = Checker(tunebook: tunebook)
 
-        let issues = runner.checkTunebook()
+        let issues = checker.checkTunebook()
 
         guard issues.isEmpty
         else { return (tunebook, issues) }

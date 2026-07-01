@@ -28,11 +28,11 @@ extension ABCSymbolMatcher {
 
     // MARK: Internal Instance Methods
 
-    internal mutating func matchSymbols(_ context: inout ABCParser.Context) throws -> [ABCSymbol] {
+    internal mutating func matchSymbols() throws -> [ABCSymbol] {
         var symbols: [ABCSymbol] = []
 
         while tokenMatcher.hasMore {
-            if let symbol = try _matchSymbol(&context) {
+            if let symbol = try _matchSymbol() {
                 symbols.append(symbol)
             }
 
@@ -55,18 +55,6 @@ extension ABCSymbolMatcher {
     }
 
     // MARK: Private Type Methods
-
-    private func _makeDuration(_ duration: ABCDuration?,
-                               _ context: inout ABCParser.Context) -> ABCDuration {
-        let baseDuration = context.baseDuration
-
-        if let duration {
-            return ABCDuration(numerator: baseDuration.numerator * duration.numerator,
-                               denominator: baseDuration.denominator * duration.denominator).require()
-        }
-
-        return baseDuration
-    }
 
     private func _makePitch(_ result: ParsePitchResult) -> ABCPitch {
         ABCPitch(letter: result.letter,
@@ -109,18 +97,18 @@ extension ABCSymbolMatcher {
         return .brokenRhythm(brokenRhythm)
     }
 
-    private mutating func _matchChord(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchChord() throws -> ABCSymbol? {
         try tokenMatcher.readMustMatch(.chordBegin)
 
         var chord: [ABCNote] = []
 
-        while let chordNote = try _matchChordNote(&context) {
+        while let chordNote = try _matchChordNote() {
             chord.append(chordNote)
         }
 
         try tokenMatcher.readMustMatch(.chordEnd)
 
-        let duration: ABCDuration
+        let length: ABCLength
         let tie: ABCTie?
 
         if let suffixToken = tokenMatcher.readIfMatches(.chordSuffix) {
@@ -130,35 +118,34 @@ extension ABCSymbolMatcher {
 
             tie = isDottedTie ? .dotted : (isRegularTie ? .regular : nil)
 
-            let durationText = value.dropLast(isDottedTie ? 2 : (isRegularTie ? 1 : 0))
+            let lengthText = value.dropLast(isDottedTie ? 2 : (isRegularTie ? 1 : 0))
 
-            duration = _makeDuration(durationText.isEmpty ? nil : parseDuration(durationText),
-                                     &context)
+            length = _writtenLength(lengthText.isEmpty ? nil : parseLength(lengthText))
         } else {
-            duration = _makeDuration(nil, &context)
+            length = _writtenLength(nil)
             tie = nil
         }
 
         guard let chord = ABCChord(notes: chord,
-                                   duration: duration,
+                                   length: length,
                                    tie: tie)
         else { return nil }
 
         return .chord(chord)
     }
 
-    private mutating func _matchChordNote(_ context: inout ABCParser.Context) throws -> ABCNote? {
+    private mutating func _matchChordNote() throws -> ABCNote? {
         guard let token = tokenMatcher.readIfMatches(.note)
         else { return nil }
 
         guard let result = parseNote(token.value)
         else { throw ABCParser.Error.invalidNote(token.value) }
 
-        let duration = _makeDuration(result.duration, &context)
+        let length = _writtenLength(result.length)
         let pitch = _makePitch(result.pitch)
 
         return ABCNote(pitch: pitch,
-                       duration: duration,
+                       length: length,
                        tie: result.tie)
     }
 
@@ -171,16 +158,9 @@ extension ABCSymbolMatcher {
         return .chordSymbol(chordSymbol)
     }
 
-    private mutating func _matchDecoration(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchDecoration() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.decoration)
         let value = token.value
-
-        // In + dialect mode, !...! decorations are an error per spec §12.1.2.
-        if context.decorationDialect == .plus,
-           value.first == "!" {
-            throw ABCParser.Error.invalidSymbols(value)
-        }
-
         let dialect: ABCDecoration.Dialect = value.first == "+" ? .plus : .bang
 
         guard let name = ABCDecoration.Name(stringValue: String(value.dropFirst().dropLast())),
@@ -190,28 +170,28 @@ extension ABCSymbolMatcher {
         return .decoration(decoration)
     }
 
-    private mutating func _matchGraceNote(_ context: inout ABCParser.Context) throws -> ABCNote? {
+    private mutating func _matchGraceNote() throws -> ABCNote? {
         guard let token = tokenMatcher.readIfMatches(.note)
         else { return nil }
 
         guard let result = parseNote(token.value)
         else { throw ABCParser.Error.invalidNote(token.value) }
 
-        let duration = _makeDuration(result.duration, &context)
+        let length = _writtenLength(result.length)
         let pitch = _makePitch(result.pitch)
 
         return ABCNote(pitch: pitch,
-                       duration: duration,
+                       length: length,
                        tie: result.tie)
     }
 
-    private mutating func _matchGraceNotes(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchGraceNotes() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.graceNotesBegin)
         let hasSlash = token.value.hasSuffix("/")
 
         var graceNotes: [ABCNote] = []
 
-        while let graceNote = try _matchGraceNote(&context) {
+        while let graceNote = try _matchGraceNote() {
             graceNotes.append(graceNote)
         }
 
@@ -224,20 +204,16 @@ extension ABCSymbolMatcher {
         return .graceNotes(graceNotes)
     }
 
-    private mutating func _matchInlineField(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchInlineField() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.inlineField)
 
         var field = try parseField(token.value)
 
-        if case let .parts(ps) = field {
-            guard ps.items.count == 1,
-                  case let .part(abcPart, 1) = ps.items[0]
-            else { throw ABCParser.Error.misplacedField(field) }
-
-            field = .part(abcPart)
+        if case let .parts(partSequence) = field,
+           partSequence.items.count == 1,
+           case let .part(part, 1) = partSequence.items[0] {
+            field = .part(part)
         }
-
-        context.update(with: field)
 
         return .inlineField(field)
     }
@@ -248,23 +224,23 @@ extension ABCSymbolMatcher {
         return .overlay
     }
 
-    private mutating func _matchNote(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchNote() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.note)
 
         guard let result = parseNote(token.value)
         else { throw ABCParser.Error.invalidNote(token.value) }
 
-        let duration = _makeDuration(result.duration, &context)
+        let length = _writtenLength(result.length)
         let pitch = _makePitch(result.pitch)
 
         let note = ABCNote(pitch: pitch,
-                           duration: duration,
+                           length: length,
                            tie: result.tie)
 
         return .note(note)
     }
 
-    private mutating func _matchRest(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchRest() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.rest)
 
         guard let result = parseRest(token.value)
@@ -275,15 +251,15 @@ extension ABCSymbolMatcher {
         switch result.kind {
         case "X",
             "Z":
-            let count = result.duration?.numerator ?? 1
+            let count = result.length?.numerator ?? 1
 
             rest = .multiMeasure(result.kind == "X", ABCRest.MeasureCount(count))
 
         case "x",
             "z":
-            let duration = _makeDuration(result.duration, &context)
+            let length = _writtenLength(result.length)
 
-            rest = .regular(result.kind == "x", duration)
+            rest = .regular(result.kind == "x", length)
 
         default:
             throw ABCParser.Error.invalidRest(token.value)
@@ -292,15 +268,12 @@ extension ABCSymbolMatcher {
         return .rest(rest)
     }
 
-    private mutating func _matchShorthand(_ context: ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchShorthand() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.shorthand)
         let value = token.value
 
         guard let shorthand = parseShorthand(value)
         else { throw ABCParser.Error.invalidSymbols(value) }
-
-        guard !context.isShorthandDeassigned(shorthand)
-        else { throw ABCParser.Error.undefinedShorthand(value) }
 
         return .shorthand(shorthand)
     }
@@ -326,15 +299,15 @@ extension ABCSymbolMatcher {
         }
     }
 
-    private mutating func _matchSpacer(_ context: inout ABCParser.Context) throws -> ABCSymbol? {
+    private mutating func _matchSpacer() throws -> ABCSymbol? {
         let token = try tokenMatcher.readMustMatch(.spacer)
         let rest = token.value.dropFirst()
-        let duration = _makeDuration(rest.isEmpty ? nil : parseDuration(rest), &context)
+        let length = _writtenLength(rest.isEmpty ? nil : parseLength(rest))
 
-        return .spacer(duration)
+        return .spacer(length)
     }
 
-    private mutating func _matchSymbol(_ context: inout ABCParser.Context) throws -> ABCSymbol? { // swiftlint:disable:this cyclomatic_complexity
+    private mutating func _matchSymbol() throws -> ABCSymbol? { // swiftlint:disable:this cyclomatic_complexity
         if tokenMatcher.nextMatches(.whitespace) {
             return _matchBeamBreak()
         }
@@ -352,7 +325,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.chordBegin) {
-            return try _matchChord(&context)
+            return try _matchChord()
         }
 
         if tokenMatcher.nextMatches(.chordSymbol) {
@@ -360,19 +333,19 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.decoration) {
-            return try _matchDecoration(&context)
+            return try _matchDecoration()
         }
 
         if tokenMatcher.nextMatches(.graceNotesBegin) {
-            return try _matchGraceNotes(&context)
+            return try _matchGraceNotes()
         }
 
         if tokenMatcher.nextMatches(.inlineField) {
-            return try _matchInlineField(&context)
+            return try _matchInlineField()
         }
 
         if tokenMatcher.nextMatches(.note) {
-            return try _matchNote(&context)
+            return try _matchNote()
         }
 
         if tokenMatcher.nextMatches(.overlay) {
@@ -380,11 +353,11 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.rest) {
-            return try _matchRest(&context)
+            return try _matchRest()
         }
 
         if tokenMatcher.nextMatches(.shorthand) {
-            return try _matchShorthand(context)
+            return try _matchShorthand()
         }
 
         if tokenMatcher.nextMatches([.dottedSlurBegin, .dottedSlurEnd, .slurBegin, .slurEnd]) {
@@ -392,7 +365,7 @@ extension ABCSymbolMatcher {
         }
 
         if tokenMatcher.nextMatches(.spacer) {
-            return try _matchSpacer(&context)
+            return try _matchSpacer()
         }
 
         if tokenMatcher.nextMatches(.tuplet) {
@@ -427,5 +400,13 @@ extension ABCSymbolMatcher {
         else { throw ABCParser.Error.invalidSymbols(token.value) }
 
         return .variantEnding(variantEnding)
+    }
+
+    // The written length of a note, rest, chord, or spacer as a multiplier of
+    // the unit note length: the parsed modifier as-is, or 1/1 when no modifier
+    // was written. Resolution against `L:`/`M:` is the resolver's job, not the
+    // parser's.
+    private func _writtenLength(_ length: ABCLength?) -> ABCLength {
+        length ?? ABCLength(numerator: 1).require()
     }
 }

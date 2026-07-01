@@ -5,27 +5,29 @@ public struct ABCChord {
 
     // MARK: Public Initializers
 
-    /// Creates a new chord with the provided notes, duration, and tie, or
+    /// Creates a new chord with the provided notes, length, and tie, or
     /// `nil` if `notes` is empty.
     ///
-    /// - Parameter notes:    The notes in the chord. Must not be empty.
-    /// - Parameter duration: The chord-level duration (written after the closing `]`).
-    /// - Parameter tie:      The tie to the next chord or note, or `nil` if not tied.
+    /// - Parameter notes:  The notes in the chord. Must not be empty.
+    /// - Parameter length: The chord-level written length (written after the
+    ///                     closing `]`), as a multiplier of the unit note length.
+    /// - Parameter tie:    The tie to the next chord or note, or `nil` if not tied.
     public init?(notes: [ABCNote],
-                 duration: ABCDuration,
+                 length: ABCLength,
                  tie: ABCTie?) {
-        guard Self._isValid(notes, duration, tie)
+        guard Self._isValid(notes, length, tie)
         else { return nil }
 
-        self.duration = duration
+        self.length = length
         self.notes = notes
         self.tie = tie
     }
 
     // MARK: Public Instance Properties
 
-    /// The chord-level duration (written after the closing `]`).
-    public let duration: ABCDuration
+    /// The chord-level written length (written after the closing `]`), as a
+    /// multiplier of the unit note length.
+    public let length: ABCLength
 
     /// The notes in this chord.
     public let notes: [ABCNote]
@@ -41,7 +43,7 @@ extension ABCChord {
     // MARK: Private Type Methods
 
     private static func _isValid(_ notes: [ABCNote],
-                                 _ duration: ABCDuration,
+                                 _ length: ABCLength,
                                  _ tie: ABCTie?) -> Bool {
         !notes.isEmpty
     }

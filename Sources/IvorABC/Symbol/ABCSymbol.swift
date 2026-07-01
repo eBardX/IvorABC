@@ -51,9 +51,10 @@ public enum ABCSymbol {
 
     /// A typesetting spacer (`y`).
     ///
-    /// The associated `ABCDuration` value is the duration of the spacer. A duration
-    /// modifier on `y` is not part of the ABC 2.1 spec but is widely supported as an extension.
-    case spacer(ABCDuration)
+    /// The associated ``ABCLength`` value is the written length of the spacer (a
+    /// multiplier of the unit note length). A length modifier on `y` is not part
+    /// of the ABC 2.1 spec but is widely supported as an extension.
+    case spacer(ABCLength)
 
     /// A tuplet specification.
     ///
@@ -64,6 +65,29 @@ public enum ABCSymbol {
 
     /// A variant ending marker.
     case variantEnding(ABCVariantEnding)
+}
+
+// MARK: -
+
+extension ABCSymbol {
+
+    // MARK: Internal Instance Properties
+
+    // A Boolean value indicating whether this symbol is a legacy construct that
+    // ``ABCNormalizer`` rewrites or removes when normalizing to the current ABC
+    // version.
+    internal var needsNormalization: Bool {
+        switch self {
+        case let .decoration(decoration):
+            decoration.needsNormalization
+
+        case let .inlineField(field):
+            field.needsNormalization
+
+        default:
+            false
+        }
+    }
 }
 
 // MARK: - Equatable

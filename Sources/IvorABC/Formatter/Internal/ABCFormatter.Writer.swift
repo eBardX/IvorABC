@@ -14,9 +14,7 @@ extension ABCFormatter {
 
         internal init(tunebook: ABCTunebook) {
             self.buffer = ""
-            self.meter = nil
             self.tunebook = tunebook
-            self.unitNoteLength = nil
         }
 
         // MARK: Private Instance Properties
@@ -24,8 +22,6 @@ extension ABCFormatter {
         private let tunebook: ABCTunebook
 
         private var buffer: String
-        private var meter: ABCTimeSignature?
-        private var unitNoteLength: ABCDuration?
     }
 }
 
@@ -95,17 +91,6 @@ extension ABCFormatter.Writer {
         buffer.append(":")
         buffer.append(value)
         buffer.append("\n")
-
-        switch field {
-        case let .meter(timeSignature):
-            meter = timeSignature
-
-        case let .unitNoteLength(duration):
-            unitNoteLength = duration
-
-        default:
-            break
-        }
     }
 
     private mutating func _writeFileHeaders() {
@@ -130,14 +115,7 @@ extension ABCFormatter.Writer {
                 continue
             }
 
-            // Keep duration state current for inline fields within the line.
-            if case let .inlineField(.meter(timeSignature)) = symbol {
-                meter = timeSignature
-            } else if case let .inlineField(.unitNoteLength(duration)) = symbol {
-                unitNoteLength = duration
-            }
-
-            line.append(formatSymbol(symbol, unitNoteLength, meter))
+            line.append(formatSymbol(symbol))
         }
 
         buffer.append(line)

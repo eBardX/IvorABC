@@ -38,10 +38,10 @@ extension ABCSymbolMatcherTests {
         let symbols = try matchSymbols("C D")
 
         #expect(symbols == [.note(makeNote(makePitch(.c, .omitted, 4),
-                                           makeDuration(1, 8))),
+                                           makeLength(1, 1))),
                             .beamBreak,
                             .note(makeNote(makePitch(.d, .omitted, 4),
-                                           makeDuration(1, 8)))])
+                                           makeLength(1, 1)))])
     }
 
     @Test
@@ -69,9 +69,9 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_chord() throws {
         let symbols = try matchSymbols("[CE]")
 
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeDuration(1, 8)),
-                                makeNote(makePitch(.e, .omitted, 4), makeDuration(1, 8))]
-        let expected: [ABCSymbol] = [.chord(makeChord(notes, makeDuration(1, 8)))]
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .omitted, 4), makeLength(1, 1))]
+        let expected: [ABCSymbol] = [.chord(makeChord(notes, makeLength(1, 1)))]
 
         #expect(symbols == expected)
     }
@@ -84,12 +84,12 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_chord_duration() throws {
+    func matchSymbols_chord_length() throws {
         let symbols = try matchSymbols("[CEG]2")
 
         if case let .chord(chord) = try #require(symbols.first) {
             #expect(chord.notes.count == 3)
-            #expect(chord.duration == makeDuration(1, 4))
+            #expect(chord.length == makeLength(2, 1))
             #expect(chord.tie == nil)
         } else {
             Issue.record("Expected .chord")
@@ -97,12 +97,12 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_chord_fractionDuration() throws {
+    func matchSymbols_chord_fractionLength() throws {
         let symbols = try matchSymbols("[CEG]/2")
 
         if case let .chord(chord) = try #require(symbols.first) {
             #expect(chord.notes.count == 3)
-            #expect(chord.duration == makeDuration(1, 16))
+            #expect(chord.length == makeLength(1, 2))
             #expect(chord.tie == nil)
         } else {
             Issue.record("Expected .chord")
@@ -137,46 +137,23 @@ extension ABCSymbolMatcherTests {
 
     @Test
     func matchSymbols_shorthand_userDefinedSymbol_stillEmitsShorthand() throws {
-        var ctx = ABCParser.Context()
-
-        ctx.update(with: .userDefined(makeUserSymbol(.wUpper, makeDecoration("trill"))))
-
-        let symbols = try matchSymbols("W", context: &ctx)
+        // Whether a shorthand is defined is a semantic concern handled by the
+        // validator; the matcher emits the shorthand regardless.
+        let symbols = try matchSymbols("W")
 
         #expect(symbols == [.shorthand(.wUpper)])
     }
 
     @Test
     func matchSymbols_shorthand_annotationDefinedSymbol_emitsShorthand() throws {
-        var ctx = ABCParser.Context()
-
-        ctx.update(with: .userDefined(makeUserSymbol(.nUpper, makeAnnotation(.above, "pizz"))))
-
-        let symbols = try matchSymbols("N", context: &ctx)
+        let symbols = try matchSymbols("N")
 
         #expect(symbols == [.shorthand(.nUpper)])
     }
 
     @Test
-    func matchSymbols_shorthand_deassigned_throwsUndefinedShorthand() throws {
-        var ctx = ABCParser.Context()
-
-        ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign T
-
-        #expect(throws: ABCParser.Error.undefinedShorthand("T")) {
-            try matchSymbols("T", context: &ctx)
-        }
-    }
-
-    @Test
-    func matchSymbols_shorthand_globalDeassignment_shadowedByTuneDefinition_succeeds() throws {
-        var ctx = ABCParser.Context()
-
-        ctx.update(with: .userDefined(makeUserSymbol(.tUpper)))   // de-assign globally
-        ctx.inTune = true
-        ctx.update(with: .userDefined(makeUserSymbol(.tUpper, makeDecoration("trill"))))  // re-assign at tune scope
-
-        let symbols = try matchSymbols("T", context: &ctx)
+    func matchSymbols_shorthand_deassigned_emitsShorthand() throws {
+        let symbols = try matchSymbols("T")
 
         #expect(symbols == [.shorthand(.tUpper)])
     }
@@ -200,7 +177,7 @@ extension ABCSymbolMatcherTests {
         let symbols = try matchSymbols("{C}")
 
         let expected: [ABCSymbol] = [.graceNotes(makeGraceNotes([makeNote(makePitch(.c, .omitted, 4),
-                                                                          makeDuration(1, 8))],
+                                                                          makeLength(1, 1))],
                                                                 false))]
 
         #expect(symbols == expected)
@@ -231,27 +208,11 @@ extension ABCSymbolMatcherTests {
     }
 
     @Test
-    func matchSymbols_keyContextDoesNotAffectAccidentals() throws {
-        var ctx = ABCParser.Context()
-
-        ctx.update(with: .key(makeKeySignature(.g, .major)))
-
-        let symbols = try matchSymbols("F", context: &ctx)
-
-        if case let .note(note) = try #require(symbols.first) {
-            #expect(note.pitch.letter == .f)
-            #expect(note.pitch.accidental == .omitted)
-        } else {
-            Issue.record("Expected .note")
-        }
-    }
-
-    @Test
     func matchSymbols_note_uppercase() throws {
         let symbols = try matchSymbols("C")
 
         let expected: [ABCSymbol] = [.note(makeNote(makePitch(.c, .omitted, 4),
-                                                    makeDuration(1, 8)))]
+                                                    makeLength(1, 1)))]
 
         #expect(symbols == expected)
     }
@@ -274,7 +235,7 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_rest_regular() throws {
         let symbols = try matchSymbols("z")
 
-        #expect(symbols == [.rest(.regular(false, makeDuration(1, 8)))])
+        #expect(symbols == [.rest(.regular(false, makeLength(1, 1)))])
     }
 
     @Test
@@ -309,14 +270,14 @@ extension ABCSymbolMatcherTests {
     func matchSymbols_spacer() throws {
         let symbols = try matchSymbols("y")
 
-        #expect(symbols == [.spacer(makeDuration(1, 8))])
+        #expect(symbols == [.spacer(makeLength(1, 1))])
     }
 
     @Test
-    func matchSymbols_spacer_withDuration() throws {
+    func matchSymbols_spacer_withLength() throws {
         let symbols = try matchSymbols("y2")
 
-        #expect(symbols == [.spacer(makeDuration(1, 4))])
+        #expect(symbols == [.spacer(makeLength(2, 1))])
     }
 
     @Test

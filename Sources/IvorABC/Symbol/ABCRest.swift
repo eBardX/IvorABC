@@ -11,8 +11,9 @@ public enum ABCRest {
     /// A regular rest.
     ///
     /// The associated `Bool` value indicates whether the rest is invisible, and
-    /// the associated ``ABCDuration`` value is the duration of the rest.
-    case regular(Bool, ABCDuration)
+    /// the associated ``ABCLength`` value is the written length of the rest (a
+    /// multiplier of the unit note length).
+    case regular(Bool, ABCLength)
 }
 
 // MARK: -

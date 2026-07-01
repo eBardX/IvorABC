@@ -40,7 +40,7 @@ extension ABCParserParsePolicyTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.beatMultiplier == 1)
-        #expect(tempo?.durations.isEmpty == false)
+        #expect(tempo?.lengths.isEmpty == true)
     }
 
     @Test
@@ -78,7 +78,7 @@ extension ABCParserParsePolicyTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.beatMultiplier == 1)
-        #expect(tempo?.durations == [makeDuration(1, 8)])
+        #expect(tempo?.lengths.isEmpty == true)
     }
 
     @Test
@@ -92,8 +92,9 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parse_deprecatedTempo_bareInteger_baseDurationFromL() throws {
-        // L:1/4 active when Q:120 is encountered → durations resolved to [1/4]
+    func parse_deprecatedTempo_leftUnresolvedRegardlessOfL() throws {
+        // The parser does not resolve the beat; it records the multiplier and
+        // leaves lengths empty for the normalizer to resolve against L:.
         let input = "%abc-2.1\nX:1\nT:Test\nL:1/4\nQ:120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -108,7 +109,7 @@ extension ABCParserParsePolicyTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.beatMultiplier == 1)
-        #expect(tempo?.durations == [makeDuration(1, 4)])
+        #expect(tempo?.lengths.isEmpty == true)
     }
 
     // MARK: - E: elemskip
@@ -237,8 +238,8 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parse_v16_tempoC_producesResolvedBeatWithFlag() throws {
-        // L:1/8 active → Q:C=120 resolves to 1/8=120
+    func parse_v16_tempoC_producesUnresolvedBeatWithFlag() throws {
+        // Q:C=120 → multiplier 1 recorded, lengths left empty (unresolved).
         let input = "%abc-1.6\nX:1\nT:Test\nL:1/8\nQ:C=120\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -253,12 +254,12 @@ extension ABCParserParsePolicyTests {
 
         #expect(tempo?.rate == 120)
         #expect(tempo?.beatMultiplier == 1)
-        #expect(tempo?.durations == [makeDuration(1, 8)])
+        #expect(tempo?.lengths.isEmpty == true)
     }
 
     @Test
-    func parse_v16_tempoCn_producesResolvedDottedBeatWithFlag() throws {
-        // L:1/8 active → Q:C3=40 resolves to 3/8=40
+    func parse_v16_tempoCn_producesUnresolvedBeatWithFlag() throws {
+        // Q:C3=40 → multiplier 3 recorded, lengths left empty (unresolved).
         let input = "%abc-1.6\nX:1\nT:Test\nL:1/8\nQ:C3=40\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
 
@@ -273,7 +274,7 @@ extension ABCParserParsePolicyTests {
 
         #expect(tempo?.rate == 40)
         #expect(tempo?.beatMultiplier == 3)
-        #expect(tempo?.durations == [makeDuration(3, 8)])
+        #expect(tempo?.lengths.isEmpty == true)
     }
 
     @Test
@@ -436,13 +437,14 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parse_missingKeyField_v20_emitsDiagnostic() throws {
-        // 2.0 → loose mode; missing K: emits diagnostic instead of throwing
+    func parse_missingKeyField_v20_emitsNoDiagnostics() throws {
+        // A missing K: is a semantic concern handled by the validator; the
+        // parser no longer emits any diagnostic for it.
         let input = "%abc-2.0\nX:1\nT:Test\nCDEF|\n"
 
         let (_, diagnostics) = try ABCParser().parse(Data(input.utf8))
 
-        #expect(diagnostics.contains(.missingKeyField))
+        #expect(diagnostics.isEmpty)
     }
 
     @Test
@@ -457,21 +459,28 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parse_missingKeyField_v21_throws() {
+    func parse_missingKeyField_v21_succeeds() throws {
+        // A missing K: is a semantic concern handled by the validator; the
+        // parser accepts the tune and routes the music code to the body.
         let input = "%abc-2.1\nX:1\nT:Test\nCDEF|\n"
 
-        #expect(throws: ABCParser.Error.missingKeyField) {
-            try ABCParser().parse(Data(input.utf8))
-        }
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+
+        let symbolsInBody = tune.body.contains { if case .symbols = $0 { true } else { false } }
+
+        #expect(symbolsInBody)
     }
 
     @Test
-    func parse_missingReferenceNumber_v21_throws() {
+    func parse_missingReferenceNumber_v21_succeeds() throws {
+        // A missing X: is a semantic concern handled by the validator; the
+        // parser accepts the tune.
         let input = "%abc-2.1\nT:Test\nK:C\nCDEF|\n"
 
-        #expect(throws: ABCParser.Error.missingReferenceNumber) {
-            try ABCParser().parse(Data(input.utf8))
-        }
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
+
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test
@@ -484,21 +493,25 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
-    func parse_multipleTitlesNonConsecutive_v21_throws() {
+    func parse_multipleTitlesNonConsecutive_v21_succeeds() throws {
+        // Title placement is a semantic concern handled by the validator; the
+        // parser accepts the tune.
         let input = "%abc-2.1\nX:1\nT:First Title\nC:Bach\nT:Second Title\nK:C\nCDEF|\n"
 
-        #expect(throws: ABCParser.Error.self) {
-            try ABCParser().parse(Data(input.utf8))
-        }
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
+
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test
-    func parse_tuneTitleAfterOtherField_v21_throws() {
+    func parse_tuneTitleAfterOtherField_v21_succeeds() throws {
+        // Title placement is a semantic concern handled by the validator; the
+        // parser accepts the tune.
         let input = "%abc-2.1\nX:1\nC:Bach\nT:Test\nK:C\nCDEF|\n"
 
-        #expect(throws: ABCParser.Error.self) {
-            try ABCParser().parse(Data(input.utf8))
-        }
+        let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
+
+        #expect(tunebook.tunes.count == 1)
     }
 
     @Test

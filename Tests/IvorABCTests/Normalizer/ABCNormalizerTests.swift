@@ -69,9 +69,10 @@ extension ABCNormalizerTests {
     }
 
     @Test
-    func normalize_fromV16_tempoLegacyFlagCleared() {
-        let dottedQuarter = makeDuration(3, 8)
-        let legacyTempo = ABCTempo(durations: [dottedQuarter], rate: 40, text: nil, beatMultiplier: 3).require()
+    func normalize_fromV16_tempoResolvedAndFlagCleared() {
+        // Q:C3=40 with no L:/M: → default L 1/8; beat = 3 × 1/8 = 3/8.
+        let dottedQuarter = makeLength(3, 8)
+        let legacyTempo = ABCTempo(lengths: [], rate: 40, text: nil, beatMultiplier: 3).require()
         let tune = makeTune(header: [.field(.tempo(legacyTempo))])
         let tunebook = makeTunebook(.v1_6, [tune])
         let (normalized, _) = ABCNormalizer().normalize(tunebook)
@@ -85,8 +86,30 @@ extension ABCNormalizerTests {
         }.first
 
         #expect(normalizedTempo?.beatMultiplier == nil)
-        #expect(normalizedTempo?.durations == [dottedQuarter])
+        #expect(normalizedTempo?.lengths == [dottedQuarter])
         #expect(normalizedTempo?.rate == 40)
+    }
+
+    @Test
+    func normalize_tempoResolvedAgainstActiveUnitNoteLength() {
+        // L:1/4 in effect when the C-form tempo appears → beat = 1 × 1/4.
+        let legacyTempo = ABCTempo(lengths: [], rate: 120, text: nil, beatMultiplier: 1).require()
+        let tune = makeTune(header: [.field(.unitNoteLength(makeLength(1, 4))),
+                                     .field(.tempo(legacyTempo))])
+        let tunebook = makeTunebook(.v1_6, [tune])
+        let (normalized, _) = ABCNormalizer().normalize(tunebook)
+
+        let normalizedTempo = normalized.tunes.first?.header.compactMap { entry -> ABCTempo? in
+            guard case let .field(f) = entry,
+                  case let .tempo(t) = f
+            else { return nil }
+
+            return t
+        }.first
+
+        #expect(normalizedTempo?.beatMultiplier == nil)
+        #expect(normalizedTempo?.lengths == [makeLength(1, 4)])
+        #expect(normalizedTempo?.rate == 120)
     }
 
     @Test

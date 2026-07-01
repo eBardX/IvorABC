@@ -319,10 +319,9 @@ extension ABCParserTests {
     }
 
     @Test
-    func parse_keyHp_presetAccidentalsInContext() throws {
-        // K:Hp sets accidentalsInKey (C♯, F♯, G♮), but the parser stores written
-        // pitch only — no implicit accidentals are folded into notes. The preset
-        // accidentals are available via the parse context for callers who need them.
+    func parse_keyHp_storesWrittenPitchOnly() throws {
+        // K:Hp implies preset accidentals (C♯, F♯, G♮), but the parser does not
+        // fold them into notes — it stores written pitch only.
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/4\nK:Hp\nCFG|\n"
         let data = Data(input.utf8)
         let parser = ABCParser()
@@ -649,11 +648,11 @@ extension ABCParserTests {
             return s
         }.first)
 
-        let cNote = makeNote(makePitch(.c, .omitted, 4), makeDuration(1, 8))
-        let dNote = makeNote(makePitch(.d, .omitted, 4), makeDuration(1, 8), .dotted)
-        let eNote = makeNote(makePitch(.e, .omitted, 4), makeDuration(1, 8))
-        let fNote = makeNote(makePitch(.f, .omitted, 4), makeDuration(1, 8), .regular)
-        let gNote = makeNote(makePitch(.g, .omitted, 4), makeDuration(1, 8))
+        let cNote = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 1))
+        let dNote = makeNote(makePitch(.d, .omitted, 4), makeLength(1, 1), .dotted)
+        let eNote = makeNote(makePitch(.e, .omitted, 4), makeLength(1, 1))
+        let fNote = makeNote(makePitch(.f, .omitted, 4), makeLength(1, 1), .regular)
+        let gNote = makeNote(makePitch(.g, .omitted, 4), makeLength(1, 1))
 
         #expect(symbols == [.shorthand(.dot),
                             .note(cNote),
@@ -682,11 +681,11 @@ extension ABCParserTests {
             return s
         }.first)
 
-        #expect(symbols.first == .spacer(makeDuration(1, 8)))
+        #expect(symbols.first == .spacer(makeLength(1, 1)))
     }
 
     @Test
-    func parse_spacer_withDuration_producesCorrectDuration() throws {
+    func parse_spacer_withLength_producesCorrectLength() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\ny2|\n"
         let (tunebook, _) = try ABCParser().parse(Data(input.utf8))
         let tune = try #require(tunebook.tunes.first)
@@ -698,14 +697,14 @@ extension ABCParserTests {
             return s
         }.first)
 
-        let spacerDurations = symbols.compactMap { sym -> ABCDuration? in
+        let spacerLengths = symbols.compactMap { sym -> ABCLength? in
             guard case let .spacer(d) = sym
             else { return nil }
 
             return d
         }
 
-        #expect(spacerDurations.first == makeDuration(1, 4))
+        #expect(spacerLengths.first == makeLength(2, 1))
     }
 
     @Test

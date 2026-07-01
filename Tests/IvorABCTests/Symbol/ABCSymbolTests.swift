@@ -31,11 +31,11 @@ extension ABCSymbolTests {
     @Test
     func equality_chord() {
         let pitch = makePitch(.c, .omitted, 4)
-        let duration = makeDuration(1, 4)
-        let note = makeNote(pitch, duration)
+        let length = makeLength(1, 4)
+        let note = makeNote(pitch, length)
 
-        #expect(ABCSymbol.chord(makeChord([note], duration))
-                == .chord(makeChord([note], duration)))
+        #expect(ABCSymbol.chord(makeChord([note], length))
+                == .chord(makeChord([note], length)))
     }
 
     @Test
@@ -53,8 +53,8 @@ extension ABCSymbolTests {
     @Test
     func equality_graceNotes() {
         let pitch = makePitch(.g, .omitted, 4)
-        let duration = makeDuration(1, 8)
-        let note = makeNote(pitch, duration)
+        let length = makeLength(1, 8)
+        let note = makeNote(pitch, length)
 
         #expect(ABCSymbol.graceNotes(makeGraceNotes([note], false))
                 == .graceNotes(makeGraceNotes([note], false)))
@@ -70,16 +70,16 @@ extension ABCSymbolTests {
     @Test
     func equality_note() {
         let pitch = makePitch(.a, .omitted, 4)
-        let duration = makeDuration(1, 4)
-        let note = makeNote(pitch, duration)
+        let length = makeLength(1, 4)
+        let note = makeNote(pitch, length)
 
         #expect(ABCSymbol.note(note) == .note(note))
     }
 
     @Test
     func equality_rest() {
-        let duration = makeDuration(1, 4)
-        let rest = ABCRest.regular(false, duration)
+        let length = makeLength(1, 4)
+        let rest = ABCRest.regular(false, length)
 
         #expect(ABCSymbol.rest(rest) == .rest(rest))
     }
@@ -91,9 +91,9 @@ extension ABCSymbolTests {
 
     @Test
     func equality_spacer() {
-        let duration = makeDuration(1, 8)
+        let length = makeLength(1, 8)
 
-        #expect(ABCSymbol.spacer(duration) == .spacer(duration))
+        #expect(ABCSymbol.spacer(length) == .spacer(length))
     }
 
     @Test

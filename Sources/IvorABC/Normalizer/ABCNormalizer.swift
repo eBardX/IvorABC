@@ -25,7 +25,7 @@ extension ABCNormalizer {
     /// The following conversions are applied:
     /// - ``ABCField/elemskip(_:)`` → ``ABCField/remark(_:)``
     /// - ``ABCField/information(_:)`` → ``ABCField/remark(_:)``
-    /// - ``ABCTempo/legacyBeatMultiple`` cleared (durations already resolved)
+    /// - Deprecated C-form tempos (``ABCTempo/beatMultiplier``) resolved against the active `L:`/`M:` and the multiplier cleared
     /// - `+name+` decorations (``ABCDecoration/Dialect/plus``) → `!name!` (`bang`)
     /// - `%%decoration +` / `I:decoration +` directives dropped
     /// - `%%abc-charset` / `I:abc-charset` directives dropped (stale after decoding)
@@ -40,9 +40,9 @@ extension ABCNormalizer {
         guard !tunebook.isNormalized
         else { return (tunebook, []) }
 
-        var runner = Editor(tunebook: tunebook)
+        var editor = Editor(tunebook: tunebook)
 
-        return runner.editTunebook()
+        return editor.editTunebook()
     }
 }
 

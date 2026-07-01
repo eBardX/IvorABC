@@ -6,9 +6,9 @@ private import XestiTools
 
 // MARK: Internal Types
 
-internal typealias ParseNoteResult = (pitch: ParsePitchResult, duration: ABCDuration?, tie: ABCTie?)
+internal typealias ParseNoteResult = (pitch: ParsePitchResult, length: ABCLength?, tie: ABCTie?)
 internal typealias ParsePitchResult = (letter: ABCPitch.Letter, accidental: ABCPitch.Accidental, octave: ABCPitch.Octave)
-internal typealias ParseRestResult = (kind: String, duration: ABCDuration?)
+internal typealias ParseRestResult = (kind: String, length: ABCLength?)
 internal typealias ParseTupletResult = (pcount: UInt, qcount: UInt?, rcount: UInt?)
 
 // MARK: Internal Functions
@@ -172,44 +172,6 @@ internal func parseChordSymbol(_ tidyInput: Substring) -> ABCChordSymbol? {
 
 internal func parseDirectiveName(_ tidyInput: Substring) -> ABCDirective.Name? {
     ABCDirective.Name(stringValue: String(tidyInput))
-}
-
-internal func parseDuration(_ tidyInput: Substring) -> ABCDuration? {
-    guard !tidyInput.isEmpty
-    else { return nil }
-
-    //
-    // <decUInteger>? "/" ( <decUInteger>? | "/"{2,6} )
-    //
-    let result = tidyInput.splitBeforeFirst("/")
-
-    var denominator: UInt = 1
-    var numerator: UInt = 1
-
-    if !result.head.isEmpty {
-        guard let numer = UInt(result.head)
-        else { return nil }
-
-        numerator = numer
-    }
-
-    if var tail = result.tail {
-        while tail.hasPrefix("/") {
-            denominator *= 2
-            tail = tail.dropFirst()
-        }
-
-        if !tail.isEmpty {
-            guard denominator == 2,         // i.e. only one "/" seen
-                  let denom = UInt(tail)
-            else { return nil }
-
-            denominator = denom
-        }
-    }
-
-    return ABCDuration(numerator: numerator,
-                       denominator: denominator)
 }
 
 internal func parseElemskip(_ tidyInput: Substring) -> ABCElemskip? {
@@ -404,12 +366,15 @@ internal func parseKeySignature(_ tidyInput: Substring) -> ABCKeySignature? {
     return .standard(standard)
 }
 
-/// Parses the ABC 1.6 `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
-/// surrounded by a quoted text label), resolving `C` against `baseDuration`.
+/// Parses the deprecated `Q:C=rate` and `Q:Cn=rate` tempo forms (optionally
+/// surrounded by a quoted text label).
 ///
-/// Returns `nil` if the input does not match the 1.6 C-form.
-internal func parseLegacyBeatTempo(_ tidyInput: Substring,
-                                   baseDuration: ABCDuration) -> ABCTempo? {
+/// The result is left *unresolved*: ``ABCTempo/lengths`` is empty and the
+/// multiplier `n` is recorded in ``ABCTempo/beatMultiplier``. ``ABCNormalizer``
+/// resolves the beat against the active unit note length (`L:`).
+///
+/// Returns `nil` if the input does not match the C-form.
+internal func parseLegacyBeatTempo(_ tidyInput: Substring) -> ABCTempo? {
     var input = tidyInput
     var text: String?
 
@@ -449,16 +414,51 @@ internal func parseLegacyBeatTempo(_ tidyInput: Substring,
         input = rest
     }
 
-    guard input.isEmpty,
-          // Resolve C×n against the active base duration
-          let beat = ABCDuration(numerator: baseDuration.numerator * multiplier,
-                                 denominator: baseDuration.denominator)
+    guard input.isEmpty
     else { return nil }
 
-    return ABCTempo(durations: [beat],
+    return ABCTempo(lengths: [],
                     rate: rate,
                     text: text,
                     beatMultiplier: multiplier)
+}
+
+internal func parseLength(_ tidyInput: Substring) -> ABCLength? {
+    guard !tidyInput.isEmpty
+    else { return nil }
+
+    //
+    // <decUInteger>? "/" ( <decUInteger>? | "/"{2,6} )
+    //
+    let result = tidyInput.splitBeforeFirst("/")
+
+    var denominator: UInt = 1
+    var numerator: UInt = 1
+
+    if !result.head.isEmpty {
+        guard let numer = UInt(result.head)
+        else { return nil }
+
+        numerator = numer
+    }
+
+    if var tail = result.tail {
+        while tail.hasPrefix("/") {
+            denominator *= 2
+            tail = tail.dropFirst()
+        }
+
+        if !tail.isEmpty {
+            guard denominator == 2,         // i.e. only one "/" seen
+                  let denom = UInt(tail)
+            else { return nil }
+
+            denominator = denom
+        }
+    }
+
+    return ABCLength(numerator: numerator,
+                     denominator: denominator)
 }
 
 internal func parseMacro(_ tidyInput: Substring) -> ABCMacro? {
@@ -478,23 +478,23 @@ internal func parseNote(_ tidyInput: Substring) -> ParseNoteResult? {
     let tie: ABCTie? = isDottedTie ? .dotted : (isRegularTie ? .regular : nil)
     let input = tidyInput.dropLast(isDottedTie ? 2 : (isRegularTie ? 1 : 0))
 
-    let result = input.splitBeforeFirst(durationCS)
+    let result = input.splitBeforeFirst(lengthCS)
 
     guard let pitch = parsePitch(result.head)
     else { return nil }
 
-    let duration: ABCDuration?
+    let length: ABCLength?
 
     if let tail = result.tail {
-        guard let dur = parseDuration(tail)
+        guard let len = parseLength(tail)
         else { return nil }
 
-        duration = dur
+        length = len
     } else {
-        duration = nil
+        length = nil
     }
 
-    return (pitch, duration, tie)
+    return (pitch, length, tie)
 }
 
 internal func parsePartSequence(_ tidyInput: Substring) -> ABCPartSequence? {
@@ -562,33 +562,33 @@ internal func parseReferenceNumber(_ tidyInput: Substring) -> ABCReferenceNumber
 }
 
 internal func parseRest(_ tidyInput: Substring) -> ParseRestResult? {
-    let result = tidyInput.splitBeforeFirst(durationCS)
+    let result = tidyInput.splitBeforeFirst(lengthCS)
 
     guard result.head.count == 1,
           let restLetter = result.head.first,
           restLetterCS.contains(restLetter)
     else { return nil }
 
-    let duration: ABCDuration?
+    let length: ABCLength?
 
     if let tail = result.tail {
         if restLetter.isUppercase {
             guard let cnt = UInt(tail)
             else { return nil }
 
-            duration = ABCDuration(numerator: cnt,
-                                   denominator: 1)
+            length = ABCLength(numerator: cnt,
+                               denominator: 1)
         } else {
-            guard let dur = parseDuration(tail)
+            guard let len = parseLength(tail)
             else { return nil }
 
-            duration = dur
+            length = len
         }
     } else {
-        duration = nil
+        length = nil
     }
 
-    return (String(restLetter), duration)
+    return (String(restLetter), length)
 }
 
 internal func parseShorthand(_ tidyInput: Substring) -> ABCShorthand? {
@@ -665,7 +665,7 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
     guard !tidyInput.isEmpty
     else { return nil }
 
-    var durations: [ABCDuration] = []
+    var lengths: [ABCLength] = []
     var text: String?
     var rate: UInt?
 
@@ -684,10 +684,10 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
     if !input.isEmpty {
         let idx = input.dropFirst().firstIndex(of: "\"") ?? input.endIndex
 
-        guard let result = _parseTempoDurationsRate(trimSuffix(input[..<idx]))
+        guard let result = _parseTempoLengthsRate(trimSuffix(input[..<idx]))
         else { return nil }
 
-        durations = result.durations
+        lengths = result.lengths
         rate = result.rate
 
         input = input[idx...]
@@ -707,7 +707,7 @@ internal func parseTempo(_ tidyInput: Substring) -> ABCTempo? {
         return nil
     }
 
-    return ABCTempo(durations: durations,
+    return ABCTempo(lengths: lengths,
                     rate: rate,
                     text: text)
 }
@@ -782,13 +782,13 @@ internal func parseTuplet(_ tidyInput: Substring) -> ParseTupletResult? {
     return (pcount, qcount, rcount)
 }
 
-internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCDuration? {
-    guard let duration = _parseDuration(tidyInput),
-          duration.numerator > 0,
-          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512].contains(duration.denominator)
+internal func parseUnitNoteLength(_ tidyInput: Substring) -> ABCLength? {
+    guard let length = _parseLength(tidyInput),
+          length.numerator > 0,
+          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512].contains(length.denominator)
     else { return nil }
 
-    return duration
+    return length
 }
 
 internal func parseUserSymbol(_ tidyInput: Substring) -> ABCUserSymbol? {
@@ -952,14 +952,14 @@ loop:
 // MARK: Private Types
 
 private typealias ClefPropertyPair              = (key: String, value: String)
-private typealias ParseTempoDurationsRateResult = (durations: [ABCDuration], rate: UInt)
+private typealias ParseTempoLengthsRateResult = (lengths: [ABCLength], rate: UInt)
 private typealias ParseVoicePropertyResult      = (key: String, value: String, rest: Substring)
 private typealias PitchLetterResult             = (letter: ABCPitch.Letter, octave: Int)
 
 // MARK: Private Constants
 
 private let accidentalCS: Set<Character>  = ["_", "^", "="]
-private let durationCS: Set<Character>    = ["/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+private let lengthCS: Set<Character>      = ["/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 private let octaveCS: Set<Character>      = [",", "'"]
 private let pitchLetterCS: Set<Character> = ["A", "B", "C", "D", "E", "F", "G", "a", "b", "c", "d", "e", "f", "g"]
 private let restLetterCS: Set<Character>  = ["X", "Z", "x", "z"]
@@ -1508,28 +1508,6 @@ private func _parseComplexTimeSignature(_ tidyInput: Substring) -> ABCTimeSignat
                            .map { .complex($0) }
 }
 
-private func _parseDuration(_ tidyInput: Substring) -> ABCDuration? {
-    let result = tidyInput.splitBeforeFirst("/")
-
-    guard let numerator = UInt(result.head)
-    else { return nil }
-
-    let denominator: UInt
-
-    if let tail = result.tail {
-        guard let denom = UInt(tail.dropFirst()),
-              denom > 0
-        else { return nil }
-
-        denominator = denom
-    } else {
-        denominator = 1
-    }
-
-    return ABCDuration(numerator: numerator,
-                       denominator: denominator)
-}
-
 private func _parseInstruction(_ tidyInput: Substring) -> ABCDirective? {
     let result = tidyInput.splitBeforeFirst { $0.isABCWhitespace }
 
@@ -1606,6 +1584,28 @@ private func _parseKeySignatureTonicMode(_ tidyInput: Substring) -> (ABCKeySigna
     }
 
     return (tonic, mode)
+}
+
+private func _parseLength(_ tidyInput: Substring) -> ABCLength? {
+    let result = tidyInput.splitBeforeFirst("/")
+
+    guard let numerator = UInt(result.head)
+    else { return nil }
+
+    let denominator: UInt
+
+    if let tail = result.tail {
+        guard let denom = UInt(tail.dropFirst()),
+              denom > 0
+        else { return nil }
+
+        denominator = denom
+    } else {
+        denominator = 1
+    }
+
+    return ABCLength(numerator: numerator,
+                     denominator: denominator)
 }
 
 private func _parsePartItemRepeatCount(_ input: inout Substring) -> ABCPartSequence.Item.RepeatCount {
@@ -1709,7 +1709,7 @@ private func _parseStandardMeter(_ tidyInput: Substring) -> ABCTimeSignature.Sta
     return ABCTimeSignature.StandardMeter(numerator: numerator, denominator: denominator)
 }
 
-private func _parseTempoDurationsRate(_ tidyInput: Substring) -> ParseTempoDurationsRateResult? {
+private func _parseTempoLengthsRate(_ tidyInput: Substring) -> ParseTempoLengthsRateResult? {
     let result = tidyInput.splitBeforeFirst("=")
     let dtext = trimSuffix(result.head)
     let pieces = dtext.split { $0.isABCWhitespace }
@@ -1717,13 +1717,13 @@ private func _parseTempoDurationsRate(_ tidyInput: Substring) -> ParseTempoDurat
     guard !pieces.isEmpty
     else { return nil }
 
-    var durations: [ABCDuration] = []
+    var lengths: [ABCLength] = []
 
     for piece in pieces {
-        guard let dur = _parseDuration(piece)
+        guard let len = _parseLength(piece)
         else { return nil }
 
-        durations.append(dur)
+        lengths.append(len)
     }
 
     guard let rtext = result.tail?.dropFirst(),
@@ -1731,7 +1731,7 @@ private func _parseTempoDurationsRate(_ tidyInput: Substring) -> ParseTempoDurat
           rate > 0
     else { return nil }
 
-    return (durations, rate)
+    return (lengths, rate)
 }
 
 private func _parseTempoText(_ tidyInput: Substring) -> String? {

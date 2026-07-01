@@ -34,14 +34,6 @@ extension ABCParser {
         /// value is the raw version string that was encountered.
         case malformedVersion(String)
 
-        /// A field appeared outside its permitted tune header or body section and
-        /// was skipped. The associated value is the field that was skipped.
-        case misplacedField(ABCField)
-
-        /// A tune had no ``ABCField/key(_:)`` field terminating its header; the
-        /// tune body was started at the first music symbols line.
-        case missingKeyField
-
         /// A `%%abc-charset` or `I:abc-charset` directive named a charset that is
         /// not recognized; the content is treated as ISO-8859-1. The associated
         /// value is the unrecognized charset name.
@@ -85,12 +77,6 @@ extension ABCParser.Diagnostic {
 
         case let .malformedVersion(raw):
             "Malformed version string ‘\(raw)’; version is treated as unspecified"
-
-        case let .misplacedField(field):
-            "Misplaced field ‘\(field)’ was skipped"
-
-        case .missingKeyField:
-            "Tune has no K: field; tune body assumed to start at first music line"
 
         case let .unrecognizedCharset(name):
             "Unrecognized charset ‘\(name)’; falling back to ISO-8859-1"

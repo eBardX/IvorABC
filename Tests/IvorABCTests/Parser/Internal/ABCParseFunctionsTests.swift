@@ -41,23 +41,23 @@ extension ABCParseFunctionsTests {
     }
 
     @Test
-    func parseDuration_failure() {
-        #expect(parseDuration("") == nil)
-        #expect(parseDuration("3//2") == nil)
+    func parseLength_failure() {
+        #expect(parseLength("") == nil)
+        #expect(parseLength("3//2") == nil)
     }
 
     @Test
-    func parseDuration_success() {
-        #expect(parseDuration("/") == makeDuration(1, 2))
-        #expect(parseDuration("//") == makeDuration(1, 4))
-        #expect(parseDuration("///") == makeDuration(1, 8))
-        #expect(parseDuration("/2") == makeDuration(1, 2))
-        #expect(parseDuration("2") == makeDuration(2, 1))
-        #expect(parseDuration("3") == makeDuration(3, 1))
-        #expect(parseDuration("3/") == makeDuration(3, 2))
-        #expect(parseDuration("3/2") == makeDuration(3, 2))
-        #expect(parseDuration("4") == makeDuration(4, 1))
-        #expect(parseDuration("8") == makeDuration(8, 1))
+    func parseLength_success() {
+        #expect(parseLength("/") == makeLength(1, 2))
+        #expect(parseLength("//") == makeLength(1, 4))
+        #expect(parseLength("///") == makeLength(1, 8))
+        #expect(parseLength("/2") == makeLength(1, 2))
+        #expect(parseLength("2") == makeLength(2, 1))
+        #expect(parseLength("3") == makeLength(3, 1))
+        #expect(parseLength("3/") == makeLength(3, 2))
+        #expect(parseLength("3/2") == makeLength(3, 2))
+        #expect(parseLength("4") == makeLength(4, 1))
+        #expect(parseLength("8") == makeLength(8, 1))
     }
 
     @Test
@@ -206,41 +206,41 @@ extension ABCParseFunctionsTests {
     @Test
     func parseNote_success() {
         #expect(parseNote("_d") == ((.d, .flat, 5), nil, nil))
-        #expect(parseNote("_d''/") == ((.d, .flat, 7), makeDuration(1, 2), nil))
+        #expect(parseNote("_d''/") == ((.d, .flat, 7), makeLength(1, 2), nil))
         #expect(parseNote("=A") == ((.a, .natural, 4), nil, nil))
         #expect(parseNote("=E") == ((.e, .natural, 4), nil, nil))
-        #expect(parseNote("=E,//-") == ((.e, .natural, 3), makeDuration(1, 4), ABCTie.regular))
-        #expect(parseNote("=E2") == ((.e, .natural, 4), makeDuration(2, 1), nil))
+        #expect(parseNote("=E,//-") == ((.e, .natural, 3), makeLength(1, 4), ABCTie.regular))
+        #expect(parseNote("=E2") == ((.e, .natural, 4), makeLength(2, 1), nil))
         #expect(parseNote("a") == ((.a, .omitted, 5), nil, nil))
-        #expect(parseNote("A,,3") == ((.a, .omitted, 2), makeDuration(3, 1), nil))
-        #expect(parseNote("A/") == ((.a, .omitted, 4), makeDuration(1, 2), nil))
-        #expect(parseNote("a2") == ((.a, .omitted, 5), makeDuration(2, 1), nil))
-        #expect(parseNote("a4") == ((.a, .omitted, 5), makeDuration(4, 1), nil))
+        #expect(parseNote("A,,3") == ((.a, .omitted, 2), makeLength(3, 1), nil))
+        #expect(parseNote("A/") == ((.a, .omitted, 4), makeLength(1, 2), nil))
+        #expect(parseNote("a2") == ((.a, .omitted, 5), makeLength(2, 1), nil))
+        #expect(parseNote("a4") == ((.a, .omitted, 5), makeLength(4, 1), nil))
         #expect(parseNote("b") == ((.b, .omitted, 5), nil, nil))
-        #expect(parseNote("B/") == ((.b, .omitted, 4), makeDuration(1, 2), nil))
-        #expect(parseNote("B2") == ((.b, .omitted, 4), makeDuration(2, 1), nil))
-        #expect(parseNote("B4") == ((.b, .omitted, 4), makeDuration(4, 1), nil))
+        #expect(parseNote("B/") == ((.b, .omitted, 4), makeLength(1, 2), nil))
+        #expect(parseNote("B2") == ((.b, .omitted, 4), makeLength(2, 1), nil))
+        #expect(parseNote("B4") == ((.b, .omitted, 4), makeLength(4, 1), nil))
         #expect(parseNote("c") == ((.c, .omitted, 5), nil, nil))
-        #expect(parseNote("c/") == ((.c, .omitted, 5), makeDuration(1, 2), nil))
-        #expect(parseNote("c2") == ((.c, .omitted, 5), makeDuration(2, 1), nil))
-        #expect(parseNote("c3") == ((.c, .omitted, 5), makeDuration(3, 1), nil))
+        #expect(parseNote("c/") == ((.c, .omitted, 5), makeLength(1, 2), nil))
+        #expect(parseNote("c2") == ((.c, .omitted, 5), makeLength(2, 1), nil))
+        #expect(parseNote("c3") == ((.c, .omitted, 5), makeLength(3, 1), nil))
         #expect(parseNote("d") == ((.d, .omitted, 5), nil, nil))
-        #expect(parseNote("d/") == ((.d, .omitted, 5), makeDuration(1, 2), nil))
-        #expect(parseNote("D//") == ((.d, .omitted, 4), makeDuration(1, 4), nil))
-        #expect(parseNote("d2") == ((.d, .omitted, 5), makeDuration(2, 1), nil))
+        #expect(parseNote("d/") == ((.d, .omitted, 5), makeLength(1, 2), nil))
+        #expect(parseNote("D//") == ((.d, .omitted, 4), makeLength(1, 4), nil))
+        #expect(parseNote("d2") == ((.d, .omitted, 5), makeLength(2, 1), nil))
         #expect(parseNote("e-") == ((.e, .omitted, 5), nil, ABCTie.regular))
-        #expect(parseNote("e'/") == ((.e, .omitted, 6), makeDuration(1, 2), nil))
-        #expect(parseNote("e2") == ((.e, .omitted, 5), makeDuration(2, 1), nil))
-        #expect(parseNote("e3") == ((.e, .omitted, 5), makeDuration(3, 1), nil))
+        #expect(parseNote("e'/") == ((.e, .omitted, 6), makeLength(1, 2), nil))
+        #expect(parseNote("e2") == ((.e, .omitted, 5), makeLength(2, 1), nil))
+        #expect(parseNote("e3") == ((.e, .omitted, 5), makeLength(3, 1), nil))
         #expect(parseNote("f''''-") == ((.f, .omitted, 9), nil, ABCTie.regular))
-        #expect(parseNote("f/") == ((.f, .omitted, 5), makeDuration(1, 2), nil))
-        #expect(parseNote("f2") == ((.f, .omitted, 5), makeDuration(2, 1), nil))
-        #expect(parseNote("F3/2") == ((.f, .omitted, 4), makeDuration(3, 2), nil))
-        #expect(parseNote("F8") == ((.f, .omitted, 4), makeDuration(8, 1), nil))
+        #expect(parseNote("f/") == ((.f, .omitted, 5), makeLength(1, 2), nil))
+        #expect(parseNote("f2") == ((.f, .omitted, 5), makeLength(2, 1), nil))
+        #expect(parseNote("F3/2") == ((.f, .omitted, 4), makeLength(3, 2), nil))
+        #expect(parseNote("F8") == ((.f, .omitted, 4), makeLength(8, 1), nil))
         #expect(parseNote("g") == ((.g, .omitted, 5), nil, nil))
-        #expect(parseNote("G,/2") == ((.g, .omitted, 3), makeDuration(1, 2), nil))
-        #expect(parseNote("g'2") == ((.g, .omitted, 6), makeDuration(2, 1), nil))
-        #expect(parseNote("g/") == ((.g, .omitted, 5), makeDuration(1, 2), nil))
+        #expect(parseNote("G,/2") == ((.g, .omitted, 3), makeLength(1, 2), nil))
+        #expect(parseNote("g'2") == ((.g, .omitted, 6), makeLength(2, 1), nil))
+        #expect(parseNote("g/") == ((.g, .omitted, 5), makeLength(1, 2), nil))
     }
 
     @Test
@@ -308,11 +308,11 @@ extension ABCParseFunctionsTests {
     @Test
     func parseRest_success() {
         #expect(parseRest("x") == ("x", nil))
-        #expect(parseRest("x//") == ("x", makeDuration(1, 4)))
-        #expect(parseRest("X2") == ("X", makeDuration(2, 1)))
+        #expect(parseRest("x//") == ("x", makeLength(1, 4)))
+        #expect(parseRest("X2") == ("X", makeLength(2, 1)))
         #expect(parseRest("z") == ("z", nil))
-        #expect(parseRest("z3/2") == ("z", makeDuration(3, 2)))
-        #expect(parseRest("Z4") == ("Z", makeDuration(4, 1)))
+        #expect(parseRest("z3/2") == ("z", makeLength(3, 2)))
+        #expect(parseRest("Z4") == ("Z", makeLength(4, 1)))
     }
 
     @Test
@@ -356,9 +356,9 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseTempo_compoundBeat_success() {
-        let d38 = makeDuration(3, 8)
-        let d14 = makeDuration(1, 4)
-        let d12 = makeDuration(1, 2)
+        let d38 = makeLength(3, 8)
+        let d14 = makeLength(1, 4)
+        let d12 = makeLength(1, 2)
 
         #expect(parseTempo("3/8 1/4=44") == makeTempo([d38, d14], 44))
         #expect(parseTempo("3/8 1/4 = 44") == makeTempo([d38, d14], 44))
@@ -446,17 +446,17 @@ extension ABCParseFunctionsTests {
 
     @Test
     func parseUnitNoteLength_success() {
-        #expect(parseUnitNoteLength("1") == makeDuration(1, 1))
-        #expect(parseUnitNoteLength("1/1") == makeDuration(1, 1))
-        #expect(parseUnitNoteLength("1/2") == makeDuration(1, 2))
-        #expect(parseUnitNoteLength("1/4") == makeDuration(1, 4))
-        #expect(parseUnitNoteLength("1/8") == makeDuration(1, 8))
-        #expect(parseUnitNoteLength("1/16") == makeDuration(1, 16))
-        #expect(parseUnitNoteLength("1/32") == makeDuration(1, 32))
-        #expect(parseUnitNoteLength("1/64") == makeDuration(1, 64))
-        #expect(parseUnitNoteLength("1/128") == makeDuration(1, 128))
-        #expect(parseUnitNoteLength("1/256") == makeDuration(1, 256))
-        #expect(parseUnitNoteLength("1/512") == makeDuration(1, 512))
+        #expect(parseUnitNoteLength("1") == makeLength(1, 1))
+        #expect(parseUnitNoteLength("1/1") == makeLength(1, 1))
+        #expect(parseUnitNoteLength("1/2") == makeLength(1, 2))
+        #expect(parseUnitNoteLength("1/4") == makeLength(1, 4))
+        #expect(parseUnitNoteLength("1/8") == makeLength(1, 8))
+        #expect(parseUnitNoteLength("1/16") == makeLength(1, 16))
+        #expect(parseUnitNoteLength("1/32") == makeLength(1, 32))
+        #expect(parseUnitNoteLength("1/64") == makeLength(1, 64))
+        #expect(parseUnitNoteLength("1/128") == makeLength(1, 128))
+        #expect(parseUnitNoteLength("1/256") == makeLength(1, 256))
+        #expect(parseUnitNoteLength("1/512") == makeLength(1, 512))
     }
 
     @Test

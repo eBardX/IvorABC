@@ -39,7 +39,7 @@ let (tunebook, diagnostics) = try ABCParser(strictness: .lenient)
 `ABCFormatter` encodes an `ABCTunebook` back to UTF-8 data. It validates the
 model at format time and throws `ABCFormatError` if it detects a structurally
 incorrect in-memory model (e.g. a chord with no notes, a zero-numerator
-duration, or a non-power-of-two unit note length denominator). Tunes that lack
+note length, or a non-power-of-two unit note length denominator). Tunes that lack
 an `X:` reference number are assigned one automatically — the lowest unused
 positive integer, skipping any numbers already present elsewhere in the
 tunebook:

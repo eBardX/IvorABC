@@ -47,6 +47,14 @@ extension ABCDecoration {
         self.name = name
     }
 
+    // MARK: Internal Instance Properties
+
+    // A Boolean value indicating whether this decoration uses a legacy dialect
+    // that ``ABCNormalizer`` rewrites when normalizing to the current ABC version.
+    internal var needsNormalization: Bool {
+        dialect == .plus
+    }
+
     // MARK: Private Type Methods
 
     private static func _isValid(_ name: Name,

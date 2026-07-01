@@ -87,7 +87,7 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
-    func tokenize_chordSuffix_fractionDuration() throws {
+    func tokenize_chordSuffix_fractionLength() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("[CE]/2")
@@ -321,7 +321,7 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
-    func tokenize_spacer_withDuration() throws {
+    func tokenize_spacer_withLength() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
         let tokens = try tokenizer.tokenize("y2")

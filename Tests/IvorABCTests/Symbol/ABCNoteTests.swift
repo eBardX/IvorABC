@@ -13,9 +13,9 @@ extension ABCNoteTests {
     @Test
     func equality() {
         let pitch = makePitch(.c, .omitted, 4)
-        let duration = makeDuration(1, 4)
-        let a = makeNote(pitch, duration)
-        let b = makeNote(pitch, duration)
+        let length = makeLength(1, 4)
+        let a = makeNote(pitch, length)
+        let b = makeNote(pitch, length)
 
         #expect(a == b)
     }
@@ -23,26 +23,26 @@ extension ABCNoteTests {
     @Test
     func inequality() {
         let pitch = makePitch(.c, .omitted, 4)
-        let duration = makeDuration(1, 4)
-        let base = makeNote(pitch, duration)
+        let length = makeLength(1, 4)
+        let base = makeNote(pitch, length)
 
-        let diffPitch = makeNote(makePitch(.d, .omitted, 4), duration)
-        let diffDuration = makeNote(pitch, makeDuration(1, 8))
-        let diffTie = makeNote(pitch, duration, .regular)
+        let diffPitch = makeNote(makePitch(.d, .omitted, 4), length)
+        let diffLength = makeNote(pitch, makeLength(1, 8))
+        let diffTie = makeNote(pitch, length, .regular)
 
         #expect(base != diffPitch)
-        #expect(base != diffDuration)
+        #expect(base != diffLength)
         #expect(base != diffTie)
     }
 
     @Test
     func init_storesValues() {
         let pitch = makePitch(.f, .sharp, 5)
-        let duration = makeDuration(3, 8)
-        let note = makeNote(pitch, duration, .regular)
+        let length = makeLength(3, 8)
+        let note = makeNote(pitch, length, .regular)
 
         #expect(note.pitch == pitch)
-        #expect(note.duration == duration)
+        #expect(note.length == length)
         #expect(note.tie == .regular)
     }
 }
