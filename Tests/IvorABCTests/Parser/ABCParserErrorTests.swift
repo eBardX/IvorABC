@@ -117,6 +117,13 @@ extension ABCParserErrorTests {
     }
 
     @Test
+    func message_invalidTuneHeader() {
+        let error = ABCParser.Error.invalidTuneHeader
+
+        #expect(error.message.contains("tune header"))
+    }
+
+    @Test
     func message_invalidTuplet() {
         let error = ABCParser.Error.invalidTuplet("(10")
 

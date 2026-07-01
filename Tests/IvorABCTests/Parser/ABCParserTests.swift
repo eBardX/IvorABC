@@ -207,6 +207,17 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_trailingUnparseableContent_throwsInvalidTuneHeader() {
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nGABc|\n"
+        let data = Data(input.utf8)
+        let parser = ABCParser()
+
+        #expect(throws: ABCParser.Error.invalidTuneHeader) {
+            try parser.parse(data)
+        }
+    }
+
+    @Test
     func parse_brokenRhythm_doubleRight_producesSymbol() throws {
         let input = "%abc-2.1\n\nX:1\nT:Test\nL:1/8\nK:C\nC>>D|\n"
         let (tunebook, _) = try ABCParser().parse(Data(input.utf8))

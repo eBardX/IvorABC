@@ -124,11 +124,9 @@ public enum ABCField {
 
 extension ABCField {
 
-    // MARK: Public Instance Properties
+    // MARK: Internal Instance Properties
 
-    /// A Boolean value indicating whether this field is valid in the file
-    /// header.
-    public var isValidInFileHeader: Bool {
+    internal var isValidInFileHeader: Bool {
         switch self {
         case .area,
              .book,
@@ -155,7 +153,7 @@ extension ABCField {
         }
     }
 
-    public var isValidInline: Bool {
+    internal var isValidInline: Bool {
         switch self {
         case .instruction,
              .key,
@@ -176,8 +174,7 @@ extension ABCField {
         }
     }
 
-    /// A Boolean value indicating whether this field is valid in a tune body.
-    public var isValidInTuneBody: Bool {
+    internal var isValidInTuneBody: Bool {
         switch self {
         case .instruction,
              .key,
@@ -202,8 +199,7 @@ extension ABCField {
         }
     }
 
-    /// A Boolean value indicating whether this field is valid in a tune header.
-    public var isValidInTuneHeader: Bool {
+    internal var isValidInTuneHeader: Bool {
         switch self {
         case .area,
              .book,
@@ -239,11 +235,6 @@ extension ABCField {
         }
     }
 
-    // MARK: Internal Instance Properties
-
-    // A Boolean value indicating whether this field is a legacy construct that
-    // ``ABCNormalizer`` rewrites or replaces when normalizing to the current
-    // ABC version.
     internal var needsNormalization: Bool {
         switch self {
         case .elemskip,

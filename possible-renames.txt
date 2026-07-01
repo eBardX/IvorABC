@@ -1,5 +1,0 @@
-ABCValidator.validate(_ tunebook: ABCTunebook) throws -> (ABCTunebook, [Issue])
-
-ABCNormalizer.normalize(_ tunebook: ABCTunebook) throws
-
-ABCExpander.expand(_ tunebook: ABCTunebook) throws

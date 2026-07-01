@@ -62,6 +62,11 @@ extension ABCParser {
         /// The parser encountered an invalid time signature.
         case invalidTimeSignature(Substring)
 
+        /// The parser encountered content it could not assemble into a tune
+        /// header (e.g. stray content with no recognizable field where a new
+        /// tune, opening with an `X:` field, was expected).
+        case invalidTuneHeader
+
         /// The parser encountered an invalid tuplet specification.
         case invalidTuplet(Substring)
 
@@ -145,6 +150,9 @@ extension ABCParser.Error: EnhancedError {
 
         case let .invalidTimeSignature(value):
             "Invalid time signature: ‘\(value)’"
+
+        case .invalidTuneHeader:
+            "Content could not be assembled into a tune header"
 
         case let .invalidTuplet(value):
             "Invalid tuplet: ‘\(value)’"

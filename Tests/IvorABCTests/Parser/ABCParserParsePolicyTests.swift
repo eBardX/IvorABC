@@ -343,6 +343,29 @@ extension ABCParserParsePolicyTests {
     }
 
     @Test
+    func parse_orphanedMusicBetweenTunes_v20_skipsLineAndParsesAllTunes() throws {
+        // The music code parses fine as symbols; it just has no preceding
+        // X:/K: to anchor it to a tune. 2.0 → loose mode; skipped and recovered.
+        let input = "%abc-2.0\nX:1\nT:Test\nK:C\nCDEF|\n\nGABc|\n\nX:2\nT:Another\nK:G\nABCD|\n"
+        let data = Data(input.utf8)
+
+        let (tunebook, _) = try ABCParser().parse(data)
+
+        #expect(tunebook.tunes.count == 2)
+    }
+
+    @Test
+    func parse_orphanedMusicBetweenTunes_v21_throwsInvalidTuneHeader() {
+        // 2.1 → strict mode; the same orphaned music throws instead of being skipped.
+        let input = "%abc-2.1\nX:1\nT:Test\nK:C\nCDEF|\n\nGABc|\n\nX:2\nT:Another\nK:G\nABCD|\n"
+        let data = Data(input.utf8)
+
+        #expect(throws: ABCParser.Error.invalidTuneHeader) {
+            try ABCParser().parse(data)
+        }
+    }
+
+    @Test
     func parse_missingFileID_nilVersion() throws {
         let input = "X:1\nT:Test\nK:C\nCDEF|\n"
         let data = Data(input.utf8)
