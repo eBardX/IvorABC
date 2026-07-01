@@ -8,15 +8,15 @@
 /// duration before becoming an `ABCScoreRest`.
 public struct ABCScoreRest {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
     /// Creates a new resolved rest.
     ///
     /// - Parameter duration:   The absolute duration of the rest.
     /// - Parameter isInvisible: Whether the rest is invisible. Defaults to
     ///                          `false`.
-    public init(duration: ABCScoreDuration,     // make this internal ???
-                isInvisible: Bool = false) {
+    internal init(duration: ABCScoreDuration,
+                  isInvisible: Bool = false) {
         self.duration = duration
         self.isInvisible = isInvisible
     }

@@ -7,7 +7,7 @@
 /// accumulated duration of the notes/chords/rests they attach to.
 public struct ABCScoreGraceNotes {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
     /// Creates a new grace note group with the provided slash flag and
     /// resolved notes, or `nil` if `notes` is empty.
@@ -16,8 +16,8 @@ public struct ABCScoreGraceNotes {
     ///                        empty.
     /// - Parameter isSlashed: Whether the grace note group has a slash
     ///                        (acciaccatura).
-    public init?(notes: [ABCScoreNote],     // make this internal ???
-                 isSlashed: Bool) {
+    internal init?(notes: [ABCScoreNote],
+                   isSlashed: Bool) {
         guard Self._isValid(notes)
         else { return nil }
 

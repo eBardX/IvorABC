@@ -7,7 +7,7 @@
 /// always carries an explicit accidental and an absolute duration.
 public struct ABCScoreNote {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
     /// Creates a new resolved note, or `nil` if `pitch` has an omitted
     /// accidental.
@@ -21,11 +21,11 @@ public struct ABCScoreNote {
     ///                         to `false`.
     /// - Parameter slurEnd:    Whether a slur ends on this note. Defaults to
     ///                         `false`.
-    public init?(pitch: ABCPitch,               // make this internal ???
-                 duration: ABCScoreDuration,
-                 tie: ABCTie? = nil,
-                 slurStart: Bool = false,
-                 slurEnd: Bool = false) {
+    internal init?(pitch: ABCPitch,
+                   duration: ABCScoreDuration,
+                   tie: ABCTie? = nil,
+                   slurStart: Bool = false,
+                   slurEnd: Bool = false) {
         guard Self._isValid(pitch)
         else { return nil }
 

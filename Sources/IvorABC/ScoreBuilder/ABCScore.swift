@@ -14,16 +14,6 @@
 /// the body — all in source order.
 public struct ABCScore {
 
-    // MARK: Public Initializers
-
-    /// Creates a new score with the provided event stream.
-    ///
-    /// - Parameter events: The events that make up this score, in source
-    ///                     order.
-    public init(events: [ABCScoreEvent]) {  // make this internal ???
-        self.events = events
-    }
-
     // MARK: Public Instance Properties
 
     /// The events that make up this score, in source order.

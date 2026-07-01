@@ -5,7 +5,7 @@
 /// attach to.
 public struct ABCScoreAttachments {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
     /// Creates a new set of attachments.
     ///
@@ -23,10 +23,10 @@ public struct ABCScoreAttachments {
     /// - Parameter chordSymbol: The chord symbol attached to the following
     ///                          note/chord/rest, or `nil` if none. Defaults
     ///                          to `nil`.
-    public init(decorations: [ABCDecoration] = [],      // make this internal ???
-                annotations: [ABCAnnotation] = [],
-                graceNotes: ABCScoreGraceNotes? = nil,
-                chordSymbol: ABCChordSymbol? = nil) {
+    internal init(decorations: [ABCDecoration] = [],
+                  annotations: [ABCAnnotation] = [],
+                  graceNotes: ABCScoreGraceNotes? = nil,
+                  chordSymbol: ABCChordSymbol? = nil) {
         self.annotations = annotations
         self.chordSymbol = chordSymbol
         self.decorations = decorations

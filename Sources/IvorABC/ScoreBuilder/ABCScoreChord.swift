@@ -6,7 +6,7 @@
 /// matching how a chord is written in ABC notation (e.g. `[CEG]2-`).
 public struct ABCScoreChord {
 
-    // MARK: Public Initializers
+    // MARK: Internal Initializers
 
     /// Creates a new resolved chord, or `nil` if `notes` is empty.
     ///
@@ -16,9 +16,9 @@ public struct ABCScoreChord {
     ///                       the chord.
     /// - Parameter tie:      The tie to the next chord, or `nil` if not tied.
     ///                       Defaults to `nil`.
-    public init?(notes: [ABCScoreNote],         // make this internal ???
-                 duration: ABCScoreDuration,
-                 tie: ABCTie? = nil) {
+    internal init?(notes: [ABCScoreNote],
+                   duration: ABCScoreDuration,
+                   tie: ABCTie? = nil) {
         guard Self._isValid(notes)
         else { return nil }
 

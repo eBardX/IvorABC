@@ -3,6 +3,17 @@
 @testable import IvorABC
 import XestiTools
 
+// MARK: - ABCScoreBuilder Helpers
+
+func buildScores(_ tunebook: ABCTunebook,
+                 options: ABCScoreBuilder.Options = []) throws -> [ABCScore] {
+    let (normalizedBook, _) = ABCNormalizer().normalize(tunebook)
+    let (validatedBook, _) = try ABCValidator().validate(normalizedBook)
+
+    return try ABCScoreBuilder().build(validatedBook,
+                                       options: options)
+}
+
 // MARK: - Factory Functions
 
 func makeScoreAttachments(_ decorations: [ABCDecoration] = [],
