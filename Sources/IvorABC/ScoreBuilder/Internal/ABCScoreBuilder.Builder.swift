@@ -28,15 +28,26 @@ extension ABCScoreBuilder {
 extension ABCScoreBuilder.Builder {
 
     // The running resolution scope: the active explicit unit note length
-    // (`L:`), meter (`M:`), and key signature (`K:`).
+    // (`L:`), meter (`M:`), and key signature (`K:`), plus pending
+    // tuplet/broken-rhythm scaling awaiting the next musical event(s).
     //
     // NOTE: Accidental context, macro/shorthand tables, and pending
-    // tuplet/broken-rhythm/attachment tracking are not yet part of this
-    // scope — they land in later phases.
+    // attachment tracking are not yet part of this scope — they land in a
+    // later phase.
     private struct State {
         var keySignature: ABCKeySignature?
         var meter: ABCTimeSignature?
+        var pendingBrokenRhythm: ABCBrokenRhythm?
+        var pendingTuplet: PendingTuplet?
         var unitNoteLength: ABCLength?
+
+        // A tuplet scope in force: the next `remaining` musical events are
+        // each scaled by `beatCount / noteCount`.
+        struct PendingTuplet {
+            let beatCount: UInt
+            let noteCount: UInt
+            var remaining: UInt
+        }
     }
 
     // MARK: Internal Instance Methods
@@ -49,6 +60,30 @@ extension ABCScoreBuilder.Builder {
     }
 
     // MARK: Private Instance Methods
+
+    // Applies the "left" side of a broken-rhythm marker to the most
+    // recently appended musical event, in place.
+    private func _applyBrokenRhythmToLastEvent(_ marker: ABCBrokenRhythm,
+                                               _ events: inout [ABCScoreEvent]) {
+        guard let index = events.indices.last
+        else { return }
+
+        let factor = _brokenRhythmFactor(marker, isLeft: true)
+
+        switch events[index] {
+        case let .chord(chord, attachments):
+            events[index] = .chord(_rescaled(chord, chord.duration * factor), attachments)
+
+        case let .note(note, attachments):
+            events[index] = .note(_rescaled(note, note.duration * factor), attachments)
+
+        case let .rest(rest, attachments):
+            events[index] = .rest(_rescaled(rest, rest.duration * factor), attachments)
+
+        default:
+            break
+        }
+    }
 
     private func _applyField(_ field: ABCField,
                              _ state: inout State) {
@@ -65,6 +100,46 @@ extension ABCScoreBuilder.Builder {
         default:
             break
         }
+    }
+
+    // Consumes any pending tuplet and/or broken-rhythm scaling and applies
+    // it to `duration`.
+    private func _applyPendingScaling(_ duration: ABCScoreDuration,
+                                      _ state: inout State) -> ABCScoreDuration {
+        var result = duration
+
+        if let factor = _consumeTupletScale(&state) {
+            result *= factor
+        }
+
+        if let factor = _consumeBrokenRhythmScale(&state) {
+            result *= factor
+        }
+
+        return result
+    }
+
+    // Returns the `(numerator, denominator)` scaling factor a broken-rhythm
+    // marker applies to one side of the flanking pair. `isLeft` selects
+    // which side; `>`-family markers lengthen the left/shorten the right,
+    // `<`-family markers reverse that.
+    private func _brokenRhythmFactor(_ marker: ABCBrokenRhythm,
+                                     isLeft: Bool) -> (numerator: UInt, denominator: UInt) {
+        let denominator = UInt(1) << marker.factor
+        let numerator = (UInt(1) << (marker.factor + 1)) - 1
+        let isLong: Bool = switch marker {
+        case .dotted,
+             .doubleDotted,
+             .tripleDotted:
+            isLeft
+
+        case .reverseDotted,
+             .reverseDoubleDotted,
+             .reverseTripleDotted:
+            !isLeft
+        }
+
+        return isLong ? (numerator, denominator) : (1, denominator)
     }
 
     // NOTE: The pitch returned here is a placeholder. Real key-signature and
@@ -117,8 +192,9 @@ extension ABCScoreBuilder.Builder {
 
     // The chord-level, note-level, and rest-level absolute duration
     // resolution below covers the base `written × unit note length`
-    // formula. Tuplet and broken-rhythm scaling, and meter-based
-    // multi-measure rest resolution, land in a later phase.
+    // formula. Tuplet and broken-rhythm scaling are applied afterward, in
+    // `_buildSymbolEvents`, since they depend on state that spans multiple
+    // symbols.
     private func _buildDuration(_ written: ABCLength,
                                 _ state: State) -> ABCScoreDuration {
         ABCScoreDuration(written: written,
@@ -184,15 +260,16 @@ extension ABCScoreBuilder.Builder {
     private func _buildRest(_ rest: ABCRest,
                             _ state: State) -> ABCScoreRest {
         switch rest {
-        case let .multiMeasure(isInvisible, _):
-            // Placeholder: resolving against the active meter and the
-            // written measure count lands in a later phase.
-            ABCScoreRest(duration: ABCScoreDuration(numerator: 1).require(),
-                         isInvisible: isInvisible)
+        case let .multiMeasure(isInvisible, measureCount):
+            let duration = _measureDuration(state) * (numerator: measureCount.uintValue,
+                                                      denominator: 1)
+
+            return ABCScoreRest(duration: duration,
+                                isInvisible: isInvisible)
 
         case let .regular(isInvisible, length):
-            ABCScoreRest(duration: _buildDuration(length, state),
-                         isInvisible: isInvisible)
+            return ABCScoreRest(duration: _buildDuration(length, state),
+                                isInvisible: isInvisible)
         }
     }
 
@@ -208,9 +285,8 @@ extension ABCScoreBuilder.Builder {
 
     // Decorations, annotations, grace notes, and chord symbols are folded
     // into attachments in a later phase; for now every musical event carries
-    // `.empty` attachments. Shorthands, tuplets, broken rhythms, slurs,
-    // overlays, and beam-breaks are likewise not yet handled and are
-    // skipped.
+    // `.empty` attachments. Shorthands, slurs, overlays, and beam-breaks are
+    // likewise not yet handled and are skipped.
     private func _buildSymbolEvents(_ symbols: [ABCSymbol],
                                     _ state: inout State) -> [ABCScoreEvent] {
         var events: [ABCScoreEvent] = []
@@ -220,8 +296,15 @@ extension ABCScoreBuilder.Builder {
             case let .barLine(barLine):
                 events.append(.barLine(barLine))
 
+            case let .brokenRhythm(marker):
+                _applyBrokenRhythmToLastEvent(marker, &events)
+                state.pendingBrokenRhythm = marker
+
             case let .chord(chord):
-                events.append(.chord(_buildChord(chord, state), .empty))
+                let built = _buildChord(chord, state)
+                let duration = _applyPendingScaling(built.duration, &state)
+
+                events.append(.chord(_rescaled(built, duration), .empty))
 
             case let .inlineField(field):
                 _applyField(field, &state)
@@ -231,10 +314,23 @@ extension ABCScoreBuilder.Builder {
                 }
 
             case let .note(note):
-                events.append(.note(_buildNote(note, state), .empty))
+                let built = _buildNote(note, state)
+                let duration = _applyPendingScaling(built.duration, &state)
+
+                events.append(.note(_rescaled(built, duration), .empty))
 
             case let .rest(rest):
-                events.append(.rest(_buildRest(rest, state), .empty))
+                let built = _buildRest(rest, state)
+                let duration = _applyPendingScaling(built.duration, &state)
+
+                events.append(.rest(_rescaled(built, duration), .empty))
+
+            case let .tuplet(tuplet):
+                let resolved = tuplet.resolve(meter: state.meter)
+
+                state.pendingTuplet = State.PendingTuplet(beatCount: resolved.beatCount,
+                                                          noteCount: resolved.noteCount,
+                                                          remaining: resolved.affectedCount)
 
             case let .variantEnding(variantEnding):
                 events.append(.variantEnding(variantEnding))
@@ -270,6 +366,29 @@ extension ABCScoreBuilder.Builder {
         return events
     }
 
+    // Consumes the pending broken-rhythm marker (if any) and returns the
+    // scaling factor for the "right" side of the flanking pair.
+    private func _consumeBrokenRhythmScale(_ state: inout State) -> (numerator: UInt, denominator: UInt)? {
+        guard let marker = state.pendingBrokenRhythm
+        else { return nil }
+
+        state.pendingBrokenRhythm = nil
+
+        return _brokenRhythmFactor(marker, isLeft: false)
+    }
+
+    // Consumes one unit of the pending tuplet scope (if any), clearing it
+    // once exhausted, and returns the scaling factor to apply.
+    private func _consumeTupletScale(_ state: inout State) -> (numerator: UInt, denominator: UInt)? {
+        guard var pending = state.pendingTuplet
+        else { return nil }
+
+        pending.remaining -= 1
+        state.pendingTuplet = pending.remaining == 0 ? nil : pending
+
+        return (pending.beatCount, pending.noteCount)
+    }
+
     private func _effectiveUnitNoteLength(_ state: State) -> ABCLength {
         if let unitNoteLength = state.unitNoteLength {
             return unitNoteLength
@@ -281,6 +400,56 @@ extension ABCScoreBuilder.Builder {
 
         return ABCLength(numerator: 1,
                          denominator: 8).require()
+    }
+
+    // The duration of one measure under the active meter, used to resolve
+    // multi-measure rests. Defaults to 4/4 when no meter is active or the
+    // meter carries no usable fraction (`.empty`).
+    private func _measureDuration(_ state: State) -> ABCScoreDuration {
+        guard let meter = state.meter
+        else { return ABCScoreDuration(numerator: 4,
+                                       denominator: 4).require() }
+
+        switch meter {
+        case .common,
+             .empty:
+            return ABCScoreDuration(numerator: 4,
+                                    denominator: 4).require()
+
+        case let .complex(additiveMeter):
+            return ABCScoreDuration(numerator: additiveMeter.numerators.reduce(0, +),
+                                    denominator: additiveMeter.denominator).require()
+
+        case .cut:
+            return ABCScoreDuration(numerator: 2,
+                                    denominator: 2).require()
+
+        case let .standard(standardMeter):
+            return ABCScoreDuration(numerator: standardMeter.numerator,
+                                    denominator: standardMeter.denominator).require()
+        }
+    }
+
+    private func _rescaled(_ chord: ABCScoreChord,
+                           _ duration: ABCScoreDuration) -> ABCScoreChord {
+        ABCScoreChord(notes: chord.notes,
+                      duration: duration,
+                      tie: chord.tie).require()
+    }
+
+    private func _rescaled(_ note: ABCScoreNote,
+                           _ duration: ABCScoreDuration) -> ABCScoreNote {
+        ABCScoreNote(pitch: note.pitch,
+                     duration: duration,
+                     tie: note.tie,
+                     slurStart: note.slurStart,
+                     slurEnd: note.slurEnd).require()
+    }
+
+    private func _rescaled(_ rest: ABCScoreRest,
+                           _ duration: ABCScoreDuration) -> ABCScoreRest {
+        ABCScoreRest(duration: duration,
+                     isInvisible: rest.isInvisible)
     }
 
     private func _scanDefaults(_ fileHeader: [ABCHeaderEntry]) -> State {

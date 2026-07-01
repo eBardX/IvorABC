@@ -251,3 +251,141 @@ extension ABCScoreBuilderTests {
         #expect(scores[0].events.contains(.note(secondNote, .empty)))
     }
 }
+
+// MARK: - Length Resolution: Tuplets
+
+extension ABCScoreBuilderTests {
+    @Test
+    func build_tuplet_threeInTwo_scalesAffectedNotes() throws {
+        // (3 before three eighth notes, with no meter (simple), defaults to
+        // noteCount 3 / beatCount 2 — each note plays in 2/3 of its written
+        // duration: 1/8 × 2/3 = 1/12.
+        let book = minimalTunebook(symbols: [.tuplet(makeTuplet(3)),
+                                             .note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.d, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.e, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let expectedDuration = makeScoreDuration(1, 12)
+
+        #expect(scores[0].events.contains(.note(makeScoreNote(makePitch(.c, .natural, 4), expectedDuration), .empty)))
+        #expect(scores[0].events.contains(.note(makeScoreNote(makePitch(.d, .natural, 4), expectedDuration), .empty)))
+        #expect(scores[0].events.contains(.note(makeScoreNote(makePitch(.e, .natural, 4), expectedDuration), .empty)))
+    }
+
+    @Test
+    func build_tuplet_stopsAffectingNotesAfterAffectedCount() throws {
+        let book = minimalTunebook(symbols: [.tuplet(makeTuplet(3)),
+                                             .note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.d, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.f, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let unaffectedNote = makeScoreNote(makePitch(.f, .natural, 4), makeScoreDuration(1, 8))
+
+        #expect(scores[0].events.contains(.note(unaffectedNote, .empty)))
+    }
+
+    @Test
+    func build_tuplet_scalesChordDurationOnly() throws {
+        let notes = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
+                     makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))]
+        let chord = makeChord(notes, makeLength(1, 1))
+        let book = minimalTunebook(symbols: [.tuplet(makeTuplet(3)),
+                                             .chord(chord)])
+        let scores = try buildScores(book)
+        let expected = makeScoreChord([makeScoreNote(makePitch(.c, .natural, 4), makeScoreDuration(1, 8)),
+                                       makeScoreNote(makePitch(.e, .natural, 4), makeScoreDuration(1, 8))],
+                                      makeScoreDuration(1, 12))
+
+        #expect(scores[0].events.contains(.chord(expected, .empty)))
+    }
+
+    @Test
+    func build_tuplet_scalesRest() throws {
+        let book = minimalTunebook(symbols: [.tuplet(makeTuplet(3)),
+                                             .rest(.regular(false, makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let expected = makeScoreRest(makeScoreDuration(1, 12))
+
+        #expect(scores[0].events.contains(.rest(expected, .empty)))
+    }
+}
+
+// MARK: - Length Resolution: Broken Rhythms
+
+extension ABCScoreBuilderTests {
+    @Test
+    func build_brokenRhythm_dotted_lengthensLeftAndShortensRight() throws {
+        let book = minimalTunebook(symbols: [.note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1))),
+                                             .brokenRhythm(.dotted),
+                                             .note(makeNote(makePitch(.d, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let left = makeScoreNote(makePitch(.c, .natural, 4), makeScoreDuration(3, 16))
+        let right = makeScoreNote(makePitch(.d, .natural, 4), makeScoreDuration(1, 16))
+
+        #expect(scores[0].events.contains(.note(left, .empty)))
+        #expect(scores[0].events.contains(.note(right, .empty)))
+    }
+
+    @Test
+    func build_brokenRhythm_reverseDotted_shortensLeftAndLengthensRight() throws {
+        let book = minimalTunebook(symbols: [.note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1))),
+                                             .brokenRhythm(.reverseDotted),
+                                             .note(makeNote(makePitch(.d, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let left = makeScoreNote(makePitch(.c, .natural, 4), makeScoreDuration(1, 16))
+        let right = makeScoreNote(makePitch(.d, .natural, 4), makeScoreDuration(3, 16))
+
+        #expect(scores[0].events.contains(.note(left, .empty)))
+        #expect(scores[0].events.contains(.note(right, .empty)))
+    }
+
+    @Test
+    func build_brokenRhythm_appliesOnlyToFlankingPair() throws {
+        let book = minimalTunebook(symbols: [.note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1))),
+                                             .brokenRhythm(.dotted),
+                                             .note(makeNote(makePitch(.d, .natural, 4), makeLength(1, 1))),
+                                             .note(makeNote(makePitch(.e, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let unaffectedNote = makeScoreNote(makePitch(.e, .natural, 4), makeScoreDuration(1, 8))
+
+        #expect(scores[0].events.contains(.note(unaffectedNote, .empty)))
+    }
+
+    @Test
+    func build_brokenRhythm_appliesToRest() throws {
+        let book = minimalTunebook(symbols: [.rest(.regular(false, makeLength(1, 1))),
+                                             .brokenRhythm(.dotted),
+                                             .note(makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)))])
+        let scores = try buildScores(book)
+        let rest = makeScoreRest(makeScoreDuration(3, 16))
+
+        #expect(scores[0].events.contains(.rest(rest, .empty)))
+    }
+}
+
+// MARK: - Length Resolution: Multi-Measure Rests
+
+extension ABCScoreBuilderTests {
+    @Test
+    func build_multiMeasureRest_resolvesAgainstActiveMeter() throws {
+        let book = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
+                                                   .field(.tuneTitle("Test")),
+                                                   .field(.meter(makeTimeSignature(3, 4))),
+                                                   .field(.key(makeKeySignature(.c, .major)))],
+                                          body: [.symbols([.rest(.multiMeasure(false, 2))])])])
+        let scores = try buildScores(book)
+        let rest = makeScoreRest(makeScoreDuration(3, 2))
+
+        #expect(scores[0].events.contains(.rest(rest, .empty)))
+    }
+
+    @Test
+    func build_multiMeasureRest_defaultsToCommonTimeWhenNoMeter() throws {
+        let book = minimalTunebook(symbols: [.rest(.multiMeasure(false, 1))])
+        let scores = try buildScores(book)
+        let rest = makeScoreRest(makeScoreDuration(4, 4))
+
+        #expect(scores[0].events.contains(.rest(rest, .empty)))
+    }
+}

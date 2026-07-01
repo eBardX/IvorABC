@@ -123,6 +123,17 @@ extension ABCScoreDuration {
         Self(numerator: lhs.numerator * rhs.numerator,
              denominator: lhs.denominator * rhs.denominator).require()
     }
+
+    /// Scales this duration in place by the fraction `numerator /
+    /// denominator`, reduced to simplest form.
+    ///
+    /// - Parameter lhs: The duration to scale.
+    /// - Parameter rhs: The scaling fraction, as a `(numerator, denominator)`
+    ///                  pair.
+    public static func *= (lhs: inout Self,
+                           rhs: (numerator: UInt, denominator: UInt)) {
+        lhs = lhs * rhs
+    }
 }
 
 // MARK: - Comparable

@@ -95,4 +95,14 @@ extension ABCScoreDurationTests {
         #expect(duration.numerator == 1)
         #expect(duration.denominator == 12)
     }
+
+    @Test
+    func multiplicationAssignment_byFractionPair_reducesResult() {
+        var duration = makeScoreDuration(1, 8)
+
+        duration *= (numerator: 2, denominator: 3)
+
+        #expect(duration.numerator == 1)
+        #expect(duration.denominator == 12)
+    }
 }
