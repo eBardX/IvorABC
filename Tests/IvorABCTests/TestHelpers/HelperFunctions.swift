@@ -1,0 +1,578 @@
+// © 2026 John Gary Pusey (see LICENSE.md)
+
+import Foundation
+@testable import IvorABC
+import Testing
+import XestiTools
+
+// MARK: - ABCField Expectations
+
+func expectFieldIsAlignedWords(_ field: ABCField,
+                               _ expected: ABCAlignedWords,
+                               sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .wordsAligned(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .alignedLyrics", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsArea(_ field: ABCField,
+                       _ expected: String,
+                       sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .area(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .area", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsBook(_ field: ABCField,
+                       _ expected: String,
+                       sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .book(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .book", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsComposer(_ field: ABCField,
+                           _ expected: String,
+                           sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .composer(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .composer", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsDiscography(_ field: ABCField,
+                              _ expected: String,
+                              sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .discography(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .discography", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsFileURL(_ field: ABCField,
+                          _ expected: String,
+                          sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .fileURL(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .fileURL", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsGroup(_ field: ABCField,
+                        _ expected: String,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .group(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .group", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsHistory(_ field: ABCField,
+                          _ expected: String,
+                          sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .history(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .history", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsInstruction(_ field: ABCField,
+                              _ expected: ABCDirective,
+                              sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .instruction(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .instruction", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsKey(_ field: ABCField,
+                      sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .key = field { } else {
+        Issue.record("Expected .key", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsLyrics(_ field: ABCField,
+                         _ expected: String,
+                         sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .words(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .lyrics", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsMacro(_ field: ABCField,
+                        _ expected: ABCMacro,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .macro(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .macro", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsMeter(_ field: ABCField,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .meter = field { } else {
+        Issue.record("Expected .meter", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsNotes(_ field: ABCField,
+                        _ expected: String,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .notes(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .notes", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsOrigin(_ field: ABCField,
+                         _ expected: String,
+                         sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .origin(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .origin", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsPart(_ field: ABCField,
+                       _ expected: ABCPart,
+                       sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .part(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .part", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsParts(_ field: ABCField,
+                        _ expected: ABCPartSequence,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .parts(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .parts", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsRefNumber(_ field: ABCField,
+                            sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .referenceNumber = field { } else {
+        Issue.record("Expected .refNumber", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsRemark(_ field: ABCField,
+                         _ expected: String,
+                         sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .remark(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .remark", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsRhythm(_ field: ABCField,
+                         _ expected: String,
+                         sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .rhythm(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .rhythm", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsSource(_ field: ABCField,
+                         _ expected: String,
+                         sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .source(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .source", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsSymbolLine(_ field: ABCField,
+                             _ expected: ABCSymbolLine,
+                             sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .symbolLine(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .symbolLine", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsTempo(_ field: ABCField,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .tempo = field { } else {
+        Issue.record("Expected .tempo", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsTitle(_ field: ABCField,
+                        _ expected: String,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .tuneTitle(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .title", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsTranscription(_ field: ABCField,
+                                _ expected: String,
+                                sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .transcription(v) = field {
+        #expect(v.stringValue == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .transcription", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsUnitNoteLength(_ field: ABCField,
+                                 sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .unitNoteLength = field { } else {
+        Issue.record("Expected .unitNoteLength", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsUserSymbol(_ field: ABCField,
+                             _ expected: ABCUserSymbol,
+                             sourceLocation: SourceLocation = #_sourceLocation) {
+    if case let .userDefined(v) = field {
+        #expect(v == expected, sourceLocation: sourceLocation)
+    } else {
+        Issue.record("Expected .userSymbol", sourceLocation: sourceLocation)
+    }
+}
+
+func expectFieldIsVoice(_ field: ABCField,
+                        sourceLocation: SourceLocation = #_sourceLocation) {
+    if case .voice = field { } else {
+        Issue.record("Expected .voice", sourceLocation: sourceLocation)
+    }
+}
+
+// MARK: - Parse Result Comparisons
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseNoteResult?,
+         rhs: ParseNoteResult?) -> Bool {
+    lhs?.length == rhs?.length
+    && lhs?.tie == rhs?.tie
+    && lhs?.pitch == rhs?.pitch
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParsePitchResult?,
+         rhs: ParsePitchResult?) -> Bool {
+    lhs?.accidental == rhs?.accidental
+    && lhs?.letter == rhs?.letter
+    && lhs?.octave == rhs?.octave
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseRestResult?,
+         rhs: ParseRestResult?) -> Bool {
+    lhs?.kind == rhs?.kind
+    && lhs?.length == rhs?.length
+}
+
+// swiftlint:disable:next static_operator
+func == (lhs: ParseTupletResult?,
+         rhs: ParseTupletResult?) -> Bool {
+    lhs?.pcount == rhs?.pcount
+    && lhs?.qcount == rhs?.qcount
+    && lhs?.rcount == rhs?.rcount
+}
+
+// MARK: - Factory Functions
+
+func makeAlignedWords(_ segments: [ABCAlignedWords.Segment] = []) -> ABCAlignedWords {
+    ABCAlignedWords(segments: segments)
+}
+
+func makeAnnotation(_ placement: ABCAnnotation.Placement,
+                    _ text: String) -> ABCAnnotation {
+    ABCAnnotation(placement: placement,
+                  text: text).require()
+}
+
+func makeBarLine(_ kind: ABCBarLine.Kind = .standard,
+                 precedingPlayCount: ABCBarLine.PlayCount = 1,
+                 followingPlayCount: ABCBarLine.PlayCount = 1,
+                 isDotted: Bool = false) -> ABCBarLine {
+    ABCBarLine(kind: kind,
+               precedingPlayCount: precedingPlayCount,
+               followingPlayCount: followingPlayCount,
+               isDotted: isDotted).require()
+}
+
+func makeChord(_ notes: [ABCNote],
+               _ length: ABCLength,
+               _ tie: ABCTie? = nil) -> ABCChord {
+    ABCChord(notes: notes,
+             length: length,
+             tie: tie).require()
+}
+
+func makeDecoration(_ name: String,
+                    _ dialect: ABCDecoration.Dialect = .bang) -> ABCDecoration {
+    ABCDecoration(name: ABCDecoration.Name(name),
+                  dialect: dialect).require()
+}
+
+func makeDirective(_ name: ABCDirective.Name,
+                   _ value: String,
+                   _ content: [String]? = nil) -> ABCDirective {
+    ABCDirective(name: name,
+                 value: value,
+                 content: content)
+}
+
+func makeLength(_ numerator: UInt,
+                _ denominator: UInt = 1) -> ABCLength {
+    ABCLength(numerator: numerator,
+              denominator: denominator).require()
+}
+
+func makeGraceNotes(_ notes: [ABCNote],
+                    _ isSlashed: Bool) -> ABCGraceNotes {
+    ABCGraceNotes(notes: notes,
+                  isSlashed: isSlashed).require()
+}
+
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode).require())
+}
+
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode,
+                      _ extraAccidentals: [ABCKeySignature.ExtraAccidental]) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode,
+                                       extraAccidentals: extraAccidentals).require())
+}
+
+func makeKeySignature(_ tonic: ABCKeySignature.Tonic,
+                      _ mode: ABCKeySignature.Mode,
+                      _ clef: ABCClef) -> ABCKeySignature {
+    .standard(ABCKeySignature.Standard(tonic: tonic,
+                                       mode: mode,
+                                       clef: clef).require())
+}
+
+func makeMacro(_ target: String,
+               _ replacement: String) -> ABCMacro {
+    ABCMacro(target: target,
+             replacement: replacement).require()
+}
+
+func makeNote(_ pitch: ABCPitch,
+              _ length: ABCLength,
+              _ tie: ABCTie? = nil) -> ABCNote {
+    ABCNote(pitch: pitch,
+            length: length,
+            tie: tie)
+}
+
+func makePart(_ part: ABCPart,
+              _ count: ABCPartSequence.Item.RepeatCount = 1) -> ABCPartSequence.Item {
+    .part(part, count)
+}
+
+func makePartGroup(_ items: [ABCPartSequence.Item],
+                   _ count: ABCPartSequence.Item.RepeatCount = 1) -> ABCPartSequence.Item {
+    .group(items, count)
+}
+
+func makePartSequence(_ items: [ABCPartSequence.Item]) -> ABCPartSequence {
+    ABCPartSequence(items: items).require()
+}
+
+func makePitch(_ letter: ABCPitch.Letter,
+               _ accidental: ABCPitch.Accidental,
+               _ octave: ABCPitch.Octave) -> ABCPitch {
+    ABCPitch(letter: letter,
+             accidental: accidental,
+             octave: octave)
+}
+
+func makeReferenceNumber(_ uintValue: UInt) -> ABCReferenceNumber {
+    ABCReferenceNumber(uintValue)
+}
+
+func makeSymbolLine(_ elements: [ABCSymbolLine.Element]) -> ABCSymbolLine {
+    ABCSymbolLine(elements: elements)
+}
+
+func makeTempo(_ numerator: UInt,
+               _ denominator: UInt,
+               _ rate: UInt? = nil,
+               _ text: String? = nil) -> ABCTempo {
+    ABCTempo(lengths: [makeLength(numerator, denominator)],
+             rate: rate,
+             text: text).require()
+}
+
+func makeTempo(_ lengths: [ABCLength],
+               _ rate: UInt? = nil,
+               _ text: String? = nil) -> ABCTempo {
+    ABCTempo(lengths: lengths,
+             rate: rate,
+             text: text).require()
+}
+
+func makeTempo(_ text: String) -> ABCTempo {
+    ABCTempo(lengths: [],
+             rate: nil,
+             text: text).require()
+}
+
+func makeTimeSignature(_ numerator: UInt,
+                       _ denominator: UInt) -> ABCTimeSignature {
+    .standard(ABCTimeSignature.StandardMeter(numerator: numerator,
+                                             denominator: denominator).require())
+}
+
+func makeTimeSignature(_ numerators: [UInt],
+                       _ denominator: UInt) -> ABCTimeSignature {
+    .complex(ABCTimeSignature.AdditiveMeter(numerators: numerators,
+                                            denominator: denominator).require())
+}
+
+func makeTune(header: [ABCHeaderEntry],
+              body: [ABCBodyEntry] = []) -> ABCTune {
+    ABCTune(header: header, body: body).require()
+}
+
+func makeTunebook(_ fileHeaders: [ABCHeaderEntry],
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(fileHeader: fileHeaders,
+                tunes: tunes).require()
+}
+
+func makeTunebook(_ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(fileHeader: [],
+                tunes: tunes).require()
+}
+
+func makeTunebook(_ version: ABCVersion,
+                  _ fileHeaders: [ABCHeaderEntry],
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: version,
+                fileHeader: fileHeaders,
+                tunes: tunes,
+                isNormalized: false,
+                isValidated: false)
+}
+
+func makeTunebook(_ version: ABCVersion,
+                  _ tunes: [ABCTune]) -> ABCTunebook {
+    ABCTunebook(version: version,
+                fileHeader: [],
+                tunes: tunes,
+                isNormalized: false,
+                isValidated: false)
+}
+
+func makeTuplet(_ noteCount: UInt,
+                _ beatCount: UInt? = nil,
+                _ affectedCount: UInt? = nil) -> ABCTuplet {
+    ABCTuplet(noteCount: noteCount,
+              beatCount: beatCount,
+              affectedCount: affectedCount).require()
+}
+
+func makeUserSymbol(_ shorthand: ABCShorthand,
+                    _ annotation: ABCAnnotation) -> ABCUserSymbol {
+    makeUserSymbol(shorthand, .annotation(annotation))
+}
+
+func makeUserSymbol(_ shorthand: ABCShorthand,
+                    _ decoration: ABCDecoration) -> ABCUserSymbol {
+    makeUserSymbol(shorthand, .decoration(decoration))
+}
+
+func makeUserSymbol(_ shorthand: ABCShorthand,
+                    _ definition: ABCUserSymbol.Definition? = nil) -> ABCUserSymbol {
+    ABCUserSymbol(shorthand: shorthand,
+                  definition: definition).require()
+}
+
+func makeVariantEnding(_ endings: [ClosedRange<UInt>]) -> ABCVariantEnding {
+    ABCVariantEnding(endings: endings).require()
+}
+
+func makeVersion(_ major: UInt,
+                 _ minor: UInt) -> ABCVersion {
+    ABCVersion(major: major,
+               minor: minor)
+}
+
+func makeVoice(_ id: ABCVoice.ID,
+               clef: ABCClef,
+               _ properties: [String: String] = [:]) -> ABCVoice {
+    ABCVoice(id: id,
+             clef: clef,
+             properties: properties).require()
+}
+
+func makeVoice(_ id: ABCVoice.ID,
+               _ properties: [String: String] = [:]) -> ABCVoice {
+    ABCVoice(id: id,
+             properties: properties).require()
+}
+
+func matchSymbols(_ input: String) throws -> [ABCSymbol] {
+    let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+    let tokens = try tokenizer.tokenize(input)
+    var matcher = ABCSymbolMatcher(tokens: tokens)
+
+    return try matcher.matchSymbols()
+}
+
+// MARK: - ABCFormatter Helpers
+
+func format(_ tunebook: ABCTunebook) throws -> String {
+    let formatter = ABCFormatter()
+    let (normalizedTunebook, _) = ABCNormalizer().normalize(tunebook)
+    let (validatedTunebook, _) = try ABCValidator().validate(normalizedTunebook)
+    let data = try formatter.format(validatedTunebook)
+
+    return String(bytes: data,
+                  encoding: .utf8).require()
+}
+
+func minimalTunebook(key: ABCKeySignature = .standard(.init(tonic: .c, mode: .major).require()),
+                     symbols: [ABCSymbol] = []) -> ABCTunebook {
+    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tuneTitle("Test")),
+                                    .field(.key(key))],
+                           body: symbols.isEmpty ? [] : [.symbols(symbols)])])
+}
+
+func minimalTunebookWithTempo(_ tempo: ABCTempo) -> ABCTunebook {
+    makeTunebook([makeTune(header: [.field(.referenceNumber(ABCReferenceNumber(1))),
+                                    .field(.tuneTitle("Test")),
+                                    .field(.tempo(tempo)),
+                                    .field(.key(makeKeySignature(.c, .major)))])])
+}
