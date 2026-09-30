@@ -1,0 +1,113 @@
+// © 2025–2026 John Gary Pusey (see LICENSE.md)
+
+internal import XestiTokens
+internal import XestiTools
+
+internal struct ABCSymbolTokenizer {
+
+    // MARK: Internal Initializers
+
+    internal init(tracing: Verbosity) {
+        self.baseTokenizer = Tokenizer(rules: Self.rules,
+                                       tracing: tracing)
+    }
+
+    // MARK: Private Instance Properties
+
+    private let baseTokenizer: Tokenizer
+}
+
+// MARK: -
+
+extension ABCSymbolTokenizer {
+
+    // MARK: Internal Type Aliases
+
+    internal typealias BaseTokenizer = Tokenizer
+    internal typealias Token         = BaseTokenizer.Token
+
+    // MARK: Internal Instance Properties
+
+    internal var tracing: Verbosity {
+        baseTokenizer.tracing
+    }
+
+    // MARK: Internal Instance Methods
+
+    internal func tokenize(_ input: String) throws(ABCParser.Error) -> [Token] {
+        do {
+            return try baseTokenizer.tokenize(input: input)
+        } catch {
+            throw ABCParser.Error.tokenizationFailed(error.message)
+        }
+    }
+
+    // MARK: Private Type Aliases
+
+    private typealias Rule = BaseTokenizer.Rule
+
+    // MARK: Private Type Properties
+
+    private nonisolated(unsafe) static let rules: [Rule] = [Rule(regexAnnotation, .annotation),
+                                                            Rule(regexBarLine, .barLine),
+                                                            Rule(regexBrokenRhythm, .brokenRhythm),
+                                                            Rule(regexChordSymbol, .chordSymbol),
+                                                            Rule(regexDecoration, .decoration),
+                                                            Rule(regexInlineField, .inlineField),
+                                                            Rule(regexNote, .note),
+                                                            Rule(regexRest, .rest),
+                                                            Rule(regexShorthand, .shorthand),
+                                                            Rule(regexSpacer, .spacer),
+                                                            Rule(regexTuplet, .tuplet),
+                                                            Rule(regexVariantEnding, .variantEnding),
+                                                            Rule(/`+/, .backquotes),
+                                                            Rule(/\[/, .chordBegin),
+                                                            Rule(/]/, .chordEnd),
+                                                            Rule(regexChordSuffix, .chordSuffix),
+                                                            Rule(/\{\/?/, .graceNotesBegin),
+                                                            Rule(/\}/, .graceNotesEnd),
+                                                            Rule(/&/, .overlay),
+                                                            Rule(/\.\(/, .dottedSlurBegin),
+                                                            Rule(/\.\)/, .dottedSlurEnd),
+                                                            Rule(/\(/, .slurBegin),
+                                                            Rule(/\)/, .slurEnd),
+                                                            Rule(regex: /[$\\]$/,
+                                                                 disposition: .skip(nil)),
+                                                            Rule(regex: /[$\\](?=\s)/,
+                                                                 disposition: .skip(nil)),
+                                                            Rule(/\s+/, .whitespace),
+                                                            Rule(regex: /%.*$/,
+                                                                 disposition: .skip(nil))]
+}
+
+// MARK: -
+
+extension Tokenizer.Token.Kind {
+
+    // MARK: Internal Type Properties
+
+    internal static let annotation         = Self("annotation")
+    internal static let backquotes         = Self("backquotes")
+    internal static let barLine            = Self("barLine")
+    internal static let brokenRhythm       = Self("brokenRhythm")
+    internal static let chordBegin         = Self("chordBegin")
+    internal static let chordEnd           = Self("chordEnd")
+    internal static let chordSuffix        = Self("chordSuffix")
+    internal static let chordSymbol        = Self("chordSymbol")
+    internal static let decoration         = Self("decoration")
+    internal static let dottedSlurBegin    = Self("dottedSlurBegin")
+    internal static let dottedSlurEnd      = Self("dottedSlurEnd")
+    internal static let graceNotesBegin    = Self("graceNotesBegin")
+    internal static let graceNotesEnd      = Self("graceNotesEnd")
+    internal static let inlineField        = Self("inlineField")
+    internal static let note               = Self("note")
+    internal static let overlay            = Self("overlay")
+    internal static let rest               = Self("rest")
+    internal static let shorthand          = Self("shorthand")
+    internal static let slurBegin          = Self("slurBegin")
+    internal static let slurEnd            = Self("slurEnd")
+    internal static let spacer             = Self("spacer")
+    internal static let tuplet             = Self("tuplet")
+    internal static let variantEnding      = Self("variantEnding")
+    internal static let whitespace         = Self("whitespace")
+}

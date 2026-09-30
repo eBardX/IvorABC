@@ -1,0 +1,61 @@
+// © 2025–2026 John Gary Pusey (see LICENSE.md)
+
+/// An ABC directive.
+///
+/// See §11 (“Stylesheet directives and pseudo-comments”) of the ABC 2.1 standard.
+public struct ABCDirective {
+
+    // MARK: Public Initializers
+
+    /// Creates a new directive with the provided name, value, and optional
+    /// block content.
+    ///
+    /// - Parameter name:    The name of the directive.
+    /// - Parameter value:   The value of the directive.
+    /// - Parameter content: The block content lines, or `nil` if this is not
+    ///                      a block directive.
+    public init(name: Name,
+                value: String,
+                content: [String]? = nil) {
+        self.content = content
+        self.name = name
+        self.value = value
+    }
+
+    // MARK: Public Instance Properties
+
+    /// The block content lines of this directive, or `nil` if this is not a
+    /// block directive.
+    public let content: [String]?
+
+    /// The name of this directive.
+    public let name: Name
+
+    /// The value of this directive.
+    public let value: String
+}
+
+// MARK: -
+
+extension ABCDirective {
+
+    // MARK: Internal Instance Properties
+
+    // A Boolean value indicating whether this directive is a legacy construct
+    // that `ABCNormalizer` removes when normalizing to the current ABC version.
+    internal var needsNormalization: Bool {
+        name == .abcCharset
+        || name == .abcVersion
+        || (name == .decoration && value == "+")
+    }
+}
+
+// MARK: - Equatable
+
+extension ABCDirective: Equatable {
+}
+
+// MARK: - Sendable
+
+extension ABCDirective: Sendable {
+}
