@@ -20,12 +20,12 @@ An ABC Notation parser, normalizer, validator, and formatter.
 ## <a name="overview">Overview</a>
 
 The IvorABC framework provides an [ABC Notation][abc] parser, normalizer,
-validator, and formatter written in Swift. It targets [ABC standard v2.1][abcspec] with a
-strict-concurrency-ready, value-type API.
+validator, and formatter written in Swift. It targets [ABC standard
+v2.1][abcspec], with a strict-concurrency-ready, value-type API.
 
-IvorABC turns ABC text into a typed, round-trippable abstract syntax tree
-(`ABCTunebook` → `ABCTune` → `ABCHeaderEntry` / `ABCBodyEntry` → `ABCField` /
-`ABCSymbol`) and back to text.
+IvorABC's syntactic core turns ABC text into a typed, round-trippable abstract
+syntax tree (`ABCTunebook` → `ABCTune` → `ABCHeaderEntry` / `ABCBodyEntry` →
+`ABCField` / `ABCSymbol`) and back to text, without interpreting the music.
 
 Everything flows through a small, explicit pipeline of four value types, each
 with a no-argument initializer:
@@ -59,7 +59,7 @@ To add IvorABC to a Swift package, add it to the `dependencies` in your
 ```swift
 dependencies: [
     .package(url: "https://github.com/eBardX/IvorABC.git",
-             .upToNextMajor(from: "2.0.0"))
+             .upToNextMinor(from: "0.1.0"))
 ]
 ```
 
@@ -83,7 +83,7 @@ Swift Package Manager resolves both automatically.
 
 ## <a name="quick_start">Quick Start</a>
 
-Take ABC text from `Data` all the way to a playback-ready realization:
+Take ABC text from `Data` through the full pipeline and back to `Data`:
 
 ```swift
 import Foundation
@@ -103,19 +103,18 @@ let (validated, issues) = try ABCValidator().validate(normalized)
 guard issues.isEmpty
 else { issues.forEach { print($0.message) }; return }
 
-// 4. Format back to ABC 2.1-compliant text…
+// 4. Format back to ABC text.
 let output = try ABCFormatter().format(validated)
 ```
 
-Each stage is independent, so you can stop at the AST, round-trip through the
-formatter, or continue on to a resolved realization. For the complete story — the AST
-and realization models, resolver options, and error handling — see the
-[usage guide][guide].
+Each stage is independent, so you can stop at the AST or round-trip through
+the formatter. For the complete story — the AST model and error handling — see
+the [usage guide][guide].
 
 ## <a name="documentation">Documentation</a>
 
-* [Using IvorABC][guide] — a guide to using the public API, published as part of
-  the DocC documentation.
+* [Using IvorABC][guide] — a guide to using the public API, published as part
+  of the DocC documentation.
 * Every public declaration carries a DocC comment, with references to the
   relevant sections of the [ABC 2.1 standard][abcspec].
 

@@ -36,8 +36,7 @@ public struct ABCTunebook {
     /// A Boolean value indicating whether this tunebook has been normalized to
     /// ABC 2.1 via ``ABCNormalizer/normalize(_:)``.
     ///
-    /// `false` for tunebooks produced by
-    /// ``init(version:fileHeader:tunes:isNormalized:isValidated:)`` or
+    /// `false` for tunebooks produced by ``init(fileHeader:tunes:)`` or
     /// returned by the parser, until ``ABCNormalizer/normalize(_:)`` is
     /// called; `true` for all tunebooks returned by
     /// ``ABCNormalizer/normalize(_:)``.

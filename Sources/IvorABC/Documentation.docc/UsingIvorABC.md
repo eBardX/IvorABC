@@ -1,6 +1,6 @@
 # Using IvorABC
 
-Take ABC notation from text to a validated syntax tree, and back to text.
+Take ABC text from `Data` to a validated syntax tree, and back to `Data`.
 
 ## Overview
 
@@ -30,7 +30,7 @@ let (validated, issues)   = try ABCValidator().validate(normalized)
 guard issues.isEmpty
 else { /* handle issues */ return }
 
-let text = try ABCFormatter().format(validated)
+let output = try ABCFormatter().format(validated)
 ```
 
 Both `normalize(_:)` and `validate(_:)` are idempotent — calling them on a
@@ -120,11 +120,12 @@ if issues.isEmpty {
 ```
 
 - If the tunebook has not been normalized, `validate(_:)` throws
-  `ABCValidator.Error.notNormalized`.
+  ``ABCValidator/Error/notNormalized``.
 - If any issues are found, the returned tunebook is the **input unchanged** (its
-  `isValidated` flag stays `false`). Fix the issues and validate again.
+  `isValidated` flag stays `false`). Fix the issues — or run it through the
+  normalizer again after editing — and validate again.
 - Only when the issues array is empty does the returned tunebook have
-  `isValidated == true` — the prerequisite for formatting and resolving.
+  `isValidated == true` — the prerequisite for formatting.
 
 Each ``ABCValidator/Issue`` describes a specific conformance problem — a missing
 or misplaced `X:` / `T:` / `K:` field, an inline field used where it is not
@@ -142,7 +143,7 @@ let data = try ABCFormatter().format(validated)
 ```
 
 If the tunebook has not been validated, `format(_:)` throws
-`ABCFormatter.Error.notValidated`. Because the model is validated first,
+``ABCFormatter/Error/notValidated``. Because the model is validated first,
 formatting itself does not fail on content — round-tripping `parse → normalize →
 validate → format` reproduces a specification-compliant document.
 
@@ -200,8 +201,8 @@ let tunebook = ABCTunebook(fileHeader: [],
 ```
 
 A directly-constructed tunebook has `isNormalized == false` and `isValidated ==
-false`, so you must run it through the normalizer and validator before
-formatting or resolving.
+false` — exactly like one fresh out of the parser — so you must run it through
+the normalizer and validator before formatting.
 
 ## Error handling
 
@@ -215,14 +216,19 @@ Thrown errors conform to `EnhancedError` (from
  ``ABCValidator/Error`` | `ABCValidator.validate(_:)`
  ``ABCFormatter/Error`` | `ABCFormatter.format(_:)`
 
+`ABCNormalizer.normalize(_:)` never throws — normalization has no failure mode.
+
 Non-fatal results are returned rather than thrown, and each also provides a
 `message`:
 
- Type                     | Returned by     | Also
-:----                     |:-----------     |:-----
- ``ABCParser/Diagnostic`` | `parse(_:)`     | recovery/deprecation notices
- ``ABCNormalizer/Change`` | `normalize(_:)` | `tuneIndex`
- ``ABCValidator/Issue``   | `validate(_:)`  | `tuneIndex`
+ Type                     | Returned by
+:----                     |:-----------
+ ``ABCParser/Diagnostic`` | `parse(_:)`
+ ``ABCNormalizer/Change`` | `normalize(_:)`
+ ``ABCValidator/Issue``   | `validate(_:)`
+
+``ABCNormalizer/Change`` and ``ABCValidator/Issue`` also expose a `tuneIndex`
+(`Int?`): the tune the result applies to, or `nil` for the file header.
 
 ## Concurrency
 
