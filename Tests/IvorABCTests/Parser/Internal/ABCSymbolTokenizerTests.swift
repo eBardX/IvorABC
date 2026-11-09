@@ -130,6 +130,16 @@ extension ABCSymbolTokenizerTests {
     }
 
     @Test
+    func tokenize_decoration_hyphenatedName() throws {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try tokenizer.tokenize("!ped-up!C")
+
+        #expect(tokens.first?.kind == .decoration)
+        #expect(tokens.first?.value == "!ped-up!")
+    }
+
+    @Test
     func tokenize_decoration_legacyPlusSyntax() throws {
         let tokenizer = ABCSymbolTokenizer(tracing: .silent)
 
@@ -148,6 +158,15 @@ extension ABCSymbolTokenizerTests {
 
         #expect(tokens.count == 1)
         #expect(tokens[0].kind == .decoration)
+    }
+
+    @Test
+    func tokenize_decoration_nameWithSpaceIsNotADecoration() {
+        let tokenizer = ABCSymbolTokenizer(tracing: .silent)
+
+        let tokens = try? tokenizer.tokenize("!da capo!")
+
+        #expect(tokens?.first?.kind != .decoration)
     }
 
     @Test

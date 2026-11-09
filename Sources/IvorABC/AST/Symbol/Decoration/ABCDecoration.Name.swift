@@ -8,8 +8,11 @@ extension ABCDecoration {
 
     /// The name of an ABC decoration, without delimiters.
     ///
-    /// Valid names consist entirely of ASCII letters, digits, and the
-    /// characters `.()+<>`, and must be non-empty.
+    /// Valid names are non-empty and, as the ABC 2.1 standard requires
+    /// (§4.14), contain no whitespace or `[`, `]`, `|` or `:` signs. They also
+    /// contain no `!`, which delimits them. Anything else is allowed, so
+    /// names that programs define for themselves, such as abcm2ps’s
+    /// `ped-up`, are valid too.
     public struct Name {
 
         // MARK: Public Initializers
@@ -18,7 +21,7 @@ extension ABCDecoration {
         /// it is invalid.
         ///
         /// - Parameter stringValue: The string to store. Must be non-empty and
-        ///   contain only ASCII letters, digits, or the characters `.()+<>`.
+        ///   contain no whitespace or `!`, `:`, `[`, `]` or `|` characters.
         public init?(stringValue: String) {
             guard Self.isValid(stringValue)
             else { return nil }
@@ -44,8 +47,8 @@ extension ABCDecoration.Name {
     ///
     /// - Parameter stringValue: The string to validate.
     ///
-    /// - Returns: `true` if `stringValue` is non-empty and contains only
-    ///   ASCII letters, digits, or the characters `.()+<>`.
+    /// - Returns: `true` if `stringValue` is non-empty and contains no
+    ///   whitespace or `!`, `:`, `[`, `]` or `|` characters.
     public static func isValid(_ stringValue: String) -> Bool {
         !stringValue.isEmpty && stringValue.allSatisfy { Self._isValidElement($0) }
     }
@@ -53,10 +56,7 @@ extension ABCDecoration.Name {
     // MARK: Private Type Methods
 
     private static func _isValidElement(_ element: Character) -> Bool {
-        element.isASCII
-        && (element.isLetter
-            || element.isNumber
-            || ".()+<>".contains(element))
+        !element.isWhitespace && !"!:[]|".contains(element)
     }
 }
 

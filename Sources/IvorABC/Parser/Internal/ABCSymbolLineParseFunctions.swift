@@ -109,8 +109,6 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             let rest = input.dropFirst()
 
             guard let closeIdx = rest.firstIndex(of: "!"),
-                  !rest[..<closeIdx].isEmpty,
-                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()+<>".contains($0) }),
                   let name = ABCDecoration.Name(stringValue: String(rest[..<closeIdx])),
                   let decoration = ABCDecoration(name: name)
             else { return nil }
@@ -123,8 +121,6 @@ internal func parseSymbolLine(_ tidyInput: Substring) -> ABCSymbolLine? {
             let rest = input.dropFirst()
 
             guard let closeIdx = rest.firstIndex(of: "+"),
-                  !rest[..<closeIdx].isEmpty,
-                  rest[..<closeIdx].allSatisfy({ $0.isABCAlphanumeric || ".()<>".contains($0) }),
                   let name = ABCDecoration.Name(stringValue: String(rest[..<closeIdx])),
                   let decoration = ABCDecoration(name: name, dialect: .plus)
             else { return nil }

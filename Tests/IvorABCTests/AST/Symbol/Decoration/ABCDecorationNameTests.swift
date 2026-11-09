@@ -55,10 +55,19 @@ extension ABCDecorationNameTests {
     func isValid_stringWithAllowedCharactersIsValid() {
         #expect(ABCDecoration.Name.isValid("roll"))
         #expect(ABCDecoration.Name.isValid("5.(+<>"))
+        #expect(ABCDecoration.Name.isValid("ped-up"))
+        #expect(ABCDecoration.Name.isValid("D.C.alfine"))
+        #expect(ABCDecoration.Name.isValid("8va(*"))
     }
 
     @Test
     func isValid_stringWithDisallowedCharacterIsInvalid() {
         #expect(!ABCDecoration.Name.isValid("roll!"))
+        #expect(!ABCDecoration.Name.isValid("da capo"))
+        #expect(!ABCDecoration.Name.isValid("a:b"))
+        #expect(!ABCDecoration.Name.isValid("a[b"))
+        #expect(!ABCDecoration.Name.isValid("a]b"))
+        #expect(!ABCDecoration.Name.isValid("a|b"))
+        #expect(!ABCDecoration.Name.isValid("a\tb"))
     }
 }

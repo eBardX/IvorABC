@@ -231,6 +231,29 @@ extension ABCParserTests {
     }
 
     @Test
+    func parse_decoration_hyphenatedName_keepsTheLine() throws {
+        let input = "X:1\nK:C\n!ped!C D !ped-up!E F\n"
+        let (tunebook, diagnostics) = try ABCParser().parse(Data(input.utf8))
+        let tune = try #require(tunebook.tunes.first)
+        let symbols = tune.body.flatMap { entry -> [ABCSymbol] in
+            guard case let .symbols(symbols) = entry
+            else { return [] }
+
+            return symbols
+        }
+        let names = symbols.compactMap { symbol -> String? in
+            guard case let .decoration(decoration) = symbol
+            else { return nil }
+
+            return decoration.name.stringValue
+        }
+
+        #expect(diagnostics.isEmpty)
+        #expect(names == ["ped", "ped-up"])
+        #expect(symbols.count { if case .note = $0 { true } else { false } } == 4)
+    }
+
+    @Test
     func parse_emptyTunebook_throws() {
         let input = "%abc-2.1\n"
         let data = Data(input.utf8)

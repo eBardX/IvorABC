@@ -219,8 +219,12 @@ extension ABCSymbolTokenizer {
         }
     }
 
-    private static let decorationLegacyNameCC   = alphaNumericCC.union(.anyOf(".()<>"))
-    private static let decorationNameCC         = alphaNumericCC.union(.anyOf(".()+<>"))
+    // Per ABC 2.1 §4.14, a decoration name may contain anything but
+    // whitespace and `[`, `]`, `|` and `:` — and not its own delimiter. This
+    // matches `ABCDecoration.Name.isValid(_:)`, so whatever is tokenized as a
+    // decoration also makes a valid name.
+    private static let decorationLegacyNameCC   = CharacterClass.whitespace.union(.anyOf("!+:[]|")).inverted
+    private static let decorationNameCC         = CharacterClass.whitespace.union(.anyOf("!:[]|")).inverted
     private static let digitCC                  = CharacterClass("0"..."9")
 
     private nonisolated(unsafe) static let inlineFieldValue = Regex {

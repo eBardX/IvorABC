@@ -46,6 +46,7 @@ extension ABCSymbolLineParseFunctionsTests {
         #expect(parseSymbolLine("**") == makeSymbolLine([.skip, .skip]))
         #expect(parseSymbolLine("!p!") == makeSymbolLine([.decoration(makeDecoration("p", .bang))]))
         #expect(parseSymbolLine("!pp!") == makeSymbolLine([.decoration(makeDecoration("pp", .bang))]))
+        #expect(parseSymbolLine("!ped-up!") == makeSymbolLine([.decoration(makeDecoration("ped-up", .bang))]))
         #expect(parseSymbolLine("\"Am\"") == makeSymbolLine([.chordSymbol(ABCChordSymbol(name: .init(root: .a, kind: "m")))]))
         #expect(parseSymbolLine("\"^forte\"") == makeSymbolLine([.annotation(makeAnnotation(.above, "forte"))]))
         #expect(parseSymbolLine("\"_text\"") == makeSymbolLine([.annotation(makeAnnotation(.below, "text"))]))
