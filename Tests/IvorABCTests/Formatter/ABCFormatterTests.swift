@@ -41,8 +41,17 @@ extension ABCFormatterTests {
     }
 
     @Test
-    func accidental_natural_emitsBareNote() throws {
+    func accidental_natural_emitsEquals() throws {
         let note = makeNote(makePitch(.c, .natural, 4),
+                            makeLength(1, 1))
+        let output = try format(minimalTunebook(symbols: [.note(note)]))
+
+        #expect(output.contains("=C\n"))
+    }
+
+    @Test
+    func accidental_omitted_emitsBareNote() throws {
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -127,7 +136,7 @@ extension ABCFormatterTests {
 
     @Test
     func barLine_emitsVerbatim() throws {
-        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
+        let note = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.barLine(makeBarLine(.repeat, followingPlayCount: 2)), .note(note)]))
 
         #expect(output.contains("|:"))
@@ -135,8 +144,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_doubleRight_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
+        let c = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .omitted, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.doubleDotted), .note(d)]))
 
         #expect(output.contains(">>"))
@@ -144,8 +153,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
+        let c = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .omitted, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.dotted), .note(d)]))
 
         #expect(output.contains(">"))
@@ -153,8 +162,8 @@ extension ABCFormatterTests {
 
     @Test
     func brokenRhythm_left_emitsVerbatim() throws {
-        let c = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
-        let d = makeNote(makePitch(.d, .natural, 4), makeLength(1, 8))
+        let c = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 8))
+        let d = makeNote(makePitch(.d, .omitted, 4), makeLength(1, 8))
         let output = try format(minimalTunebook(symbols: [.note(c), .brokenRhythm(.reverseDotted), .note(d)]))
 
         #expect(output.contains("<"))
@@ -162,9 +171,9 @@ extension ABCFormatterTests {
 
     @Test
     func chord_basic_emitsBracketedNotes() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
-                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1)),
-                                makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))]
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .omitted, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.g, .omitted, 4), makeLength(1, 1))]
         let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(1, 1)))]))
 
         #expect(output.contains("[CEG]\n"))
@@ -172,8 +181,8 @@ extension ABCFormatterTests {
 
     @Test
     func chord_withLengthSuffix_emitsChordSuffix() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
-                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))]
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .omitted, 4), makeLength(1, 1))]
         let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(2, 1)))]))
 
         #expect(output.contains("[CE]2\n"))
@@ -181,8 +190,8 @@ extension ABCFormatterTests {
 
     @Test
     func chord_withTie_emitsDash() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.c, .natural, 4), makeLength(1, 1)),
-                                makeNote(makePitch(.e, .natural, 4), makeLength(1, 1))]
+        let notes: [ABCNote] = [makeNote(makePitch(.c, .omitted, 4), makeLength(1, 1)),
+                                makeNote(makePitch(.e, .omitted, 4), makeLength(1, 1))]
         let output = try format(minimalTunebook(symbols: [.chord(makeChord(notes, makeLength(1, 1), .regular))]))
 
         #expect(output.contains("[CE]-\n"))
@@ -382,8 +391,8 @@ extension ABCFormatterTests {
 
     @Test
     func graceNotes_noSlash_emitsCurlyBraces() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeLength(1, 1))]
-        let following = makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))
+        let notes: [ABCNote] = [makeNote(makePitch(.a, .omitted, 4), makeLength(1, 1))]
+        let following = makeNote(makePitch(.g, .omitted, 4), makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, false)), .note(following)]))
 
         #expect(output.contains("{A}G\n"))
@@ -391,8 +400,8 @@ extension ABCFormatterTests {
 
     @Test
     func graceNotes_withSlash_emitsSlashInBraces() throws {
-        let notes: [ABCNote] = [makeNote(makePitch(.a, .natural, 4), makeLength(1, 1))]
-        let following = makeNote(makePitch(.g, .natural, 4), makeLength(1, 1))
+        let notes: [ABCNote] = [makeNote(makePitch(.a, .omitted, 4), makeLength(1, 1))]
+        let following = makeNote(makePitch(.g, .omitted, 4), makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.graceNotes(makeGraceNotes(notes, true)), .note(following)]))
 
         #expect(output.contains("{/A}G\n"))
@@ -416,7 +425,7 @@ extension ABCFormatterTests {
     @Test
     func inlineField_key_emitsBracketed() throws {
         let output = try format(minimalTunebook(symbols: [.inlineField(.key(makeKeySignature(.g, .major))),
-                                                          .note(makeNote(makePitch(.g, .natural, 4),
+                                                          .note(makeNote(makePitch(.g, .omitted, 4),
                                                                          makeLength(1, 8)))]))
 
         #expect(output.contains("[K:G major]"))
@@ -425,7 +434,7 @@ extension ABCFormatterTests {
     @Test
     func inlineField_meter_emitsBracketed() throws {
         let output = try format(minimalTunebook(symbols: [.inlineField(.meter(makeTimeSignature(3, 4))),
-                                                          .note(makeNote(makePitch(.c, .natural, 4),
+                                                          .note(makeNote(makePitch(.c, .omitted, 4),
                                                                          makeLength(1, 8)))]))
 
         #expect(output.contains("[M:3/4]"))
@@ -594,7 +603,7 @@ extension ABCFormatterTests {
     @Test
     func length_default_emitsEmpty() throws {
         // A written length of 1/1 (a bare note) emits no suffix.
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -603,7 +612,7 @@ extension ABCFormatterTests {
 
     @Test
     func length_double_emits2() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(2, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -612,7 +621,7 @@ extension ABCFormatterTests {
 
     @Test
     func length_half_emitsSlash() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(1, 2))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -621,7 +630,7 @@ extension ABCFormatterTests {
 
     @Test
     func length_quarter_emitsDoubleSlash() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(1, 4))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -630,7 +639,7 @@ extension ABCFormatterTests {
 
     @Test
     func length_threeHalves_emits3over2() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(3, 2))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -742,7 +751,7 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave2_emitsUppercaseWithTwoCommas() throws {
-        let note = ABCNote(pitch: makePitch(.c, .natural, 2),
+        let note = ABCNote(pitch: makePitch(.c, .omitted, 2),
                            length: makeLength(1, 1),
                            tie: nil)
         let output = try format(minimalTunebook(symbols: [.note(note)]))
@@ -752,7 +761,7 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave3_emitsUppercaseWithComma() throws {
-        let note = makeNote(makePitch(.c, .natural, 3),
+        let note = makeNote(makePitch(.c, .omitted, 3),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -761,7 +770,7 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave4_emitsUppercase() throws {
-        let note = makeNote(makePitch(.c, .natural, 4),
+        let note = makeNote(makePitch(.c, .omitted, 4),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -770,7 +779,7 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave5_emitsLowercase() throws {
-        let note = makeNote(makePitch(.c, .natural, 5),
+        let note = makeNote(makePitch(.c, .omitted, 5),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -779,7 +788,7 @@ extension ABCFormatterTests {
 
     @Test
     func pitch_octave6_emitsLowercaseWithApostrophe() throws {
-        let note = makeNote(makePitch(.c, .natural, 6),
+        let note = makeNote(makePitch(.c, .omitted, 6),
                             makeLength(1, 1))
         let output = try format(minimalTunebook(symbols: [.note(note)]))
 
@@ -1043,7 +1052,7 @@ extension ABCFormatterTests {
 
     @Test
     func tune_missingKeySignature_outputsWithoutKeyField() throws {
-        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1, 8))
+        let note = makeNote(makePitch(.c, .omitted, 4), makeLength(1, 8))
         let tunebook = makeTunebook([makeTune(header: [.field(.referenceNumber(makeReferenceNumber(1))),
                                                        .field(.tuneTitle("Test"))],
                                               body: [.symbols([.note(note)])])])

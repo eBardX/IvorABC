@@ -80,7 +80,7 @@ extension ABCFormatFunctionsTests {
 
     @Test
     func formatSymbol_note() {
-        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1))
+        let note = makeNote(makePitch(.c, .omitted, 4), makeLength(1))
 
         #expect(formatSymbol(.note(note)) == "C")
     }

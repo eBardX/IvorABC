@@ -233,7 +233,7 @@ internal func formatPitchAccidentalNoteGlyph(_ accidental: ABCPitch.Accidental) 
         "_"
 
     case .natural:
-        ""
+        "="
 
     case .omitted:
         ""

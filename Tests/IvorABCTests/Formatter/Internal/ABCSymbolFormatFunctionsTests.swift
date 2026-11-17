@@ -66,7 +66,7 @@ extension ABCSymbolFormatFunctionsTests {
 
     @Test
     func formatChord_withTie() {
-        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1))
+        let note = makeNote(makePitch(.c, .omitted, 4), makeLength(1))
         let chord = makeChord([note], makeLength(1), .regular)
 
         #expect(formatChord(chord) == "[C]-")
@@ -93,7 +93,7 @@ extension ABCSymbolFormatFunctionsTests {
 
     @Test
     func formatGraceNotes_slashed() {
-        let note = makeNote(makePitch(.c, .natural, 4), makeLength(1))
+        let note = makeNote(makePitch(.c, .omitted, 4), makeLength(1))
         let graceNotes = makeGraceNotes([note], true)
 
         #expect(formatGraceNotes(graceNotes) == "{/C}")

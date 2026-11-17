@@ -15,10 +15,11 @@ extension ABCPitch {
         /// A flat (♭).
         case flat
 
-        /// A natural (♮).
+        /// A natural (♮), written as `=` before a note.
         case natural
 
-        /// No accidental was written in the source.
+        /// No accidental was written in the source, so the key signature (or an earlier
+        /// accidental in the bar) decides the pitch. A note with it is written bare.
         case omitted
 
         /// A sharp (♯).

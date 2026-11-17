@@ -13,8 +13,8 @@ struct ABCFormatterWriterTests {
 extension ABCFormatterWriterTests {
     @Test
     func writeTunebook_beamBreakEmitsSpace() {
-        let note1 = makeNote(makePitch(.c, .natural, 4), makeLength(1))
-        let note2 = makeNote(makePitch(.d, .natural, 4), makeLength(1))
+        let note1 = makeNote(makePitch(.c, .omitted, 4), makeLength(1))
+        let note2 = makeNote(makePitch(.d, .omitted, 4), makeLength(1))
         let tunebook = minimalTunebook(symbols: [.note(note1), .beamBreak, .note(note2)])
         var writer = ABCFormatter.Writer(tunebook: tunebook)
         let output = String(data: writer.writeTunebook(), encoding: .utf8).require()
